@@ -83,7 +83,7 @@ namespace AbyssalReach.Gameplay
 
             if (showDebug)
             {
-                Debug.Log($"[Boat] Input: {moveInput:F2} | Speed: {currentSpeed:F2} | Pos: {transform.position.x:F2}");
+                Debug.Log("[Boat] Input: {"+ moveInput+ ":F2} | Speed: {"+ currentSpeed+":F2} | Pos: {" + transform.position.x +":F2}");                
             }
         }
 

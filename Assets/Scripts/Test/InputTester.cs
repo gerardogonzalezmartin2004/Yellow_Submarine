@@ -18,14 +18,14 @@ public class InputTester : MonoBehaviour
         controls.BoatControls.Movement.performed += ctx =>
         {
             float value = ctx.ReadValue<float>();
-            Debug.Log($"Boat Movement: {value}");
+            Debug.Log("Boat Movement: {"+value+"}");
         };
 
         // Test buceador
         controls.DiverControls.Move.performed += ctx =>
         {
             Vector2 value = ctx.ReadValue<Vector2>();
-            Debug.Log($"Diver Move: {value}");
+            Debug.Log("Diver Move: {"+value+"}");
         };
     }
 
