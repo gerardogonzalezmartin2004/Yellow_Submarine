@@ -19,7 +19,7 @@ public class GameController : MonoBehaviour
     private void OnEnable()
     {
         controls.Enable();
-        controls.BoatControls.StartDive.performed += _ => ToggleDiving();
+        controls.BoatControls.StartDive.performed += _ => ToggleDiving(); // Esto es como una llamada a la función ToggleDiving cada vez que se presiona el botón de bucear. Si ya estás buceando, te saca a navegar, y si estás navegando, te mete a bucear. Me lo dijo Serg
     }
 
     private void OnDisable()
@@ -57,7 +57,7 @@ public class GameController : MonoBehaviour
         controls.BoatControls.Enable();
         controls.DiverControls.Disable();
 
-        Debug.Log("[GameController] SAILING MODE");
+        Debug.Log("[GameController] Saling Mode");
     }
 
     private void SetDivingMode()
@@ -76,6 +76,6 @@ public class GameController : MonoBehaviour
         controls.BoatControls.Disable();
         controls.DiverControls.Enable();
 
-        Debug.Log("[GameController] DIVING MODE");
+        Debug.Log("[GameController] Diving Mode");
     }
 }

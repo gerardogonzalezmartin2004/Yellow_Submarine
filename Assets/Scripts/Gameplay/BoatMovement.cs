@@ -3,13 +3,11 @@ using AbyssalReach.Core;
 
 namespace AbyssalReach.Gameplay
 {
-    /// <summary>
-    /// Controla el movimiento horizontal del barco.
-    /// Simple, suave y responsivo para teclado y gamepad.
-    /// </summary>
-    [RequireComponent(typeof(Rigidbody))]
+       
+    [RequireComponent(typeof(Rigidbody))] // Por si acaso
     public class BoatMovement : MonoBehaviour
     {
+        // Controla el movimiento horizontal del barco
         [Header("Movement Settings")]
         [Tooltip("Velocidad máxima del barco en m/s")]
         [SerializeField] private float maxSpeed = 8f;
@@ -27,11 +25,11 @@ namespace AbyssalReach.Gameplay
         [Header("Debug")]
         [SerializeField] private bool showDebug = false;
 
-        // Components
+       
         private Rigidbody rb;
         private AbyssalReachControls controls;
 
-        // State
+        
         private float currentSpeed = 0f;
         private float moveInput = 0f;
 
@@ -41,12 +39,10 @@ namespace AbyssalReach.Gameplay
         {
             rb = GetComponent<Rigidbody>();
 
-            // Configurar Rigidbody para 2.5D
+            // Configurazao Rigidbody 
             rb.useGravity = false;
             rb.linearDamping = waterDrag;
-            rb.constraints = RigidbodyConstraints.FreezePositionZ |
-                           RigidbodyConstraints.FreezeRotationX |
-                           RigidbodyConstraints.FreezeRotationY;
+            rb.constraints = RigidbodyConstraints.FreezePositionZ | RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationY;
 
             // Inicializar controles
             controls = new AbyssalReachControls();
@@ -93,20 +89,20 @@ namespace AbyssalReach.Gameplay
 
         #endregion
 
-        #region Public API
+        #region Aplicaciones
 
-        /// <summary>
-        /// Detiene el movimiento del barco
-        /// </summary>
+      
+        
+        // Detiene el movimiento del barco
         public void Stop()
         {
             currentSpeed = 0f;
             rb.linearVelocity = Vector3.zero;
         }
 
-        /// <summary>
-        /// Teletransporta el barco a una posición
-        /// </summary>
+      
+       
+        // Teletransporta el barco a una posición
         public void SetPosition(Vector3 position)
         {
             position.z = 0f;

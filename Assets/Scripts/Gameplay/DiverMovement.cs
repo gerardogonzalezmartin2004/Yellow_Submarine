@@ -3,13 +3,11 @@ using AbyssalReach.Core;
 
 namespace AbyssalReach.Gameplay
 {
-    /// <summary>
-    /// Controla el movimiento del buceador con física de agua realista.
-    /// Incluye inercia, aceleración gradual y límite de 180°.
-    /// </summary>
-    [RequireComponent(typeof(Rigidbody))]
+   
+    [RequireComponent(typeof(Rigidbody))]// No es esta mal tenerlo, por si acaso.
     public class DiverMovement : MonoBehaviour
     {
+        // En este script, se controla el movimiento del buceador con física de agua realista. Incluye inercia, aceleración gradual y límite de 180°.
         [Header("Movement Settings")]
         [Tooltip("Velocidad máxima de nado")]
         [SerializeField] private float swimSpeed = 5f;
@@ -54,19 +52,17 @@ namespace AbyssalReach.Gameplay
         {
             rb = GetComponent<Rigidbody>();
 
-            // Configurar Rigidbody
-            rb.useGravity = false; // Usaremos gravedad custom
+            // Por si, configurar Rigidbody
+            rb.useGravity = false; 
             rb.linearDamping = rbDrag;
-            rb.constraints = RigidbodyConstraints.FreezePositionZ |
-                           RigidbodyConstraints.FreezeRotationX |
-                           RigidbodyConstraints.FreezeRotationY |
-                           RigidbodyConstraints.FreezeRotationZ;
+            rb.constraints = RigidbodyConstraints.FreezePositionZ |RigidbodyConstraints.FreezeRotationX |RigidbodyConstraints.FreezeRotationY |RigidbodyConstraints.FreezeRotationZ;
 
             controls = new AbyssalReachControls();
         }
 
         private void OnEnable()
         {
+            // Activar controles
             controls.Enable();
             controls.DiverControls.Move.performed += ctx => moveInput = ctx.ReadValue<Vector2>();
             controls.DiverControls.Move.canceled += ctx => moveInput = Vector2.zero;
@@ -84,9 +80,9 @@ namespace AbyssalReach.Gameplay
             EnforceSurfaceLimit();
         }
 
-        #endregion
+        #endregion // Con esto acortamos y dividimos mejor el codigo
 
-        #region Movement Logic
+        #region Movement Logica
 
         private void ApplyGravity()
         {
@@ -103,7 +99,7 @@ namespace AbyssalReach.Gameplay
             float rate = moveInput.magnitude > 0.01f ? acceleration : waterDrag;
             currentVelocity = Vector2.MoveTowards(currentVelocity, targetVelocity, rate * Time.fixedDeltaTime);
 
-            // Aplicar límite de 180° (semicírculo)
+            // Aplicar límite de 180° 
             currentVelocity = ApplyHemisphereConstraint(currentVelocity);
 
             // Aplicar movimiento
@@ -112,14 +108,14 @@ namespace AbyssalReach.Gameplay
 
             if (showDebug && moveInput.magnitude > 0)
             {
-                Debug.Log($"[Diver] Input: {moveInput} | Velocity: {currentVelocity} | Pos: {transform.position}");
+                Debug.Log("Diver Input: " + moveInput + "  | Velocity: {" + currentVelocity + "} | Pos: {" + transform.position + "}");
             }
         }
 
         private Vector2 ApplyHemisphereConstraint(Vector2 velocity)
         {
             // Solo permitir movimiento hacia abajo o a los lados (180°)
-            // NO permitir moverse hacia arriba más allá de cierto punto
+            // No permitir moverse hacia arriba más allá de cierto punto
 
             if (boatTransform == null) return velocity;
 
@@ -141,7 +137,7 @@ namespace AbyssalReach.Gameplay
 
         private void EnforceSurfaceLimit()
         {
-            // NO permitir salir del agua
+            // No permitir salir del agua
             if (transform.position.y > waterSurfaceY)
             {
                 Vector3 pos = transform.position;
@@ -158,32 +154,29 @@ namespace AbyssalReach.Gameplay
 
         #endregion
 
-        #region Public API
+        #region Apliaciones
 
-        /// <summary>
-        /// Detiene el movimiento del buceador
-        /// </summary>
+      
+        // Detiene el movimiento del buceador
         public void Stop()
         {
             currentVelocity = Vector2.zero;
             rb.linearVelocity = Vector3.zero;
         }
 
-        /// <summary>
-        /// Posiciona el buceador (ej: al empezar buceo)
-        /// </summary>
+        
+        // Posiciona el buceador         
         public void SetPosition(Vector3 position)
         {
             position.z = 0f;
-            position.y = Mathf.Min(position.y, waterSurfaceY); // Asegurar que está bajo agua
+            position.y = Mathf.Min(position.y, waterSurfaceY); // Hay q asegurarses de que está bajo agua
             transform.position = position;
             rb.position = position;
             Stop();
         }
 
-        /// <summary>
-        /// Asigna el transform del barco (para el constraint de 180°)
-        /// </summary>
+       
+       // Asigna el transform del barco       
         public void SetBoatReference(Transform boat)
         {
             boatTransform = boat;

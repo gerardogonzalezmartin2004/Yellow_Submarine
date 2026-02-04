@@ -2,13 +2,10 @@ using UnityEngine;
 
 namespace AbyssalReach.Gameplay
 {
-    /// <summary>
-    /// Sistema de cable que conecta el barco con el buceador.
-    /// Limita la distancia y aplica física de "compás" (arco de 180°).
-    /// </summary>
-    [RequireComponent(typeof(LineRenderer))]
+     [RequireComponent(typeof(LineRenderer))] // No es esta mal tenerlo, por si acaso.
     public class TetherSystem : MonoBehaviour
     {
+        // En este script hya un sistema de cable que conecta el barco con el buceador. Y limita la distancia máxima entre ambos.
         [Header("References")]
         [Tooltip("Transform del barco (punto de anclaje superior)")]
         [SerializeField] private Transform boatAnchor;
@@ -39,13 +36,13 @@ namespace AbyssalReach.Gameplay
         [Header("Debug")]
         [SerializeField] private bool showDebug = false;
 
-        // Components
+       
         private LineRenderer lineRenderer;
         private Rigidbody diverRb;
 
-        // State
+       
         private float currentLength = 0f;
-        private float tension = 0f; // 0-1
+        private float tension = 0f;
 
         #region Unity Lifecycle
 
@@ -81,10 +78,10 @@ namespace AbyssalReach.Gameplay
 
         private void SetupLineRenderer()
         {
+            // Ya que estamos por si se desconfigura. Luego se me va.
             lineRenderer.positionCount = 2;
             lineRenderer.startWidth = lineWidth;
-            lineRenderer.endWidth = lineWidth;
-            lineRenderer.material = new Material(Shader.Find("Sprites/Default"));
+            lineRenderer.endWidth = lineWidth;            
             lineRenderer.startColor = relaxedColor;
             lineRenderer.endColor = relaxedColor;
             lineRenderer.numCornerVertices = 5;
@@ -95,23 +92,23 @@ namespace AbyssalReach.Gameplay
         {
             if (boatAnchor == null)
             {
-                Debug.LogError("[TetherSystem] Boat Anchor not assigned!");
+                Debug.LogError("[TetherSystem] Boat Anchor no esta asignado");
             }
 
             if (diverAnchor == null)
             {
-                Debug.LogError("[TetherSystem] Diver Anchor not assigned!");
+                Debug.LogError("[TetherSystem] Diver Anchor no esta asignado");
             }
 
             if (diverRb == null && diverAnchor != null)
             {
-                Debug.LogWarning("[TetherSystem] Diver doesn't have Rigidbody. Pull force won't work.");
+                Debug.LogWarning("[TetherSystem] Diver no tiene Rigidbody");
             }
         }
 
         #endregion
 
-        #region Tether Physics
+        #region Tether Fisicas
 
         private void UpdateTetherPhysics()
         {
@@ -131,7 +128,7 @@ namespace AbyssalReach.Gameplay
 
             if (showDebug)
             {
-                Debug.Log($"[Tether] Length: {currentLength:F2}/{maxLength:F2} | Tension: {tension:F2}");
+                  Debug.Log("[Tether] Length: " + currentLength+ ":F2}/{" + maxLength+ ":F2} | Tension: {"+ tension+ ":F2}");
             }
         }
 
@@ -177,41 +174,40 @@ namespace AbyssalReach.Gameplay
 
         #region Public API
 
-        /// <summary>
-        /// Verifica si el cable está al límite
-        /// </summary>
+        
+        
+      // Verifica si el cable está al límite
         public bool IsAtMaxLength => currentLength >= maxLength * 0.99f;
 
-        /// <summary>
-        /// Obtiene la longitud actual del cable
-        /// </summary>
+       
+        
+        // Obtiene la longitud actual del cable
         public float CurrentLength => currentLength;
 
-        /// <summary>
-        /// Obtiene la longitud máxima
-        /// </summary>
+        
+       
+        // Obtiene la longitud máxima
         public float MaxLength => maxLength;
 
-        /// <summary>
-        /// Obtiene la tensión actual (0-1)
-        /// </summary>
+       // Obtiene la tensión actual (0-1)
         public float Tension => tension;
 
-        /// <summary>
-        /// Mejora la longitud del cable (para upgrades futuros)
-        /// </summary>
+       
+        // Mejora la longitud del cable (para upgrades futuros)
+        
         public void UpgradeLength(float newLength)
         {
             if (newLength > maxLength)
             {
                 maxLength = newLength;
-                Debug.Log($"[TetherSystem] Cable upgraded to {newLength}m");
+                Debug.Log("[TetherSystem] Cable upgraded to {"+newLength+"}m");
+               
             }
         }
 
-        /// <summary>
-        /// Asigna las referencias dinámicamente
-        /// </summary>
+     
+        
+        // Asigna las referencias 
         public void SetAnchors(Transform boat, Transform diver)
         {
             boatAnchor = boat;
