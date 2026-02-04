@@ -8,12 +8,18 @@ public class GameController : MonoBehaviour
     [SerializeField] private GameObject diver;
     [SerializeField] private GameObject tetherSystem;
 
+    private Rigidbody boatRb;
+
     private AbyssalReachControls controls;
     private bool isDiving = false;
 
     private void Awake()
     {
         controls = new AbyssalReachControls();
+        if (boat != null)
+        {
+            boatRb = boat.GetComponent<Rigidbody>();
+        }
     }
 
     private void OnEnable()
@@ -49,6 +55,10 @@ public class GameController : MonoBehaviour
     {
         isDiving = false;
 
+        if (boatRb != null)
+        {
+            boatRb.isKinematic = false;
+        }
         boat.SetActive(true);
         diver.SetActive(false);
         tetherSystem.SetActive(false);
@@ -64,6 +74,12 @@ public class GameController : MonoBehaviour
     {
         isDiving = true;
 
+        if (boatRb != null)
+        {
+            boatRb.linearVelocity = Vector3.zero;        // Frenar en seco
+            boatRb.angularVelocity = Vector3.zero; // Frenar giros
+            boatRb.isKinematic = true;             // Hacerlo "inmóvil" ante golpes o física
+        }
         // Posicionar buceador bajo el barco
         Vector3 boatPos = boat.transform.position;
         diver.transform.position = new Vector3(boatPos.x, boatPos.y - 2f, 0f);

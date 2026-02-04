@@ -33,7 +33,7 @@ namespace AbyssalReach.Gameplay
         private float currentSpeed = 0f;
         private float moveInput = 0f;
 
-        #region Unity Lifecycle
+        #region Ciclo de Vida
 
         private void Awake()
         {
@@ -51,17 +51,33 @@ namespace AbyssalReach.Gameplay
         private void OnEnable()
         {
             controls.Enable();
+            controls.BoatControls.Enable(); // Aseguramos que el mapa de controles del barco está activo
+
             controls.BoatControls.Movement.performed += ctx => moveInput = ctx.ReadValue<float>();
             controls.BoatControls.Movement.canceled += ctx => moveInput = 0f;
+
+            if (showDebug)
+            {
+                Debug.Log("[Boat] Controles habilitados");
+            }
         }
 
         private void OnDisable()
         {
+            // Limpiamos el input para evitar que el barco siga moviéndse después de desactivar los controles
+            moveInput = 0f;
+            currentSpeed = 0f;
+
+            controls.BoatControls.Disable();
             controls.Disable();
         }
 
         private void FixedUpdate()
         {
+            if (!enabled)
+            {
+                return;// Evitar actualizar si el script está deshabilitado
+            } 
             UpdateMovement();
         }
 
@@ -73,8 +89,19 @@ namespace AbyssalReach.Gameplay
         {
             // Acelerar o frenar según el input
             float targetSpeed = moveInput * maxSpeed;
-            float accelRate = Mathf.Abs(targetSpeed) > 0.01f ? acceleration : deceleration;
+            float accelRate;
 
+            // Si nos intentamos mover (velocidad objetivo mayor que casi 0)
+            if (Mathf.Abs(targetSpeed) > 0.01f)
+            {
+                accelRate = acceleration; 
+            }
+            else
+            {
+                accelRate = deceleration; 
+            }
+
+            // MoveTowards suaviza el cambio de velocidad
             currentSpeed = Mathf.MoveTowards(currentSpeed, targetSpeed, accelRate * Time.fixedDeltaTime);
 
             // Aplicar movimiento
@@ -97,7 +124,14 @@ namespace AbyssalReach.Gameplay
         public void Stop()
         {
             currentSpeed = 0f;
-            rb.linearVelocity = Vector3.zero;
+            moveInput = 0f; // Reseteamos el input
+
+            if (rb != null)
+            {
+               
+                rb.linearVelocity = Vector3.zero;
+                rb.angularVelocity = Vector3.zero;
+            }
         }
 
       
@@ -111,8 +145,15 @@ namespace AbyssalReach.Gameplay
             Stop();
         }
 
-        public float CurrentSpeed => currentSpeed;
-        public Vector3 Position => transform.position;
+        public float CurrentSpeed ()
+        {
+             return currentSpeed; 
+        }
+
+        public Vector3 Position ()
+        {
+            return transform.position; 
+        }
 
         #endregion
 
@@ -120,11 +161,29 @@ namespace AbyssalReach.Gameplay
 
         private void OnDrawGizmos()
         {
-            if (!showDebug || !Application.isPlaying) return;
+            if (!showDebug || !Application.isPlaying) 
+            {
+                return;
+            }
 
-            // Dibujar dirección y velocidad
-            Gizmos.color = currentSpeed > 0 ? Color.green : (currentSpeed < 0 ? Color.red : Color.yellow);
+            if (currentSpeed > 0)
+            {
+                Gizmos.color = Color.green; // Avanza - verde
+            }
+            else if (currentSpeed < 0)
+            {
+                Gizmos.color = Color.red;   // Retrocede - rojo
+            }
+            else
+            {
+                Gizmos.color = Color.yellow; // Quieto - amarillo
+            }
+
             Gizmos.DrawRay(transform.position, Vector3.right * currentSpeed);
+
+            // Dibujamos una bolita verde si el script está activo (navegando) o gris si no (buceando)
+            Gizmos.color = enabled ? Color.green : Color.gray;
+            Gizmos.DrawWireSphere(transform.position + Vector3.up * 2f, 0.3f);
         }
 
         #endregion
