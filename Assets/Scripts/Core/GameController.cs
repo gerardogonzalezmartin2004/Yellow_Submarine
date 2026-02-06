@@ -85,7 +85,7 @@ namespace AbyssalReach.Core
         private void Update()
         {
 
-            if (showDebug && Input.GetKeyDown(KeyCode.F5))
+            if ( Input.GetKeyDown(KeyCode.F5))
             {
                 ToggleDiving();
             }
@@ -141,10 +141,7 @@ namespace AbyssalReach.Core
             controls.BoatControls.Enable();
             controls.DiverControls.Disable();
 
-            if (showDebug)
-            {
-                Debug.Log("[GameController] SAILING MODE");
-            }
+          
         }
 
         private void SetDivingMode()
@@ -196,10 +193,7 @@ namespace AbyssalReach.Core
             controls.BoatControls.Disable();
             controls.DiverControls.Enable();
 
-            if (showDebug)
-            {
-                Debug.Log("[GameController] DIVING MODE - Barco anclado");
-            }
+           
         }
 
         public void EnterPort()
@@ -221,10 +215,6 @@ namespace AbyssalReach.Core
                     boatRb.isKinematic = true;
                 }
 
-                if (showDebug)
-                {
-                    Debug.Log("[GameController] En el puerto");
-                }
             }
         }
 

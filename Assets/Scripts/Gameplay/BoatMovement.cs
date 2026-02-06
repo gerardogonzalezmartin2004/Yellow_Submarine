@@ -3,8 +3,7 @@ using AbyssalReach.Core;
 
 namespace AbyssalReach.Gameplay
 {
-       
-    [RequireComponent(typeof(Rigidbody))] // Por si acaso
+    [RequireComponent(typeof(Rigidbody))]
     public class BoatMovement : MonoBehaviour
     {
         // Controla el movimiento horizontal del barco
@@ -22,14 +21,9 @@ namespace AbyssalReach.Gameplay
         [Tooltip("Drag cuando está en agua")]
         [SerializeField] private float waterDrag = 1.5f;
 
-        [Header("Debug")]
-        [SerializeField] private bool showDebug = false;
-
-       
         private Rigidbody rb;
         private AbyssalReachControls controls;
 
-        
         private float currentSpeed = 0f;
         private float moveInput = 0f;
         private bool isActive = true;
@@ -40,7 +34,7 @@ namespace AbyssalReach.Gameplay
         {
             rb = GetComponent<Rigidbody>();
 
-            // Configurazao Rigidbody 
+            // Configuración del Rigidbody
             rb.useGravity = false;
             rb.linearDamping = waterDrag;
             rb.constraints = RigidbodyConstraints.FreezePositionZ | RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationY;
@@ -52,29 +46,43 @@ namespace AbyssalReach.Gameplay
         private void OnEnable()
         {
             controls.Enable();
-            controls.BoatControls.Enable(); // Aseguramos que el mapa de controles del barco está activo
+            controls.BoatControls.Enable();
 
-            controls.BoatControls.Movement.performed += OnMovementPerformed;
-            controls.BoatControls.Movement.canceled += OnMovementCanceled;
-
-            if (showDebug)
-            {
-                Debug.Log("[Boat] Controles habilitados");
-            }
+            // Suscripción a eventos del Input System 
+            controls.BoatControls.Movement.performed += OnMovementPerformed; // .performed se llama cuando hay un cambio en el input (ej: el jugador está moviendo el joystick ahora mismo)
+            controls.BoatControls.Movement.canceled += OnMovementCanceled; //. canceled se llama cuando el jugador suelta el joystick o la tecla, es decir, deja de dar input
+            // Y el += es para suscribir la función a ese evento, así cada vez que el jugador mueva el joystick se ejecutará OnMovementPerformed, y cada vez que lo suelte se ejecutará OnMovementCanceled
         }
 
         private void OnDisable()
         {
-            // Limpiamos el input para evitar que el barco siga moviéndse después de desactivar los controles
+            // Limpiamos el input al desactivar
             moveInput = 0f;
             currentSpeed = 0f;
 
+            // Desuscripción de eventos y asi e evitamos errores de memoria
             controls.BoatControls.Movement.performed -= OnMovementPerformed;
             controls.BoatControls.Movement.canceled -= OnMovementCanceled;
 
             controls.BoatControls.Disable();
             controls.Disable();
         }
+
+        private void FixedUpdate()
+        {
+            // Evitar actualizar si el script está deshabilitado o inactivo
+            if (!enabled || !isActive)
+            {
+                return;
+            }
+            UpdateMovement();
+        }
+
+        #endregion
+
+        #region Input Llamadas
+
+        // Se ejecuta cuando mueves el joystick o pulsas la tecla
         private void OnMovementPerformed(UnityEngine.InputSystem.InputAction.CallbackContext context)
         {
             if (isActive)
@@ -83,18 +91,10 @@ namespace AbyssalReach.Gameplay
             }
         }
 
+        // Se ejecuta cuando sueltas el joystick o la tecla. Se pone le paramtro UnityEngine.InputSystem.InputAction.CallbackContext context para que sea compatible con el evento del Input System, pq sino no se ejecutaría.
         private void OnMovementCanceled(UnityEngine.InputSystem.InputAction.CallbackContext context)
         {
             moveInput = 0f;
-        }
-
-        private void FixedUpdate()
-        {
-            if (!enabled || !isActive)
-            {
-                return; // Evitar actualizar si el script está deshabilitado o inactivo
-            }
-            UpdateMovement();
         }
 
         #endregion
@@ -107,68 +107,52 @@ namespace AbyssalReach.Gameplay
             float targetSpeed = moveInput * maxSpeed;
             float accelRate;
 
-            // Si nos intentamos mover (velocidad objetivo mayor que casi 0)
+            // Si nos intentamos mover (> 0.01), aceleramos. Si no, frenamos.
             if (Mathf.Abs(targetSpeed) > 0.01f)
             {
-                accelRate = acceleration; 
+                accelRate = acceleration;
             }
             else
             {
-                accelRate = deceleration; 
+                accelRate = deceleration;
             }
 
             // MoveTowards suaviza el cambio de velocidad
             currentSpeed = Mathf.MoveTowards(currentSpeed, targetSpeed, accelRate * Time.fixedDeltaTime);
 
-            // Aplicar movimiento
+            // Aplicar movimiento físico
             Vector3 movement = Vector3.right * currentSpeed * Time.fixedDeltaTime;
             rb.MovePosition(rb.position + movement);
-
-            if (showDebug)
-            {
-                Debug.Log("[Boat] Input: " + moveInput.ToString("F2") + " | Speed: " + currentSpeed.ToString("F2") + " | Pos: " + transform.position.x.ToString("F2"));
-            }
         }
 
         #endregion
 
-        #region Aplicaciones
+        #region Aplicaciones Públicas
 
-      
-        
-        // Detiene el movimiento del barco
+        // Detiene el movimiento del barco completamente
         public void Stop()
         {
             currentSpeed = 0f;
-            moveInput = 0f; // Reseteamos el input
+            moveInput = 0f;
 
             if (rb != null)
             {
-               
                 rb.linearVelocity = Vector3.zero;
                 rb.angularVelocity = Vector3.zero;
             }
-            if (showDebug)
-            {
-                Debug.Log("[BoatMovement] STOPPED");
-            }
         }
+
+        // Activa o desactiva el control el GameController
         public void SetMovementActive(bool active)
         {
             isActive = active;
 
             if (!active)
             {
-                // Si se desactiva, detener input pero NO llamar Stop() completo
+                // Si se desactiva, reseteamos el input interno
                 moveInput = 0f;
             }
-
-            if (showDebug)
-            {
-                Debug.Log("[BoatMovement] Movement Active: " + active.ToString());
-            }
         }
-
 
         // Teletransporta el barco a una posición
         public void SetPosition(Vector3 position)
@@ -179,49 +163,51 @@ namespace AbyssalReach.Gameplay
             Stop();
         }
 
-        public float GetCurrentSpeed ()
+        public float GetCurrentSpeed()
         {
-             return currentSpeed; 
+            return currentSpeed;
         }
 
-        public Vector3 GetPosition ()
+        public Vector3 GetPosition()
         {
-            return transform.position; 
+            return transform.position;
         }
 
-       
-        public bool IsActive() // Getter para estado de activación
+        public bool IsActive()
         {
             return isActive;
         }
 
         #endregion
 
-        #region Debug
+        #region Debug Visual
 
         private void OnDrawGizmos()
         {
-            if (!showDebug || !Application.isPlaying) 
+            // Solo dibujamos si estamos jugando para ver la velocidad real, sino veriamos una pelota amarilla 
+            if (!Application.isPlaying)
             {
                 return;
             }
 
+            // Colores según dirección
             if (currentSpeed > 0)
             {
-                Gizmos.color = Color.green; // Avanza - verde
+                Gizmos.color = Color.green; // Avanza
             }
             else if (currentSpeed < 0)
             {
-                Gizmos.color = Color.red;   // Retrocede - rojo
+                Gizmos.color = Color.red;   // Retrocede
             }
             else
             {
-                Gizmos.color = Color.yellow; // Quieto - amarillo
+                Gizmos.color = Color.yellow; // Quieto
             }
 
+            // La longitud representa la velocidad actual, y el color representa la dirección. (Origen,Vector3.right * currentSpeed (Dirección y Longitud))
             Gizmos.DrawRay(transform.position, Vector3.right * currentSpeed);
 
-            // Dibujamos una bolita verde si el script está activo (navegando) o gris si no (buceando)
+            // Bolita de estado: Verde si tengo el control, gris si no
             if (isActive)
             {
                 Gizmos.color = Color.green;
@@ -230,7 +216,7 @@ namespace AbyssalReach.Gameplay
             {
                 Gizmos.color = Color.gray;
             }
-            Gizmos.DrawWireSphere(transform.position + Vector3.up * 2f, 0.3f);
+            Gizmos.DrawWireSphere(transform.position + Vector3.up * 2f, 0.3f);//(Centro, Radio). Y la funcion es para dibujar una esfera hueca encima del barco que nos indica si el control está activo o no.
         }
 
         #endregion

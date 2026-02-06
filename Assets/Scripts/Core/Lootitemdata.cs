@@ -2,16 +2,11 @@ using UnityEngine;
 
 namespace AbyssalReach.Data
 {
-    /// <summary>
-    /// ScriptableObject que define un item de loot coleccionable.
-    /// Se crean múltiples assets de este tipo para cada tesoro/objeto.
-    /// 
-    /// CREAR NUEVO ITEM:
-    /// Assets > Create > AbyssalReach > Loot Item
-    /// </summary>
-    [CreateAssetMenu(fileName = "New Loot Item", menuName = "AbyssalReach/Loot Item", order = 1)]
+         
+    [CreateAssetMenu(fileName = "New Loot Item", menuName = "AbyssalReach/Loot Item", order = 1)] // Para crear un nuevo Loot Item: Assets > Create > AbyssalReach > Loot Item
     public class LootItemData : ScriptableObject
     {
+        // Este ScriptableObject representa los items que el buceador puede recoger.
         [Header("Basic Info")]
         [Tooltip("Nombre del item (ej: 'Cofre Dorado')")]
         public string itemName = "New Item";
@@ -44,10 +39,10 @@ namespace AbyssalReach.Data
 
         private void OnValidate()
         {
-            // Auto-asignar color de aura según rareza
+            // Auto asignar el  color de aura según rareza
             auraColor = GetAuraColorForRarity(rarity);
 
-            // Auto-ajustar valor sugerido según rareza
+            // Auto ajusta el  valor sugerido según rareza
             if (value == 0)
             {
                 value = GetSuggestedValueForRarity(rarity);
@@ -58,9 +53,9 @@ namespace AbyssalReach.Data
 
         #region Helper Methods
 
-        /// <summary>
-        /// Obtiene el color de aura según la rareza
-        /// </summary>
+       
+     
+        // Obtiene el color de aura según la rareza
         public Color GetAuraColor()
         {
             return GetAuraColorForRarity(rarity);
@@ -103,10 +98,8 @@ namespace AbyssalReach.Data
         #endregion
     }
 
-    /// <summary>
-    /// Enumeración de rarezas disponibles
-    /// </summary>
-    public enum ItemRarity
+  
+    public enum ItemRarity // Rarezas disponibles para los items, con colores y valores sugeridos asociados
     {
         Common,      // Gris - Valor: ~5
         Rare,        // Azul - Valor: ~10

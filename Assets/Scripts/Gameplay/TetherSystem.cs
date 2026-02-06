@@ -2,10 +2,12 @@ using UnityEngine;
 
 namespace AbyssalReach.Gameplay
 {
-     [RequireComponent(typeof(LineRenderer))] // No es esta mal tenerlo, por si acaso.
+    [RequireComponent(typeof(LineRenderer))]
     public class TetherSystem : MonoBehaviour
     {
-        // En este script hya un sistema de cable que conecta el barco con el buceador. Y limita la distancia máxima entre ambos.
+        // En este script hay un sistema de cable que conecta el barco con el buceador.
+        // Limita la distancia máxima entre ambos.
+
         [Header("References")]
         [Tooltip("Transform del barco (punto de anclaje superior)")]
         [SerializeField] private Transform boatAnchor;
@@ -33,14 +35,9 @@ namespace AbyssalReach.Gameplay
         [Tooltip("Color cuando está tenso")]
         [SerializeField] private Color tenseColor = Color.red;
 
-        [Header("Debug")]
-        [SerializeField] private bool showDebug = false;
-
-       
         private LineRenderer lineRenderer;
         private Rigidbody diverRb;
 
-       
         private float currentLength = 0f;
         private float tension = 0f;
 
@@ -78,10 +75,10 @@ namespace AbyssalReach.Gameplay
 
         private void SetupLineRenderer()
         {
-            // Ya que estamos por si se desconfigura. Luego se me va.
+            // Configuración básica de la línea visual
             lineRenderer.positionCount = 2;
             lineRenderer.startWidth = lineWidth;
-            lineRenderer.endWidth = lineWidth;            
+            lineRenderer.endWidth = lineWidth;
             lineRenderer.startColor = relaxedColor;
             lineRenderer.endColor = relaxedColor;
             lineRenderer.numCornerVertices = 5;
@@ -112,44 +109,49 @@ namespace AbyssalReach.Gameplay
 
         private void UpdateTetherPhysics()
         {
-            if (boatAnchor == null || diverAnchor == null) return;
+            if (boatAnchor == null || diverAnchor == null)
+            {
+                return;
+            }
 
-            // Calcular longitud actual
+            // Calcular distancia real
             currentLength = Vector3.Distance(boatAnchor.position, diverAnchor.position);
 
-            // Calcular tensión (0 = relajado, 1 = máximo)
-            tension = Mathf.Clamp01((currentLength - (maxLength * tensionThreshold)) / (maxLength * (1f - tensionThreshold)));
+            //  Calcular factor de tensión
+            // Esto convierte la distancia en un valor de 0 a 1 basándose en el umbral
+            float range = maxLength * (1f - tensionThreshold);
+            float excessOverThreshold = currentLength - (maxLength * tensionThreshold);
 
-            // Si excede la longitud máxima, aplicar fuerza de retroceso
+            tension = Mathf.Clamp01(excessOverThreshold / range);
+
+            //  Aplicar físicas si nos pasamos
             if (currentLength > maxLength)
             {
                 ApplyPullForce();
             }
 
-            if (showDebug)
-            {
-                  Debug.Log("[Tether] Length: " + currentLength+ ":F2}/{" + maxLength+ ":F2} | Tension: {"+ tension+ ":F2}");
-            }
+            Debug.Log("[Tether] Length: " + currentLength + "/" + maxLength + " | Tension: " + tension);
         }
 
         private void ApplyPullForce()
         {
-            if (diverRb == null) return;
+            if (diverRb == null)
+            {
+                return;
+            }
 
-            // Dirección desde buceador hacia barco
-            Vector3 direction = (boatAnchor.position - diverAnchor.position).normalized;
+            // Calcular dirección: Desde el buzo hacia el barco.
+            Vector3 direction = (boatAnchor.position - diverAnchor.position).normalized; // Es como si fuese una flecha invisible que apunta desde el buzo hacia el barco. Al normalizarlo, la flecha mide exactamente 1 metro, lo que nos permite multiplicarla después por la fuerza que queramos.
 
-            // Fuerza proporcional a cuánto excede el límite
+            // Calcular fuerza. Cuanto más lejos, más fuerte tira como si fuese un muelle
             float excessLength = currentLength - maxLength;
             float forceMagnitude = pullForce * excessLength;
 
-            // Aplicar fuerza
+            // Aplicar la fuerza al Rigidbody
             diverRb.AddForce(direction * forceMagnitude, ForceMode.Force);
 
-            if (showDebug)
-            {
-                Debug.DrawRay(diverAnchor.position, direction * 2f, Color.red);
-            }
+            // Debug visual del vector de fuerza
+            Debug.DrawRay(diverAnchor.position, direction * 2f, Color.red);
         }
 
         #endregion
@@ -158,13 +160,16 @@ namespace AbyssalReach.Gameplay
 
         private void UpdateTetherVisual()
         {
-            if (boatAnchor == null || diverAnchor == null) return;
+            if (boatAnchor == null || diverAnchor == null)
+            {
+                return;
+            }
 
-            // Actualizar posiciones del LineRenderer
+            // Actualizar los puntos de la línea
             lineRenderer.SetPosition(0, boatAnchor.position);
             lineRenderer.SetPosition(1, diverAnchor.position);
 
-            // Cambiar color según tensión
+            // Interpolar color entre gris (relajado) y rojo (tenso) según la tensión
             Color currentColor = Color.Lerp(relaxedColor, tenseColor, tension);
             lineRenderer.startColor = currentColor;
             lineRenderer.endColor = currentColor;
@@ -174,40 +179,37 @@ namespace AbyssalReach.Gameplay
 
         #region Public API
 
-        
-        
-      // Verifica si el cable está al límite
-        public bool IsAtMaxLength => currentLength >= maxLength * 0.99f;
 
-       
-        
-        // Obtiene la longitud actual del cable
-        public float CurrentLength => currentLength;
+        // Sirve como para que otros scripts puedan consultar el estado del cable, concretamente si este esta estirado al max.
+        public bool IsAtMaxLength()
+        {
+            return currentLength >= maxLength * 0.99f;
+        }
 
-        
-       
-        // Obtiene la longitud máxima
-        public float MaxLength => maxLength;
+        public float GetCurrentLength()
+        {
+            return currentLength;
+        }
 
-       // Obtiene la tensión actual (0-1)
-        public float Tension => tension;
+        public float GetMaxLength()
+        {
+            return maxLength;
+        }
 
-       
-        // Mejora la longitud del cable (para upgrades futuros)
-        
+        public float GetTension()
+        {
+            return tension;
+        }
+
         public void UpgradeLength(float newLength)
         {
             if (newLength > maxLength)
             {
                 maxLength = newLength;
-                Debug.Log("[TetherSystem] Cable upgraded to {"+newLength+"}m");
-               
+                Debug.Log("[TetherSystem] Cable upgraded to " + newLength + "m");
             }
         }
 
-     
-        
-        // Asigna las referencias 
         public void SetAnchors(Transform boat, Transform diver)
         {
             boatAnchor = boat;
@@ -221,28 +223,33 @@ namespace AbyssalReach.Gameplay
 
         #endregion
 
-        #region Debug
+        #region Debug (Gizmos)
 
         private void OnDrawGizmos()
         {
-            if (!showDebug) return;
+           
 
-            // Dibujar radio máximo del cable
             if (boatAnchor != null)
             {
                 Gizmos.color = new Color(1f, 0.5f, 0f, 0.3f);
                 DrawCircle(boatAnchor.position, maxLength, 30);
             }
 
-            // Dibujar la línea del cable
             if (boatAnchor != null && diverAnchor != null)
             {
-                Gizmos.color = IsAtMaxLength ? Color.red : Color.yellow;
+                if (IsAtMaxLength())
+                {
+                    Gizmos.color = Color.red;
+                }
+                else
+                {
+                    Gizmos.color = Color.yellow;
+                }
                 Gizmos.DrawLine(boatAnchor.position, diverAnchor.position);
             }
         }
 
-        private void DrawCircle(Vector3 center, float radius, int segments)
+        private void DrawCircle(Vector3 center, float radius, int segments) // este metodo es para dibujar un circulo alrededor del barco que representa la longitud máxima del cable. Y la diferencia es q es 3D, no 2D, por eso el punto del buzo no esta exactamente en el centro del circulo sino q esta a una altura determinada. 
         {
             float angleStep = 360f / segments;
             Vector3 previousPoint = center + new Vector3(radius, 0, 0);
@@ -250,11 +257,7 @@ namespace AbyssalReach.Gameplay
             for (int i = 1; i <= segments; i++)
             {
                 float angle = angleStep * i * Mathf.Deg2Rad;
-                Vector3 currentPoint = center + new Vector3(
-                    Mathf.Cos(angle) * radius,
-                    Mathf.Sin(angle) * radius,
-                    0
-                );
+                Vector3 currentPoint = center + new Vector3( Mathf.Cos(angle) * radius, Mathf.Sin(angle) * radius, 0);
 
                 Gizmos.DrawLine(previousPoint, currentPoint);
                 previousPoint = currentPoint;
