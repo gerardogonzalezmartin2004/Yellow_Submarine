@@ -32,6 +32,7 @@ namespace AbyssalReach.Gameplay
         
         private float currentSpeed = 0f;
         private float moveInput = 0f;
+        private bool isActive = true;
 
         #region Ciclo de Vida
 
@@ -53,8 +54,8 @@ namespace AbyssalReach.Gameplay
             controls.Enable();
             controls.BoatControls.Enable(); // Aseguramos que el mapa de controles del barco está activo
 
-            controls.BoatControls.Movement.performed += ctx => moveInput = ctx.ReadValue<float>();
-            controls.BoatControls.Movement.canceled += ctx => moveInput = 0f;
+            controls.BoatControls.Movement.performed += OnMovementPerformed;
+            controls.BoatControls.Movement.canceled += OnMovementCanceled;
 
             if (showDebug)
             {
@@ -68,16 +69,31 @@ namespace AbyssalReach.Gameplay
             moveInput = 0f;
             currentSpeed = 0f;
 
+            controls.BoatControls.Movement.performed -= OnMovementPerformed;
+            controls.BoatControls.Movement.canceled -= OnMovementCanceled;
+
             controls.BoatControls.Disable();
             controls.Disable();
+        }
+        private void OnMovementPerformed(UnityEngine.InputSystem.InputAction.CallbackContext context)
+        {
+            if (isActive)
+            {
+                moveInput = context.ReadValue<float>();
+            }
+        }
+
+        private void OnMovementCanceled(UnityEngine.InputSystem.InputAction.CallbackContext context)
+        {
+            moveInput = 0f;
         }
 
         private void FixedUpdate()
         {
-            if (!enabled)
+            if (!enabled || !isActive)
             {
-                return;// Evitar actualizar si el script está deshabilitado
-            } 
+                return; // Evitar actualizar si el script está deshabilitado o inactivo
+            }
             UpdateMovement();
         }
 
@@ -110,7 +126,7 @@ namespace AbyssalReach.Gameplay
 
             if (showDebug)
             {
-                Debug.Log("[Boat] Input: {"+ moveInput+ ":F2} | Speed: {"+ currentSpeed+":F2} | Pos: {" + transform.position.x +":F2}");                
+                Debug.Log("[Boat] Input: " + moveInput.ToString("F2") + " | Speed: " + currentSpeed.ToString("F2") + " | Pos: " + transform.position.x.ToString("F2"));
             }
         }
 
@@ -132,10 +148,28 @@ namespace AbyssalReach.Gameplay
                 rb.linearVelocity = Vector3.zero;
                 rb.angularVelocity = Vector3.zero;
             }
+            if (showDebug)
+            {
+                Debug.Log("[BoatMovement] STOPPED");
+            }
+        }
+        public void SetMovementActive(bool active)
+        {
+            isActive = active;
+
+            if (!active)
+            {
+                // Si se desactiva, detener input pero NO llamar Stop() completo
+                moveInput = 0f;
+            }
+
+            if (showDebug)
+            {
+                Debug.Log("[BoatMovement] Movement Active: " + active.ToString());
+            }
         }
 
-      
-       
+
         // Teletransporta el barco a una posición
         public void SetPosition(Vector3 position)
         {
@@ -145,14 +179,20 @@ namespace AbyssalReach.Gameplay
             Stop();
         }
 
-        public float CurrentSpeed ()
+        public float GetCurrentSpeed ()
         {
              return currentSpeed; 
         }
 
-        public Vector3 Position ()
+        public Vector3 GetPosition ()
         {
             return transform.position; 
+        }
+
+       
+        public bool IsActive() // Getter para estado de activación
+        {
+            return isActive;
         }
 
         #endregion
@@ -182,7 +222,14 @@ namespace AbyssalReach.Gameplay
             Gizmos.DrawRay(transform.position, Vector3.right * currentSpeed);
 
             // Dibujamos una bolita verde si el script está activo (navegando) o gris si no (buceando)
-            Gizmos.color = enabled ? Color.green : Color.gray;
+            if (isActive)
+            {
+                Gizmos.color = Color.green;
+            }
+            else
+            {
+                Gizmos.color = Color.gray;
+            }
             Gizmos.DrawWireSphere(transform.position + Vector3.up * 2f, 0.3f);
         }
 

@@ -182,8 +182,16 @@ namespace AbyssalReach.Gameplay
             boatTransform = boat;
         }
 
-        public Vector2 CurrentVelocity => currentVelocity;
-        public Vector3 Position => transform.position;
+        
+        public Vector2 CurrentVelocity()
+        {
+            return currentVelocity;
+        }
+       
+        public Vector3 Position()
+        {
+            return transform.position;
+        }
 
         #endregion
 
