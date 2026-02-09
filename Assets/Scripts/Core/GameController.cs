@@ -21,6 +21,8 @@ namespace AbyssalReach.Core
         [SerializeField] private GameObject boat;
         [SerializeField] private GameObject diver;
         [SerializeField] private GameObject tetherSystem;
+        [SerializeField] private GameObject boatCamera;
+        [SerializeField] private GameObject diverCamera;
 
         [Header("Anchor Points")]
         [SerializeField] private Transform boatAnchor;
@@ -166,6 +168,8 @@ namespace AbyssalReach.Core
         {
             isDiving = false;
             currentState = GameState.Sailing;
+            boatCamera.SetActive(true);
+            diverCamera.SetActive(false);
 
             //  Activar barco y sus físicas
             if (boat != null)
@@ -209,6 +213,8 @@ namespace AbyssalReach.Core
         {
             isDiving = true;
             currentState = GameState.Diving;
+            boatCamera.SetActive(false);
+            diverCamera.SetActive(true);
 
             // Congelar Barco
             if (boatMovement != null)
