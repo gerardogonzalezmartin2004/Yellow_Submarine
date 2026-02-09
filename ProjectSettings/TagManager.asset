@@ -5,6 +5,7 @@ TagManager:
   serializedVersion: 3
   tags:
   - Boat
+  - Diver
   layers:
   - Default
   - TransparentFX

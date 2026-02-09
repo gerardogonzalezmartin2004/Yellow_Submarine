@@ -377,50 +377,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 150054378}
   m_CullTransparentMesh: 1
---- !u!1 &289230190
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 289230192}
-  - component: {fileID: 289230191}
-  m_Layer: 0
-  m_Name: InputTester
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 0
---- !u!114 &289230191
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 289230190}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1fe8e81e9f8657d40badee4c8003f5eb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::InputTester
---- !u!4 &289230192
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 289230190}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.47083, y: -9.37789, z: 16.88161}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &330585543
 GameObject:
   m_ObjectHideFlags: 0
@@ -1354,6 +1310,37 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
+--- !u!1 &603160691
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 603160692}
+  m_Layer: 0
+  m_Name: DockingPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &603160692
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 603160691}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 901970974}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &680598578
 GameObject:
   m_ObjectHideFlags: 0
@@ -1721,12 +1708,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3b5f34762192c454d885f15ed5e67e59, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Portarea
-  interactionRadius: 5
+  outerRadius: 5.2
+  innerRadius: 3
+  dockingPoint: {fileID: 603160692}
+  dockingSpeed: 10
+  arrivalThreshold: 0.5
+  exitCooldown: 2
   targetTag: Boat
-  interactionMessage: Press 'E' to Open Shop
   shopUIPanel: {fileID: 2118195371}
+  dockingMessage: Pulsar 'E' para entrar
+  autoPilotMessage: Auto-Pilot Active...
   showDebug: 1
-  gizmoColor: {r: 0, g: 1, b: 0.5, a: 0.3}
+  outerGizmoColor: {r: 0, g: 1, b: 0.5, a: 0.2}
+  innerGizmoColor: {r: 1, g: 0.5, b: 0, a: 0.3}
 --- !u!4 &901970974
 Transform:
   m_ObjectHideFlags: 0
@@ -1739,7 +1733,8 @@ Transform:
   m_LocalPosition: {x: -12.93, y: 2, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 603160692}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &930908957
@@ -1780,7 +1775,6 @@ MonoBehaviour:
   lineWidth: 0.1
   relaxedColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
   tenseColor: {r: 1, g: 0, b: 0, a: 1}
-  showDebug: 1
 --- !u!120 &930908959
 LineRenderer:
   serializedVersion: 3
@@ -3105,6 +3099,7 @@ Transform:
   m_Children:
   - {fileID: 349254719}
   - {fileID: 1202090459}
+  - {fileID: 1839085669}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!65 &1724961924
@@ -3170,8 +3165,8 @@ MonoBehaviour:
   maxSpeed: 8
   acceleration: 15
   deceleration: 20
+  inputDeadzone: 0.15
   waterDrag: 1.5
-  showDebug: 0
 --- !u!1 &1735820688
 GameObject:
   m_ObjectHideFlags: 0
@@ -3186,7 +3181,7 @@ GameObject:
   - component: {fileID: 1735820690}
   m_Layer: 8
   m_Name: Diver
-  m_TagString: Untagged
+  m_TagString: Diver
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -3278,7 +3273,76 @@ MonoBehaviour:
   waterSurfaceY: 0
   minDepthFromBoat: 1
   boatTransform: {fileID: 1724961923}
-  showDebug: 0
+--- !u!1 &1839085668
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1839085669}
+  - component: {fileID: 1839085671}
+  - component: {fileID: 1839085670}
+  m_Layer: 7
+  m_Name: BoardingZone
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1839085669
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1839085668}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: -1, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1724961923}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1839085670
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1839085668}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 94d246f1bfebc5f459cd1e5590024aad, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AbyssalReach.Gameplay.BoatBoardingZone
+  diverTag: Diver
+  boardingMessage: 'Press ''Espacio'' o ''Boton Sur'' para subir al barco '
+  showDebug: 1
+  gizmoColor: {r: 1, g: 1, b: 0, a: 0.3}
+--- !u!65 &1839085671
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1839085668}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 3, y: 2, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &1868921709
 GameObject:
   m_ObjectHideFlags: 0
@@ -3741,7 +3805,7 @@ MonoBehaviour:
   upgradeCableLengthButton: {fileID: 6295533}
   upgradeCableStrengthButton: {fileID: 1406400595}
   upgradeSwimSpeedButton: {fileID: 722155035}
-  showDebug: 1
+  portArea: {fileID: 0}
 --- !u!114 &2118195374
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3789,7 +3853,6 @@ SceneRoots:
   - {fileID: 832575519}
   - {fileID: 425124117}
   - {fileID: 946984393}
-  - {fileID: 289230192}
   - {fileID: 1724961923}
   - {fileID: 1735820689}
   - {fileID: 930908960}

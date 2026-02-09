@@ -94,16 +94,14 @@ namespace AbyssalReach.Data
                     return 1;
             }
         }
-
+        public enum ItemRarity // Rarezas disponibles para los items, con colores y valores sugeridos asociados
+        {
+            Common,      // Gris - Valor: ~5
+            Rare,        // Azul - Valor: ~10
+            Epic,        // Morado - Valor: ~20
+            Legendary    // Dorado - Valor: ~50
+        }
         #endregion
-    }
-
-  
-    public enum ItemRarity // Rarezas disponibles para los items, con colores y valores sugeridos asociados
-    {
-        Common,      // Gris - Valor: ~5
-        Rare,        // Azul - Valor: ~10
-        Epic,        // Morado - Valor: ~20
-        Legendary    // Dorado - Valor: ~50
-    }
+    }     
+   
 }

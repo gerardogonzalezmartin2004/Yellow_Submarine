@@ -37,11 +37,12 @@ namespace AbyssalReach.Gameplay
 
         private LineRenderer lineRenderer;
         private Rigidbody diverRb;
+        private DiverMovement diverMovement;
 
         private float currentLength = 0f;
         private float tension = 0f;
 
-        #region Unity Lifecycle
+        #region Unity ciclo de vida
 
         private void Awake()
         {
@@ -54,6 +55,7 @@ namespace AbyssalReach.Gameplay
             if (diverAnchor != null)
             {
                 diverRb = diverAnchor.GetComponent<Rigidbody>();
+                diverMovement = diverAnchor.GetComponent<DiverMovement>();
             }
 
             ValidateReferences();
@@ -135,23 +137,31 @@ namespace AbyssalReach.Gameplay
 
         private void ApplyPullForce()
         {
-            if (diverRb == null)
+            if (diverRb == null || diverMovement == null)
             {
                 return;
             }
 
             // Calcular dirección: Desde el buzo hacia el barco.
-            Vector3 direction = (boatAnchor.position - diverAnchor.position).normalized; // Es como si fuese una flecha invisible que apunta desde el buzo hacia el barco. Al normalizarlo, la flecha mide exactamente 1 metro, lo que nos permite multiplicarla después por la fuerza que queramos.
+            Vector3 toBoat = (boatAnchor.position - diverAnchor.position).normalized; // Es como si fuese una flecha invisible que apunta desde el buzo hacia el barco. Al normalizarlo, la flecha mide exactamente 1 metro, lo que nos permite multiplicarla después por la fuerza que queramos.
 
-            // Calcular fuerza. Cuanto más lejos, más fuerte tira como si fuese un muelle
-            float excessLength = currentLength - maxLength;
-            float forceMagnitude = pullForce * excessLength;
+            // Obtener velocidad actual del buzo
+            Vector2 diverVelocity = diverMovement.GetCurrentVelocity();
+            Vector3 diverVelocity3D = new Vector3(diverVelocity.x, diverVelocity.y, 0f);
+          
+            // Calcular el producto punto entre la velocidad y la dirección hacia el barco.Haciendo asi podemos determinar si el buzo se está moviendo hacia el barco o alejándose de él.
+            float dot = Vector3.Dot(diverVelocity3D.normalized, toBoat);
 
-            // Aplicar la fuerza al Rigidbody
-            diverRb.AddForce(direction * forceMagnitude, ForceMode.Force);
+            // Si se está alejando del barco, aplicar fuerza de retroceso
+            if (dot < 0f)
+            {
+                // Calcular fuerza proporcional al exceso
+                float excessLength = currentLength - maxLength;
+                float forceMagnitude = pullForce * excessLength;
 
-            // Debug visual del vector de fuerza
-            Debug.DrawRay(diverAnchor.position, direction * 2f, Color.red);
+                // Aplicar fuerza hacia el barco
+                diverRb.AddForce(toBoat * forceMagnitude, ForceMode.Force);
+            }
         }
 
         #endregion
@@ -177,7 +187,7 @@ namespace AbyssalReach.Gameplay
 
         #endregion
 
-        #region Public API
+        #region Aplicaciones
 
 
         // Sirve como para que otros scripts puedan consultar el estado del cable, concretamente si este esta estirado al max.
@@ -218,6 +228,7 @@ namespace AbyssalReach.Gameplay
             if (diver != null)
             {
                 diverRb = diver.GetComponent<Rigidbody>();
+                diverMovement = diver.GetComponent<DiverMovement>();
             }
         }
 

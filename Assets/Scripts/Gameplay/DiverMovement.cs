@@ -6,7 +6,7 @@ namespace AbyssalReach.Gameplay
     [RequireComponent(typeof(Rigidbody))]
     public class DiverMovement : MonoBehaviour
     {
-        // Controla el movimiento del buceador con física de agua realista.
+        // Controla el movimiento del buceador con física de agua.
 
         [Header("Movement Settings")]
         [Tooltip("Velocidad máxima de nado")]
@@ -41,7 +41,7 @@ namespace AbyssalReach.Gameplay
         private Vector2 moveInput = Vector2.zero;
         private Vector2 currentVelocity = Vector2.zero;
 
-        #region Unity Lifecycle
+        #region Unity ciclo de vida
 
         private void Awake()
         {
@@ -106,7 +106,7 @@ namespace AbyssalReach.Gameplay
 
         #endregion
 
-        #region Movement Logica
+        #region Movement Logic
 
         private void ApplyGravity()
         {
@@ -176,10 +176,31 @@ namespace AbyssalReach.Gameplay
                 transform.position = pos;
                 rb.position = pos;
 
-                //  Eliminar velocidad vertical para que no rebote
-                Vector3 vel = rb.linearVelocity;
-                vel.y = Mathf.Min(vel.y, 0f);
-                rb.linearVelocity = vel;
+                if(moveInput.y > 0f)
+                {
+                    currentVelocity.y = 0f;// Cancelamos cualquier intento de seguir subiendo si el jugador sigue pulsando hacia arriba, para evitar que se quede atascado intentando subir sin poder porque ya está en la superficie.
+                    Vector3 vel = rb.linearVelocity;
+                    vel.y = 0f;
+                    rb.linearVelocity = vel;
+                }
+                else if(moveInput.y < 0f)
+                {
+                    // Si el jugador está intentando bajar, permitimos que siga bajando aunque esté en la superficie, para que pueda volver a sumergirse sin problemas.
+                    
+                        Debug.Log("[DiverMovement] En superficie - Permitiendo movimiento hacia abajo");
+                    
+                }
+                else            
+                {
+                    // Solo cancelar velocidad hacia arriba si la hay
+                    Vector3 vel = rb.linearVelocity;
+                    if (vel.y > 0)
+                    {
+                        vel.y = 0f;
+                        rb.linearVelocity = vel;
+                    }
+                }
+
             }
         }
 
@@ -243,7 +264,7 @@ namespace AbyssalReach.Gameplay
             Vector3 vel3D = new Vector3(currentVelocity.x, currentVelocity.y, 0f);
             Gizmos.DrawRay(transform.position, vel3D); // Sirve para ver hacia dónde y qué tan rápido se está intentando mover el personaje en ese instante.
 
-            // Línea de Superficie del Agua = Azul
+            // Línea de Superficie del agua
             Gizmos.color = Color.blue;
             float xPos = transform.position.x;
             Gizmos.DrawLine( new Vector3(xPos - 5f, waterSurfaceY, 0f), new Vector3(xPos + 5f, waterSurfaceY, 0f)); // Dibuja una línea de 10 metros de ancho que sigue al jugador horizontalmente pero se mantiene fija en la altura del agua. Indica dónde está el límite para salir a la superficie.

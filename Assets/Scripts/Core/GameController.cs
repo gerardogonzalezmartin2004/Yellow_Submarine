@@ -1,16 +1,18 @@
 using UnityEngine;
-using AbyssalReach.Gameplay; // Necesario para encontrar BoatMovement
+using AbyssalReach.Gameplay;
 
 namespace AbyssalReach.Core
 {
+    // En este script centralizamos la lógica de cambio entre los modos de juego (Navegación, Buceo, Tienda) y gestionamos el estado global del juego.
     public class GameController : MonoBehaviour
     {
-        public static GameController instance;
+        // Singleton 
+        private static GameController instance;
+
         public static GameController Instance
         {
             get
             {
-
                 return instance;
             }
         }
@@ -31,9 +33,11 @@ namespace AbyssalReach.Core
 
         private Rigidbody boatRb;
         private BoatMovement boatMovement;
-        private DiverMovement diverMovement; // Referencia al script del buceador como el boat y los controles 
+        private DiverMovement diverMovement;
         private AbyssalReachControls controls;
         private bool isDiving = false;
+
+        #region Unity ciclo de vida
 
         private void Awake()
         {
@@ -47,8 +51,10 @@ namespace AbyssalReach.Core
             instance = this;
             DontDestroyOnLoad(gameObject);
 
+            // Inicializar controles
             controls = new AbyssalReachControls();
 
+            // Cachear referencias
             if (boat != null)
             {
                 boatRb = boat.GetComponent<Rigidbody>();
@@ -63,8 +69,12 @@ namespace AbyssalReach.Core
         private void OnEnable()
         {
             controls.Enable();
-            controls.BoatControls.StartDive.performed += OnStartDivePressed; // Esto es como una llamada a la función ToggleDiving cada vez que se presiona el botón de bucear. Si ya estás buceando, te saca a navegar, y si estás navegando, te mete a bucear. Me lo dijo Serg
 
+            // Suscripción al botón de Empezar Inmersión
+            controls.BoatControls.StartDive.performed += OnStartDivePressed;
+
+            // Por defecto activamos los controles de juego
+            SetInputToGameplay();
         }
 
         private void OnDisable()
@@ -72,24 +82,73 @@ namespace AbyssalReach.Core
             controls.BoatControls.StartDive.performed -= OnStartDivePressed;
             controls.Disable();
         }
-        private void OnStartDivePressed(UnityEngine.InputSystem.InputAction.CallbackContext context)
-        {
-            ToggleDiving();
-        }
 
         private void Start()
         {
             // Empezar en modo navegación
             SetSailingMode();
         }
+
         private void Update()
         {
-
-            if ( Input.GetKeyDown(KeyCode.F5))
+            // Debug rápido por si queremos probar el cambio de modo sin usar el mando. IMPORTANTE, YA QUE HAY QUE QUITARLOS TRAS LAS PREUBAS O SINOS EL PROFE EDU..
+            if (Input.GetKeyDown(KeyCode.F5))
             {
                 ToggleDiving();
             }
         }
+
+        #endregion
+
+        #region Input Logic
+
+        private void OnStartDivePressed(UnityEngine.InputSystem.InputAction.CallbackContext context)
+        {
+            // Solo permitimos cambiar modo si estamos en un estado de Gameplay válido. Evita que cambie si estás en la tienda o pausado
+            if (currentState == GameState.Sailing || currentState == GameState.Diving)
+            {
+                ToggleDiving();
+            }
+        }
+
+        
+
+        // Estos métodos permiten que la Tienda (PortArea) pida el control del mando
+        public void SetInputToUI()
+        {
+            controls.BoatControls.Disable();
+            controls.DiverControls.Disable();
+            controls.UI.Enable();
+
+            if (showDebug)
+            {
+                Debug.Log("[GameController] Input cambiado a UI");
+            }
+        }
+
+        public void SetInputToGameplay()
+        {
+            controls.UI.Disable();
+
+            // Reactivamos el mapa correcto según el estado actual
+            if (isDiving)
+            {
+                controls.DiverControls.Enable();
+            }
+            else
+            {
+                controls.BoatControls.Enable();
+            }
+
+            if (showDebug)
+            {
+                Debug.Log("[GameController] Input cambiado a Gameplay");
+            }
+        }
+
+        #endregion
+
+        #region Game State Logic
 
         private void ToggleDiving()
         {
@@ -103,68 +162,69 @@ namespace AbyssalReach.Core
             }
         }
 
-        private void SetSailingMode()
+        public void SetSailingMode()
         {
             isDiving = false;
             currentState = GameState.Sailing;
 
-            // Activar barco
+            //  Activar barco y sus físicas
             if (boat != null)
             {
                 boat.SetActive(true);
             }
 
-            // Desactivar buceador
-            if (diver != null)
-            {
-                diver.SetActive(false);
-            }
-
-            // Desactivar cable
-            if (tetherSystem != null)
-            {
-                tetherSystem.SetActive(false);
-            }
-
-            // IMPORTANTE: Activar movimiento del barco
             if (boatMovement != null)
             {
                 boatMovement.SetMovementActive(true);
             }
 
-            // Rigidbody del barco normal (no kinematic)
             if (boatRb != null)
             {
                 boatRb.isKinematic = false;
             }
 
+            // Desactivar buzo y cable
+            if (diver != null)
+            {
+                diver.SetActive(false);
+            }
+
+            if (tetherSystem != null)
+            {
+                tetherSystem.SetActive(false);
+            }
+
+            // Cambiar inputs
             controls.BoatControls.Enable();
             controls.DiverControls.Disable();
+            controls.UI.Disable();
 
-          
+            if (showDebug)
+            {
+                Debug.Log("[GameController] Modo Navegación Activado");
+            }
         }
 
-        private void SetDivingMode()
+        public void SetDivingMode()
         {
             isDiving = true;
             currentState = GameState.Diving;
 
-
-            if (boatRb != null)
-            {
-
-                boatRb.linearVelocity = Vector3.zero;  // Frenar en seco
-                boatRb.angularVelocity = Vector3.zero; // Frenar giros
-                boatRb.isKinematic = true; // Hacerlo inmóvil ante golpes o física
-
-            }
+            // Congelar Barco
             if (boatMovement != null)
             {
                 boatMovement.Stop();
                 boatMovement.SetMovementActive(false);
             }
 
-            // Posicionar buceador debajo del barco
+            if (boatRb != null)
+            {
+                boatRb.linearVelocity = Vector3.zero;
+                boatRb.angularVelocity = Vector3.zero;
+                boatRb.isKinematic = true;
+            }
+
+            // Activar y Posicionar Buzo
             if (diver != null && boat != null)
             {
                 Vector3 spawnPos = boat.transform.position;
@@ -172,6 +232,8 @@ namespace AbyssalReach.Core
                 {
                     spawnPos = boatAnchor.position;
                 }
+
+                // Spawneamos un poco más abajo para no chocar
                 spawnPos.y = spawnPos.y - 2f;
 
                 diver.SetActive(true);
@@ -183,17 +245,21 @@ namespace AbyssalReach.Core
                 }
             }
 
-            // Activar cable
+            // Activar Cable
             if (tetherSystem != null)
             {
                 tetherSystem.SetActive(true);
             }
 
-            //Y activamos al buceador 
+            // Cambiar Inputs
             controls.BoatControls.Disable();
             controls.DiverControls.Enable();
+            controls.UI.Disable();
 
-           
+            if (showDebug)
+            {
+                Debug.Log("[GameController] Modo Buceo Activado");
+            }
         }
 
         public void EnterPort()
@@ -202,7 +268,7 @@ namespace AbyssalReach.Core
             {
                 currentState = GameState.InPort;
 
-                // Detener barco en el puerto
+                // Detener barco
                 if (boatMovement != null)
                 {
                     boatMovement.Stop();
@@ -215,6 +281,7 @@ namespace AbyssalReach.Core
                     boatRb.isKinematic = true;
                 }
 
+                //No hay que olvidar q el input a UI lo gestiona PortArea llamando a SetInputToUI()
             }
         }
 
@@ -222,10 +289,12 @@ namespace AbyssalReach.Core
         {
             if (currentState == GameState.InPort)
             {
+                // Volver a modo navegación normal
                 SetSailingMode();
             }
         }
 
+        // Estos métodos pueden ser llamados por el botón de buceo del mando o por la UI para cambiar entre modos. 
         public void StartDive()
         {
             if (currentState == GameState.Sailing)
@@ -241,18 +310,37 @@ namespace AbyssalReach.Core
                 SetSailingMode();
             }
         }
+        public enum GameState
+        {
+            Sailing,
+            Diving,
+            InPort,
+            Paused
+        }
 
-        // Getter para estado actual
+        #endregion
+
+        #region Getters
+
         public GameState GetCurrentState()
         {
             return currentState;
         }
 
-        // Getter para isDiving
         public bool IsDiving()
         {
             return isDiving;
         }
+
+        // Permite a otros scripts como el del barco acceder a la instancia centralizada de controles
+        public AbyssalReachControls GetControls()
+        {
+            return controls;
+        }
+
+        #endregion
+
+        #region Debug (GUI)
 
         private void OnGUI()
         {
@@ -274,57 +362,15 @@ namespace AbyssalReach.Core
 
             if (boatRb != null)
             {
-                GUI.Label(new Rect(10, 35, 300, 20), "Boat Kinematic: " + boatRb.isKinematic.ToString(), style);
                 GUI.Label(new Rect(10, 55, 300, 20), "Boat Velocity: " + boatRb.linearVelocity.magnitude.ToString("F2"), style);
             }
 
-            if (boatMovement != null)
-            {
-                GUI.Label(new Rect(10, 75, 300, 20), "BoatMovement Active: " + boatMovement.IsActive().ToString(), style);
-            }
-
             style.normal.textColor = Color.cyan;
-            GUI.Label(new Rect(10, 100, 400, 20), "F5: Toggle Sailing/Diving", style);
+            GUI.Label(new Rect(10, 100, 400, 20), "F5: Cambiar Sailing/Diving", style);
         }
+
+        #endregion
     }
 
-    public enum GameState
-    {
-        Sailing,
-        Diving,
-        InPort,
-        Paused
-    }
+    
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

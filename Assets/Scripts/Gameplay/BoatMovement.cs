@@ -17,6 +17,10 @@ namespace AbyssalReach.Gameplay
         [Tooltip("Qué tan rápido frena")]
         [SerializeField] private float deceleration = 20f;
 
+        [Header("Input Settings")]
+        [Tooltip("Zona muerta del input (ignora valores menores a este)")]
+        [SerializeField] private float inputDeadzone = 0.15f;
+
         [Header("Water Physics")]
         [Tooltip("Drag cuando está en agua")]
         [SerializeField] private float waterDrag = 1.5f;
@@ -28,7 +32,7 @@ namespace AbyssalReach.Gameplay
         private float moveInput = 0f;
         private bool isActive = true;
 
-        #region Ciclo de Vida
+        #region Unity ciclo de vida
 
         private void Awake()
         {
@@ -53,7 +57,6 @@ namespace AbyssalReach.Gameplay
             controls.BoatControls.Movement.canceled += OnMovementCanceled; //. canceled se llama cuando el jugador suelta el joystick o la tecla, es decir, deja de dar input
             // Y el += es para suscribir la función a ese evento, así cada vez que el jugador mueva el joystick se ejecutará OnMovementPerformed, y cada vez que lo suelte se ejecutará OnMovementCanceled
         }
-
         private void OnDisable()
         {
             // Limpiamos el input al desactivar
@@ -67,7 +70,39 @@ namespace AbyssalReach.Gameplay
             controls.BoatControls.Disable();
             controls.Disable();
         }
+        private void OnMovementPerformed(UnityEngine.InputSystem.InputAction.CallbackContext context)
+        {
+            if (!isActive)
+            {
+                return;
+            }
 
+            Vector2 inputVector = context.ReadValue<Vector2>();
+            float rawInput = inputVector.x; // Solo usar eje X
+
+            // Aplicar deadzone: Si el valor absoluto es menor que el umbral, ignorar
+            if (Mathf.Abs(rawInput) < inputDeadzone)
+            {
+                moveInput = 0f;
+            }
+            else
+            {
+                // Normalizar el input fuera de la deadzone
+                // Mapear de [deadzone, 1.0] a [0, 1.0] para suavizar la respuesta
+                float sign = Mathf.Sign(rawInput);
+                float magnitude = Mathf.Abs(rawInput);
+                float normalized = (magnitude - inputDeadzone) / (1f - inputDeadzone);
+                moveInput = sign * Mathf.Clamp01(normalized);
+
+            }
+        }
+
+        private void OnMovementCanceled(UnityEngine.InputSystem.InputAction.CallbackContext context)
+        {
+            moveInput = 0f;
+
+        }
+      
         private void FixedUpdate()
         {
             // Evitar actualizar si el script está deshabilitado o inactivo
@@ -78,27 +113,8 @@ namespace AbyssalReach.Gameplay
             UpdateMovement();
         }
 
-        #endregion
-
-        #region Input Llamadas
-
-        // Se ejecuta cuando mueves el joystick o pulsas la tecla
-        private void OnMovementPerformed(UnityEngine.InputSystem.InputAction.CallbackContext context)
-        {
-            if (isActive)
-            {
-                moveInput = context.ReadValue<float>();
-            }
-        }
-
-        // Se ejecuta cuando sueltas el joystick o la tecla. Se pone le paramtro UnityEngine.InputSystem.InputAction.CallbackContext context para que sea compatible con el evento del Input System, pq sino no se ejecutaría.
-        private void OnMovementCanceled(UnityEngine.InputSystem.InputAction.CallbackContext context)
-        {
-            moveInput = 0f;
-        }
-
-        #endregion
-
+        #endregion             
+       
         #region Movement Logic
 
         private void UpdateMovement()
@@ -127,7 +143,7 @@ namespace AbyssalReach.Gameplay
 
         #endregion
 
-        #region Aplicaciones Públicas
+        #region Aplicaciones 
 
         // Detiene el movimiento del barco completamente
         public void Stop()
@@ -180,7 +196,7 @@ namespace AbyssalReach.Gameplay
 
         #endregion
 
-        #region Debug Visual
+        #region Debug (Gizmos) 
 
         private void OnDrawGizmos()
         {

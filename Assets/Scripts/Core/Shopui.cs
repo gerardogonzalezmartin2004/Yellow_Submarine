@@ -5,18 +5,11 @@ using AbyssalReach.Core;
 
 namespace AbyssalReach.UI
 {
-    /// <summary>
-    /// Controla la UI de la tienda del puerto.
-    /// Permite vender items y comprar upgrades.
-    /// 
-    /// SETUP:
-    /// 1. Crear Canvas en la escena
-    /// 2. Crear Panel hijo del Canvas
-    /// 3. Añadir este script al Panel
-    /// 4. Configurar las referencias UI
-    /// </summary>
     public class ShopUI : MonoBehaviour
     {
+        // Controla la UI de la tienda del puerto
+        // Permite vender items y comprar upgrades
+
         [Header("UI References")]
         [SerializeField] private Button sellAllButton;
         [SerializeField] private TextMeshProUGUI goldText;
@@ -24,23 +17,24 @@ namespace AbyssalReach.UI
         [SerializeField] private TextMeshProUGUI itemCountText;
         [SerializeField] private Button closeButton;
 
-        [Header("Upgrade Buttons (Placeholders)")]
+        [Header("Upgrade Buttons")]
         [SerializeField] private Button upgradeCableLengthButton;
         [SerializeField] private Button upgradeCableStrengthButton;
         [SerializeField] private Button upgradeSwimSpeedButton;
 
-        [Header("Debug")]
-        [SerializeField] private bool showDebug = true;
+        [Header("Port Reference")]
+        [Tooltip("Referencia al PortArea para notificar cierre")]
+        [SerializeField] private Gameplay.PortArea portArea;
 
-        #region Unity Lifecycle
+        #region Unity ciclo de vida
 
         private void OnEnable()
         {
-            // Suscribirse a eventos
+            // Suscribirse a eventos para actualizar la UI automáticamente
             InventoryManager.OnInventoryChanged += UpdateInventoryDisplay;
             CurrencyManager.OnGoldChanged += UpdateGoldDisplay;
 
-            // Configurar botones
+            // Configurar botones principales
             if (sellAllButton != null)
             {
                 sellAllButton.onClick.AddListener(SellAllItems);
@@ -51,33 +45,33 @@ namespace AbyssalReach.UI
                 closeButton.onClick.AddListener(CloseShop);
             }
 
-            // Upgrades (placeholders por ahora)
+            // Configurar botones de mejora 
             if (upgradeCableLengthButton != null)
             {
-                upgradeCableLengthButton.onClick.AddListener(() => PurchaseUpgrade("Cable Length", 50));
+                upgradeCableLengthButton.onClick.AddListener(PurchaseCableUpgrade);
             }
 
             if (upgradeCableStrengthButton != null)
             {
-                upgradeCableStrengthButton.onClick.AddListener(() => PurchaseUpgrade("Cable Strength", 75));
+                upgradeCableStrengthButton.onClick.AddListener(PurchaseStrengthUpgrade);
             }
 
             if (upgradeSwimSpeedButton != null)
             {
-                upgradeSwimSpeedButton.onClick.AddListener(() => PurchaseUpgrade("Swim Speed", 100));
+                upgradeSwimSpeedButton.onClick.AddListener(PurchaseSpeedUpgrade);
             }
 
-            // Actualizar display inicial
+            // Actualizar toda la información al abrir la tienda
             UpdateAllDisplays();
         }
 
         private void OnDisable()
         {
-            // Desuscribirse
+            // Desuscribirse de eventos y asi evitamos errores de memoria
             InventoryManager.OnInventoryChanged -= UpdateInventoryDisplay;
             CurrencyManager.OnGoldChanged -= UpdateGoldDisplay;
 
-            // Limpiar listeners
+            // Limpiar listeners de los botones
             if (sellAllButton != null) sellAllButton.onClick.RemoveAllListeners();
             if (closeButton != null) closeButton.onClick.RemoveAllListeners();
             if (upgradeCableLengthButton != null) upgradeCableLengthButton.onClick.RemoveAllListeners();
@@ -89,83 +83,79 @@ namespace AbyssalReach.UI
 
         #region Shop Actions
 
-        /// <summary>
-        /// Vende todos los items del inventario
-        /// </summary>
         private void SellAllItems()
         {
+            // Verificación de seguridad
             if (InventoryManager.Instance == null || CurrencyManager.Instance == null)
             {
-                Debug.LogError("[ShopUI] Missing InventoryManager or CurrencyManager!");
+                Debug.LogError("[ShopUI] Falta el manager");
                 return;
             }
 
-            // Obtener valor total
+            //  Calcular cuánto valen todos los objetos
             int totalValue = InventoryManager.Instance.CalculateTotalValue();
 
             if (totalValue <= 0)
             {
-                if (showDebug)
-                {
-                    Debug.Log("[ShopUI] No items to sell");
-                }
-                return;
+                return; // No hay nada que vender
             }
 
-            // Vender todo
+            // Vender items 
             int earnedGold = InventoryManager.Instance.SellAllItems();
 
-            // Añadir oro
+            // Añadir el oro ganado al jugador
             CurrencyManager.Instance.AddGold(earnedGold);
-
-            if (showDebug)
-            {
-                Debug.Log($"[ShopUI] Sold all items for {earnedGold}G");
-            }
-
-            // TODO: Mostrar feedback visual (ej: animación de monedas)
         }
 
-        /// <summary>
-        /// Compra un upgrade (placeholder)
-        /// </summary>
+        // Los botones de compra
+
+        private void PurchaseCableUpgrade()
+        {
+            PurchaseUpgrade("Cable Length", 50);
+        }
+
+        private void PurchaseStrengthUpgrade()
+        {
+            PurchaseUpgrade("Cable Strength", 75);
+        }
+
+        private void PurchaseSpeedUpgrade()
+        {
+            PurchaseUpgrade("Swim Speed", 100);
+        }
+
+        // Lógica genérica de compra
         private void PurchaseUpgrade(string upgradeName, int cost)
         {
             if (CurrencyManager.Instance == null)
             {
-                Debug.LogError("[ShopUI] CurrencyManager not found!");
                 return;
             }
 
+            // Intentar gastar el oro. Si devuelve true, la compra fue exitosa.
             if (CurrencyManager.Instance.SpendGold(cost))
             {
-                if (showDebug)
-                {
-                    Debug.Log($"[ShopUI] Purchased: {upgradeName} for {cost}G");
-                }
-
-                // TODO: Aplicar el upgrade real
-                // Ejemplo: TetherSystem.Instance.UpgradeLength(40f);
-
-                // TODO: Mostrar feedback visual
+                Debug.Log("[ShopUI] Purchased: " + upgradeName + " for " + cost + "G");
+                // Aquí tendriamos q introducir la lógica real de aplicar la mejora
             }
             else
             {
-                if (showDebug)
-                {
-                    Debug.LogWarning($"[ShopUI] Not enough gold for {upgradeName}");
-                }
-
-                // TODO: Mostrar mensaje de error
+                Debug.Log("[ShopUI] No tienes suficiente oro para " + upgradeName);
             }
         }
 
-        /// <summary>
-        /// Cierra la tienda
-        /// </summary>
         private void CloseShop()
         {
-            gameObject.SetActive(false);
+            // Notificar al PortArea para que maneje el cierre y el cooldown
+            if (portArea != null)
+            {
+                portArea.CloseShop();
+            }
+            else
+            {
+                // Si no hay referencia al PortArea, simplemente cerramos la UI
+                gameObject.SetActive(false);
+            }
         }
 
         #endregion
@@ -174,40 +164,50 @@ namespace AbyssalReach.UI
 
         private void UpdateAllDisplays()
         {
-            UpdateGoldDisplay(0, 0); // Los valores reales se obtienen de los managers
+            // Actualizamos todo a la vez
+            UpdateGoldDisplay(0, 0); // Pasamos 0,0 porque solo queremos repintar el valor actual
             UpdateInventoryDisplay();
         }
 
+        // Se llama automáticamente cuando cambia el oro con el evento
         private void UpdateGoldDisplay(int newAmount, int delta)
         {
             if (goldText != null && CurrencyManager.Instance != null)
             {
-                goldText.text = $"Gold: {CurrencyManager.Instance.GetGold()}G";
+                // Damos formato al texto para mostrar el oro actual
+                goldText.text = "Gold: " + CurrencyManager.Instance.GetGold() + "G";
             }
         }
 
+        // Se llama automáticamente cuando cambia el inventario con el evento
         private void UpdateInventoryDisplay()
         {
-            if (InventoryManager.Instance == null) return;
+            if (InventoryManager.Instance == null)
+            {
+                return;
+            }
 
-            // Actualizar valor total
+            //  Mostrar valor total del inventario
             if (inventoryValueText != null)
             {
                 int totalValue = InventoryManager.Instance.CalculateTotalValue();
-                inventoryValueText.text = $"Inventory Value: {totalValue}G";
+                inventoryValueText.text = "Inventory Value: " + totalValue + "G";
             }
 
-            // Actualizar cantidad de items
+           
+            //  Mostrar número de items
             if (itemCountText != null)
             {
-                int itemCount = InventoryManager.Instance.ItemCount;
-                itemCountText.text = $"Items: {itemCount}";
+                int itemCount = InventoryManager.Instance.GetItemCount();
+                itemCountText.text = "Items: " + itemCount;
             }
 
-            // Habilitar/deshabilitar botón de venta
+           
+            //  Activar/desactivar botón de vender
             if (sellAllButton != null)
             {
-                sellAllButton.interactable = !InventoryManager.Instance.IsEmpty;
+                bool hasItems = !InventoryManager.Instance.IsEmpty();
+                sellAllButton.interactable = hasItems;
             }
         }
 
