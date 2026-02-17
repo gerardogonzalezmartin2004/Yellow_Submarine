@@ -1,5 +1,6 @@
 using UnityEngine;
 using AbyssalReach.Gameplay;
+using UnityEngine.UI;
 
 namespace AbyssalReach.Core
 {
@@ -23,6 +24,17 @@ namespace AbyssalReach.Core
         [SerializeField] private GameObject tetherSystem;
         [SerializeField] private GameObject boatCamera;
         [SerializeField] private GameObject diverCamera;
+
+        [Header("Timer")]
+        [SerializeField] private float oxygenTimer;
+        [SerializeField] private float maxTimer;
+        [SerializeField] private Slider oxygenSlider;
+        private bool stopTimer;
+
+        [Header("Lantern")]
+        [SerializeField] private float lanternTimer;
+        [SerializeField] private float lanternMax;
+        [SerializeField] private GameObject lightCone;
 
         [Header("Anchor Points")]
         [SerializeField] private Transform boatAnchor;
@@ -66,6 +78,11 @@ namespace AbyssalReach.Core
             {
                 diverMovement = diver.GetComponent<DiverMovement>();
             }
+
+            stopTimer = false;
+            oxygenSlider.maxValue = maxTimer;
+            oxygenSlider.value = oxygenTimer;
+            oxygenTimer = maxTimer;
         }
 
         private void OnEnable()
@@ -97,6 +114,18 @@ namespace AbyssalReach.Core
             if (Input.GetKeyDown(KeyCode.F5))
             {
                 ToggleDiving();
+            }
+
+            if (currentState == GameState.Diving && !stopTimer)
+            {
+                oxygenTimer -= Time.deltaTime;
+
+                oxygenSlider.value = oxygenTimer;
+
+                if (oxygenTimer <= 0)
+                {
+                    stopTimer = true;
+                }
             }
         }
 
@@ -202,6 +231,9 @@ namespace AbyssalReach.Core
             controls.BoatControls.Enable();
             controls.DiverControls.Disable();
             controls.UI.Disable();
+
+            oxygenTimer = maxTimer;
+            oxygenSlider.value = maxTimer;
 
             if (showDebug)
             {

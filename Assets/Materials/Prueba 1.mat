@@ -56,7 +56,7 @@ Material:
     - _QueueOffset: 5
     - _Tiling: 3.64
     - _WaveFrequency: 1.75
-    - _WaveHeight: 0.018
+    - _WaveHeight: 0.01
     - _WaveSpeed: 0.69
     m_Colors:
     - _Azul_claro: {r: 0.64716977, g: 0.88239, b: 1, a: 1}
