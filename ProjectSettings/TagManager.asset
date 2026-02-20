@@ -37,8 +37,8 @@ TagManager:
   - 
   - 
   - 
-  - 
-  - 
+  - Collision
+  - Rope
   m_SortingLayers:
   - name: Default
     uniqueID: 0
