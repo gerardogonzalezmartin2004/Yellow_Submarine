@@ -15,7 +15,7 @@ MonoBehaviour:
   itemName: Cofre De Oro
   icon: {fileID: 0}
   value: 50
-  weight: 1
+  weight: 10
   rarity: 3
   auraColor: {r: 1, g: 0.8, b: 0.2, a: 1}
   description: Se le ha caida a tu padre minetras pescaba

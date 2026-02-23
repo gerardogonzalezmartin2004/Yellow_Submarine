@@ -59,6 +59,7 @@ namespace AbyssalReach.Gameplay
 
         private void OnEnable()
         {
+            Debug.Log("[" + gameObject.name + "] " + GetType().Name + " ENABLE - controls.DiverControls.enabled: " + controls.DiverControls.enabled);
             controls.Enable();
 
             // Suscripción a los eventos de Input: Esta explicado en BoatMovement.

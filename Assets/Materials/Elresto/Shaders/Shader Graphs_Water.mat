@@ -94,12 +94,12 @@ Material:
     - _QueueControl: 0
     - _QueueOffset: 0
     - _Smoothness: 43.2
-    - _Strength: 0.29
+    - _Strength: 2
     - _TimeVelocity: 0.1
     - _VelocityX: -0.0055
     - _VelocityY: -0.006
     - _Wave: 0
-    - _WaveIntensity: 0.077
+    - _WaveIntensity: 0.029
     - _WaveSpeed: 1.5
     m_Colors:
     - _CausticColor: {r: 2.200812, g: 2.4659297, b: 2.4686356, a: 0}

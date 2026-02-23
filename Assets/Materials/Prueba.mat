@@ -51,12 +51,14 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
+    - _Offset: 24.94
     - _QueueControl: 0
     - _QueueOffset: 0
-    - _WaveFrequency: 2.69
-    - _WaveHeight: 0.04
-    - _WaveSpeed: 0.12
+    - _Tilling: 9.55
+    - _WaveFrequency: 0.25
+    - _WaveHeight: 0.08
+    - _WaveSpeed: 0.29
     m_Colors:
-    - _Azul_claro: {r: 0.41999996, g: 0.72, b: 0.92, a: 0.8}
+    - _Azul_claro: {r: 1, g: 1, b: 1, a: 0.8}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

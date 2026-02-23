@@ -2,81 +2,228 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using AbyssalReach.Core;
+using AbyssalReach.Gameplay;
 
 namespace AbyssalReach.UI
 {
+    // ShopUI  - Cierre funcional con ratón, gamepad y Escape
+   
     public class ShopUI : MonoBehaviour
     {
-        // Controla la UI de la tienda del puerto
-        // Permite vender items y comprar upgrades
-
         [Header("UI References")]
+        [Tooltip("Botón para vender todos los items")]
         [SerializeField] private Button sellAllButton;
+
+        [Tooltip("Botón para cerrar la tienda")]
+        [SerializeField] private Button closeButton;
+
+        [Tooltip("Botón para mejorar longitud del cable")]
+        [SerializeField] private Button upgradeCableLengthButton;
+
+        [Tooltip("Botón para mejorar resistencia del cable")]
+        [SerializeField] private Button upgradeCableStrengthButton;
+
+        [Tooltip("Botón para mejorar velocidad de nado")]
+        [SerializeField] private Button upgradeSwimSpeedButton;
+
+        [Header("Text Elements")]
         [SerializeField] private TextMeshProUGUI goldText;
         [SerializeField] private TextMeshProUGUI inventoryValueText;
         [SerializeField] private TextMeshProUGUI itemCountText;
-        [SerializeField] private Button closeButton;
 
-        [Header("Upgrade Buttons")]
-        [SerializeField] private Button upgradeCableLengthButton;
-        [SerializeField] private Button upgradeCableStrengthButton;
-        [SerializeField] private Button upgradeSwimSpeedButton;
+        [Header("Navigation")]
+        [Tooltip("Botón que se selecciona al abrir (para gamepad)")]
+        [SerializeField] private Button firstSelectedButton;
 
         [Header("Port Reference")]
-        [Tooltip("Referencia al PortArea para notificar cierre")]
-        [SerializeField] private Gameplay.PortArea portArea;
+        [Tooltip("Referencia al puerto para cerrar correctamente")]
+        [SerializeField] private PortArea portArea;
 
-        #region Unity ciclo de vida
+        [Header("Debug")]
+        [SerializeField] private bool showDebug = true;
+
+       
+
+        // Referencia al UI Navigation Manager
+        private UINavigationManager navManager;
+
+        // Controles para escuchar Cancel
+        private AbyssalReachControls controls;
+
+        #region Unity Lifecycle
+
+        private void Awake()
+        {
+            // Inicializar controles
+            controls = new AbyssalReachControls();
+
+            // Buscar el UINavigationManager
+            navManager = UINavigationManager.Instance;
+
+            if (navManager == null)
+            {
+                Debug.LogError("[ShopUI] UINavigationManager no encontrado");
+            }
+
+            // Validar firstSelectedButton
+            if (firstSelectedButton == null)
+            {
+                if (sellAllButton != null)
+                {
+                    firstSelectedButton = sellAllButton;
+                }
+                else if (closeButton != null)
+                {
+                    firstSelectedButton = closeButton;
+                }
+
+                if (showDebug && firstSelectedButton != null)
+                {
+                    Debug.Log("[ShopUI] firstSelectedButton auto-asignado a: " + firstSelectedButton.name);
+                }
+            }
+
+            // FIX: Asignar listeners a los botones EN AWAKE
+            SetupButtonListeners();
+        }
 
         private void OnEnable()
         {
-            // Suscribirse a eventos para actualizar la UI automáticamente
-            InventoryManager.OnInventoryChanged += UpdateInventoryDisplay;
-            CurrencyManager.OnGoldChanged += UpdateGoldDisplay;
+            
+            // Habilitar controles y suscribirse a Cancel
+            controls.Enable();
+            controls.UI.Enable();
+            controls.UI.Cancel.performed += OnCancelPressed;
 
-            // Configurar botones principales
+            
+
+            // Suscribirse a eventos de managers
+            if (InventoryManager.Instance != null)
+            {
+                InventoryManager.OnInventoryChanged += UpdateInventoryDisplay;
+            }
+
+            if (CurrencyManager.Instance != null)
+            {
+                CurrencyManager.OnGoldChanged += UpdateGoldDisplay;
+            }
+
+            // Actualizar displays
+            UpdateAllDisplays();
+
+            // Abrir panel con navegación
+            if (navManager != null)
+            {
+                navManager.OpenPanel(gameObject, firstSelectedButton.gameObject);
+            }
+            else
+            {
+                Debug.LogWarning("[ShopUI] Navegación no configurada");
+            }
+        }
+
+        private void OnDisable()
+        {
+            
+            // Desuscribirse de Cancel
+            controls.UI.Cancel.performed -= OnCancelPressed;
+            controls.UI.Disable();
+            controls.Disable();
+
+            if (showDebug)
+            {
+                Debug.Log("[ShopUI] OnDisable - Controles UI deshabilitados");
+            }
+
+            // Desuscribirse de managers
+            if (InventoryManager.Instance != null)
+            {
+                InventoryManager.OnInventoryChanged -= UpdateInventoryDisplay;
+            }
+
+            if (CurrencyManager.Instance != null)
+            {
+                CurrencyManager.OnGoldChanged -= UpdateGoldDisplay;
+            }
+
+            // Decirle al Manager que cierre este panel
+            if (navManager != null)
+            {
+                navManager.ClosePanel(gameObject);
+            }
+        }
+
+        #endregion
+
+        #region Button Setup
+
+        //  Configurar listeners de botones programáticamente
+        private void SetupButtonListeners()
+        {
             if (sellAllButton != null)
             {
+                // Limpiar listeners anteriores
+                sellAllButton.onClick.RemoveAllListeners();
+                // Añadir nuevo listener
                 sellAllButton.onClick.AddListener(SellAllItems);
+
+                if (showDebug)
+                {
+                    Debug.Log("[ShopUI] Listener asignado a sellAllButton");
+                }
+            }
+            else
+            {
+                Debug.LogWarning("[ShopUI] sellAllButton no asignado");
             }
 
             if (closeButton != null)
             {
+                closeButton.onClick.RemoveAllListeners();
                 closeButton.onClick.AddListener(CloseShop);
+
+                if (showDebug)
+                {
+                    Debug.Log("[ShopUI] Listener asignado a closeButton");
+                }
+            }
+            else
+            {
+                Debug.LogWarning("[ShopUI] closeButton no asignado");
             }
 
-            // Configurar botones de mejora 
             if (upgradeCableLengthButton != null)
             {
+                upgradeCableLengthButton.onClick.RemoveAllListeners();
                 upgradeCableLengthButton.onClick.AddListener(PurchaseCableUpgrade);
             }
 
             if (upgradeCableStrengthButton != null)
             {
+                upgradeCableStrengthButton.onClick.RemoveAllListeners();
                 upgradeCableStrengthButton.onClick.AddListener(PurchaseStrengthUpgrade);
             }
 
             if (upgradeSwimSpeedButton != null)
             {
+                upgradeSwimSpeedButton.onClick.RemoveAllListeners();
                 upgradeSwimSpeedButton.onClick.AddListener(PurchaseSpeedUpgrade);
             }
-
-            // Actualizar toda la información al abrir la tienda
-            UpdateAllDisplays();
         }
 
-        private void OnDisable()
-        {
-            // Desuscribirse de eventos y asi evitamos errores de memoria
-            InventoryManager.OnInventoryChanged -= UpdateInventoryDisplay;
-            CurrencyManager.OnGoldChanged -= UpdateGoldDisplay;
+        #endregion
 
-            // Limpiar listeners de los botones
-            if (sellAllButton != null) sellAllButton.onClick.RemoveAllListeners();
-            if (closeButton != null) closeButton.onClick.RemoveAllListeners();
-            if (upgradeCableLengthButton != null) upgradeCableLengthButton.onClick.RemoveAllListeners();
-            if (upgradeCableStrengthButton != null) upgradeCableStrengthButton.onClick.RemoveAllListeners();
-            if (upgradeSwimSpeedButton != null) upgradeSwimSpeedButton.onClick.RemoveAllListeners();
+        #region Input Callbacks
+
+        // FIX: Nuevo callback para cerrar con Escape/Cancel
+        private void OnCancelPressed(UnityEngine.InputSystem.InputAction.CallbackContext context)
+        {
+            if (showDebug)
+            {
+                Debug.Log("[ShopUI] Cancel presionado (Escape) - Cerrando tienda");
+            }
+
+            CloseShop();
         }
 
         #endregion
@@ -85,46 +232,67 @@ namespace AbyssalReach.UI
 
         private void SellAllItems()
         {
-            // Verificación de seguridad
+            if (showDebug)
+            {
+                Debug.Log("[ShopUI] SellAllItems llamado");
+            }
+
             if (InventoryManager.Instance == null || CurrencyManager.Instance == null)
             {
-                Debug.LogError("[ShopUI] Falta el manager");
+                Debug.LogError("[ShopUI] Falta un manager (Inventory o Currency)");
                 return;
             }
 
-            //  Calcular cuánto valen todos los objetos
             int totalValue = InventoryManager.Instance.CalculateTotalValue();
 
             if (totalValue <= 0)
             {
-                return; // No hay nada que vender
+                if (showDebug)
+                {
+                    Debug.Log("[ShopUI] No hay items para vender");
+                }
+                return;
             }
 
-            // Vender items 
             int earnedGold = InventoryManager.Instance.SellAllItems();
-
-            // Añadir el oro ganado al jugador
             CurrencyManager.Instance.AddGold(earnedGold);
-        }
 
-        // Los botones de compra
+            if (showDebug)
+            {
+                Debug.Log("[ShopUI] Vendido todo por " + earnedGold + "G");
+            }
+        }
 
         private void PurchaseCableUpgrade()
         {
+            if (showDebug)
+            {
+                Debug.Log("[ShopUI] PurchaseCableUpgrade llamado");
+            }
+
             PurchaseUpgrade("Cable Length", 50);
         }
 
         private void PurchaseStrengthUpgrade()
         {
+            if (showDebug)
+            {
+                Debug.Log("[ShopUI] PurchaseStrengthUpgrade llamado");
+            }
+
             PurchaseUpgrade("Cable Strength", 75);
         }
 
         private void PurchaseSpeedUpgrade()
         {
+            if (showDebug)
+            {
+                Debug.Log("[ShopUI] PurchaseSpeedUpgrade llamado");
+            }
+
             PurchaseUpgrade("Swim Speed", 100);
         }
 
-        // Lógica genérica de compra
         private void PurchaseUpgrade(string upgradeName, int cost)
         {
             if (CurrencyManager.Instance == null)
@@ -132,28 +300,35 @@ namespace AbyssalReach.UI
                 return;
             }
 
-            // Intentar gastar el oro. Si devuelve true, la compra fue exitosa.
             if (CurrencyManager.Instance.SpendGold(cost))
             {
-                Debug.Log("[ShopUI] Purchased: " + upgradeName + " for " + cost + "G");
-                // Aquí tendriamos q introducir la lógica real de aplicar la mejora
+                Debug.Log("[ShopUI] Comprado: " + upgradeName + " por " + cost + "G");
+                // TODO: Aplicar mejora según tu sistema de upgrades
             }
             else
             {
-                Debug.Log("[ShopUI] No tienes suficiente oro para " + upgradeName);
+                if (showDebug)
+                {
+                    Debug.Log("[ShopUI] No tienes suficiente oro para " + upgradeName);
+                }
             }
         }
 
         private void CloseShop()
         {
-            // Notificar al PortArea para que maneje el cierre y el cooldown
+            if (showDebug)
+            {
+                Debug.Log("[ShopUI] CloseShop llamado");
+            }
+
             if (portArea != null)
             {
                 portArea.CloseShop();
             }
             else
             {
-                // Si no hay referencia al PortArea, simplemente cerramos la UI
+                // Fallback si no hay referencia al puerto
+                Debug.LogWarning("[ShopUI] portArea no asignado - cerrando panel directamente");
                 gameObject.SetActive(false);
             }
         }
@@ -164,22 +339,19 @@ namespace AbyssalReach.UI
 
         private void UpdateAllDisplays()
         {
-            // Actualizamos todo a la vez
-            UpdateGoldDisplay(0, 0); // Pasamos 0,0 porque solo queremos repintar el valor actual
+            UpdateGoldDisplay(0, 0);
             UpdateInventoryDisplay();
         }
 
-        // Se llama automáticamente cuando cambia el oro con el evento
         private void UpdateGoldDisplay(int newAmount, int delta)
         {
             if (goldText != null && CurrencyManager.Instance != null)
             {
-                // Damos formato al texto para mostrar el oro actual
-                goldText.text = "Gold: " + CurrencyManager.Instance.GetGold() + "G";
+                int currentGold = CurrencyManager.Instance.GetGold();
+                goldText.text = "Gold: " + currentGold + "G";
             }
         }
 
-        // Se llama automáticamente cuando cambia el inventario con el evento
         private void UpdateInventoryDisplay()
         {
             if (InventoryManager.Instance == null)
@@ -187,27 +359,64 @@ namespace AbyssalReach.UI
                 return;
             }
 
-            //  Mostrar valor total del inventario
             if (inventoryValueText != null)
             {
                 int totalValue = InventoryManager.Instance.CalculateTotalValue();
                 inventoryValueText.text = "Inventory Value: " + totalValue + "G";
             }
 
-           
-            //  Mostrar número de items
             if (itemCountText != null)
             {
                 int itemCount = InventoryManager.Instance.GetItemCount();
                 itemCountText.text = "Items: " + itemCount;
             }
 
-           
-            //  Activar/desactivar botón de vender
+            // Actualizar estado del botón de vender
             if (sellAllButton != null)
             {
                 bool hasItems = !InventoryManager.Instance.IsEmpty();
                 sellAllButton.interactable = hasItems;
+            }
+        }
+
+        #endregion
+
+        #region Debug
+
+        private void Update()
+        {
+            if (!showDebug)
+            {
+                return;
+            }
+
+            // Debug adicional para detectar inputs
+            if (UnityEngine.InputSystem.Keyboard.current != null)
+            {
+                if (UnityEngine.InputSystem.Keyboard.current.escapeKey.wasPressedThisFrame)
+                {
+                    Debug.Log("[ShopUI] Escape detectado por Keyboard.current");
+                }
+            }
+        }
+
+        private void OnGUI()
+        {
+            if (!showDebug)
+            {
+                return;
+            }
+
+            GUIStyle style = new GUIStyle();
+            style.fontSize = 12;
+            style.normal.textColor = Color.yellow;
+
+            GUI.Label(new Rect(10, 590, 400, 20), "[ShopUI] UI Controls enabled: " + controls.UI.enabled, style);
+            GUI.Label(new Rect(10, 610, 400, 20), "[ShopUI] Panel activo: " + gameObject.activeSelf, style);
+
+            if (closeButton != null)
+            {
+                GUI.Label(new Rect(10, 630, 400, 20), "[ShopUI] CloseButton interactable: " + closeButton.interactable, style);
             }
         }
 
