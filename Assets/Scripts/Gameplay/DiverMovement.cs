@@ -34,6 +34,7 @@ namespace AbyssalReach.Gameplay
 
         [Header("References")]
         [SerializeField] private Transform boatTransform;
+        [SerializeField] private ropeVerlet rope;
 
         private Rigidbody rb;
         private AbyssalReachControls controls;

@@ -4758,6 +4758,7 @@ MonoBehaviour:
   tetherSystem: {fileID: 930908957}
   boatCamera: {fileID: 591149471}
   diverCamera: {fileID: 1337339125}
+  ropeObject: {fileID: 1787755040}
   oxygenTimer: 20
   maxTimer: 20
   oxygenSlider: {fileID: 670141711}
@@ -5053,6 +5054,7 @@ MonoBehaviour:
   waterSurfaceY: 0
   minDepthFromBoat: 1
   boatTransform: {fileID: 1724961923}
+  rope: {fileID: 1787755041}
 --- !u!1 &1787755040
 GameObject:
   m_ObjectHideFlags: 0
@@ -5070,7 +5072,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1787755041
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5083,9 +5085,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8cf52f833f3e89c4fb4bc094fc65d8cf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
-  numOfRopeSegments: 50
-  ropeSegmentLength: 0.225
-  gravityForce: {x: 0, y: -1}
+  numOfRopeSegments: 40
+  ropeSegmentLength: 0.15
+  gravityForce: {x: 0, y: -0.1}
   "damp\xECngFactor": 0.98
   collisionMask:
     serializedVersion: 2
@@ -5095,8 +5097,14 @@ MonoBehaviour:
   correctionClampAmount: 0.1
   numOfConstraintRuns: 50
   collisionSegmentInterval: 2
+  maxRopeLength: 50
+  tensionStrength: 25
   ropeStartPoint: {x: 0, y: 0, z: 0}
   ropeStartTransform: {fileID: 1724961923}
+  ropeEndTransform: {fileID: 1735820689}
+  anchorStart: 1
+  anchorEnd: 1
+  tetherSystem: {fileID: 930908958}
 --- !u!120 &1787755042
 LineRenderer:
   serializedVersion: 3

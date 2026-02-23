@@ -274,7 +274,10 @@ namespace AbyssalReach.Gameplay
                 previousPoint = currentPoint;
             }
         }
-
+        public Transform GetDiverAnchor()
+        {
+            return diverAnchor;
+        }
         #endregion
     }
 }

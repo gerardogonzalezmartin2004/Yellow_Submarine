@@ -1,6 +1,9 @@
+﻿using AbyssalReach.Gameplay;
 using NUnit.Framework;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
+using static ropeVerlet;
 
 public class ropeVerlet : MonoBehaviour
 {
@@ -10,7 +13,7 @@ public class ropeVerlet : MonoBehaviour
 
     [Header("Physics")]
     [SerializeField] private Vector2 gravityForce = new Vector2(0f, -1f);
-    [SerializeField] private float damp�ngFactor = .98f;
+    [SerializeField] private float dampìngFactor = .98f;
     [SerializeField] private LayerMask collisionMask;
     [SerializeField] private float collisionRadius = .1f;
     [SerializeField] private float bounceFactor = .1f;
@@ -22,23 +25,38 @@ public class ropeVerlet : MonoBehaviour
     [Header("Optimizations")]
     [SerializeField] private int collisionSegmentInterval = 2;
 
+    [Header("Length Limit")]
+    [SerializeField] private float maxRopeLength = 10f;
+
+    [Header("Tension")]
+    [SerializeField] private float tensionStrength = 25f;
+
     private LineRenderer lineRenderer;
     private List<RopeSegment> ropeSegments = new List<RopeSegment>();
 
     [SerializeField] private Vector3 ropeStartPoint;
     [SerializeField] private Transform ropeStartTransform;
+    [SerializeField] private Transform ropeEndTransform;
+    [SerializeField] private bool anchorStart = true;
+    [SerializeField] private bool anchorEnd = true;
+    [SerializeField] private TetherSystem tetherSystem;
 
     private void Awake()
     {
-        ropeStartPoint = new Vector3(ropeStartTransform.position.x, ropeStartTransform.position.y, ropeStartTransform.position.z);
+        ropeStartPoint = ropeStartTransform.position;
         lineRenderer = GetComponent<LineRenderer>();
         lineRenderer.positionCount = numOfRopeSegments;
 
-        for(int i = 0; i < numOfRopeSegments; i++)
+        // Calcular longitud de cada segmento según el tether
+        if (tetherSystem != null)
+        {
+            ropeSegmentLength = tetherSystem.GetMaxLength() / (numOfRopeSegments - 1);
+        }
+
+        for (int i = 0; i < numOfRopeSegments; i++)
         {
             ropeSegments.Add(new RopeSegment(ropeStartPoint));
-            ropeStartPoint.y = ropeSegmentLength;
-
+            ropeStartPoint.y -= ropeSegmentLength; // baja los segmentos
         }
     }
 
@@ -50,15 +68,58 @@ public class ropeVerlet : MonoBehaviour
     private void FixedUpdate()
     {
         Simulate();
+        ApplyTensionForce();
 
-        for(int i = 0; i<numOfConstraintRuns; i++)
+        for (int i = 0; i < numOfConstraintRuns; i++)
         {
             ApplyConstraints();
 
-            if(i% collisionSegmentInterval == 0)
+            if (i % collisionSegmentInterval == 0)
             {
                 HandleCollisions();
             }
+        }
+    }
+
+    private float GetCurrentRopeLength()
+    {
+        float length = 0f;
+
+        for (int i = 0; i < ropeSegments.Count - 1; i++)
+        {
+            length += Vector2.Distance(
+                ropeSegments[i].CurrentPosition,
+                ropeSegments[i + 1].CurrentPosition);
+        }
+
+        return length;
+    }
+
+
+    private void ApplyTensionForce()
+    {
+        if (ropeEndTransform == null) return;
+
+        Rigidbody rb = ropeEndTransform.GetComponent<Rigidbody>();
+        if (rb == null) return;
+
+        float totalLength = (numOfRopeSegments - 1) * ropeSegmentLength;
+
+        float currentLength = 0f;
+
+        for (int i = 0; i < ropeSegments.Count - 1; i++)
+        {
+            currentLength += Vector2.Distance(
+                ropeSegments[i].CurrentPosition,
+                ropeSegments[i + 1].CurrentPosition);
+        }
+
+        // Si está prácticamente estirada al máximo
+        if (currentLength >= totalLength * 0.98f)
+        {
+            Vector2 dir = (ropeStartTransform.position - ropeEndTransform.position).normalized;
+
+            rb.AddForce(dir * tensionStrength, ForceMode.Force);
         }
     }
 
@@ -79,7 +140,7 @@ public class ropeVerlet : MonoBehaviour
         for(int i = 0;i < ropeSegments.Count; i++)
         {
             RopeSegment segment = ropeSegments[i];
-            Vector2 velocity = (segment.CurrentPosition - segment.OldPosition) * damp�ngFactor;
+            Vector2 velocity = (segment.CurrentPosition - segment.OldPosition) * dampìngFactor;
 
             segment.OldPosition = segment.CurrentPosition;
             segment.CurrentPosition += velocity;
@@ -88,35 +149,43 @@ public class ropeVerlet : MonoBehaviour
         }
     }
 
+
     private void ApplyConstraints()
     {
-        RopeSegment firstSegment = ropeSegments[0];
-        firstSegment.CurrentPosition = ropeStartTransform.position;
-        ropeSegments[0] = firstSegment;
+        // Inicio al barco
+        RopeSegment first = ropeSegments[0];
+        first.CurrentPosition = ropeStartTransform.position;
+        ropeSegments[0] = first;
 
-        for(int i = 0; i < numOfRopeSegments -1; i++)
+        // Final al diver
+        RopeSegment last = ropeSegments[ropeSegments.Count - 1];
+        last.CurrentPosition = tetherSystem.GetDiverAnchor().position; // sincroniza con diver real
+        ropeSegments[ropeSegments.Count - 1] = last;
+
+        // Ajuste de todos los segmentos intermedios
+        for (int i = 0; i < ropeSegments.Count - 1; i++)
         {
-            RopeSegment currentSeg = ropeSegments[i];
-            RopeSegment nextSeg = ropeSegments[i + 1];
+            RopeSegment current = ropeSegments[i];
+            RopeSegment next = ropeSegments[i + 1];
 
-            float dist = (currentSeg.CurrentPosition - nextSeg.CurrentPosition).magnitude;
-            float difference = (dist - ropeSegmentLength);
+            float dist = (current.CurrentPosition - next.CurrentPosition).magnitude;
+            float diff = dist - ropeSegmentLength;
 
-            Vector2 changeDir = (currentSeg.CurrentPosition - nextSeg.CurrentPosition).normalized;
-            Vector2 changeVector = changeDir * difference;
+            Vector2 dir = (current.CurrentPosition - next.CurrentPosition).normalized;
+            Vector2 offset = dir * diff;
 
-            if(i != 0)
-            {
-                currentSeg.CurrentPosition -= (changeVector * .5f);
-                nextSeg.CurrentPosition += (changeVector * .5f);
-            }
+            if (i == 0)
+                next.CurrentPosition += offset; // solo mover siguiente
+            else if (i == ropeSegments.Count - 2)
+                current.CurrentPosition -= offset; // solo mover actual
             else
             {
-                nextSeg.CurrentPosition += changeVector;
+                current.CurrentPosition -= offset * 0.5f;
+                next.CurrentPosition += offset * 0.5f;
             }
 
-            ropeSegments[i] = currentSeg;
-            ropeSegments[i + 1] = nextSeg;
+            ropeSegments[i] = current;
+            ropeSegments[i + 1] = next;
         }
     }
 
