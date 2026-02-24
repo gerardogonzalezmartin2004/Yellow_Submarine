@@ -47,12 +47,8 @@ public class ropeVerlet : MonoBehaviour
         lineRenderer = GetComponent<LineRenderer>();
         lineRenderer.positionCount = numOfRopeSegments;
 
-        // Calcular longitud de cada segmento según el tether
-        if (tetherSystem != null)
-        {
-            ropeSegmentLength = tetherSystem.GetMaxLength() / (numOfRopeSegments - 1);
-        }
 
+        CalculateLength();
         for (int i = 0; i < numOfRopeSegments; i++)
         {
             ropeSegments.Add(new RopeSegment(ropeStartPoint));
@@ -63,6 +59,16 @@ public class ropeVerlet : MonoBehaviour
     private void Update()
     {
         DrawRope();
+        CalculateLength();
+    }
+
+    public void CalculateLength()
+    {
+        // Calcular longitud de cada segmento según el tether
+        if (tetherSystem != null)
+        {
+            ropeSegmentLength = tetherSystem.GetMaxLength() / (numOfRopeSegments - 1);
+        }
     }
 
     private void FixedUpdate()

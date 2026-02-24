@@ -5054,7 +5054,6 @@ MonoBehaviour:
   waterSurfaceY: 0
   minDepthFromBoat: 1
   boatTransform: {fileID: 1724961923}
-  rope: {fileID: 1787755041}
 --- !u!1 &1787755040
 GameObject:
   m_ObjectHideFlags: 0
@@ -5098,7 +5097,7 @@ MonoBehaviour:
   numOfConstraintRuns: 50
   collisionSegmentInterval: 2
   maxRopeLength: 50
-  tensionStrength: 25
+  tensionStrength: 0
   ropeStartPoint: {x: 0, y: 0, z: 0}
   ropeStartTransform: {fileID: 1724961923}
   ropeEndTransform: {fileID: 1735820689}
