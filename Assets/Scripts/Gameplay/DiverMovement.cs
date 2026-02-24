@@ -34,6 +34,7 @@ namespace AbyssalReach.Gameplay
 
         [Header("References")]
         [SerializeField] private Transform boatTransform;
+        [SerializeField] private ropeVerlet rope;
 
         private Rigidbody rb;
         private AbyssalReachControls controls;
@@ -52,7 +53,7 @@ namespace AbyssalReach.Gameplay
             rb.linearDamping = rbDrag;
 
             // Congelar rotaciones para que no de vueltas como un loco
-            rb.constraints = RigidbodyConstraints.FreezePositionZ | RigidbodyConstraints.FreezeRotationX |RigidbodyConstraints.FreezeRotationY |RigidbodyConstraints.FreezeRotationZ;
+            rb.constraints = RigidbodyConstraints.FreezePositionZ | RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationY | RigidbodyConstraints.FreezeRotationZ;
 
             controls = new AbyssalReachControls();
         }
@@ -176,21 +177,21 @@ namespace AbyssalReach.Gameplay
                 transform.position = pos;
                 rb.position = pos;
 
-                if(moveInput.y > 0f)
+                if (moveInput.y > 0f)
                 {
                     currentVelocity.y = 0f;// Cancelamos cualquier intento de seguir subiendo si el jugador sigue pulsando hacia arriba, para evitar que se quede atascado intentando subir sin poder porque ya está en la superficie.
                     Vector3 vel = rb.linearVelocity;
                     vel.y = 0f;
                     rb.linearVelocity = vel;
                 }
-                else if(moveInput.y < 0f)
+                else if (moveInput.y < 0f)
                 {
                     // Si el jugador está intentando bajar, permitimos que siga bajando aunque esté en la superficie, para que pueda volver a sumergirse sin problemas.
-                    
-                        Debug.Log("[DiverMovement] En superficie - Permitiendo movimiento hacia abajo");
-                    
+
+                    Debug.Log("[DiverMovement] En superficie - Permitiendo movimiento hacia abajo");
+
                 }
-                else            
+                else
                 {
                     // Solo cancelar velocidad hacia arriba si la hay
                     Vector3 vel = rb.linearVelocity;
@@ -267,14 +268,14 @@ namespace AbyssalReach.Gameplay
             // Línea de Superficie del agua
             Gizmos.color = Color.blue;
             float xPos = transform.position.x;
-            Gizmos.DrawLine( new Vector3(xPos - 5f, waterSurfaceY, 0f), new Vector3(xPos + 5f, waterSurfaceY, 0f)); // Dibuja una línea de 10 metros de ancho que sigue al jugador horizontalmente pero se mantiene fija en la altura del agua. Indica dónde está el límite para salir a la superficie.
+            Gizmos.DrawLine(new Vector3(xPos - 5f, waterSurfaceY, 0f), new Vector3(xPos + 5f, waterSurfaceY, 0f)); // Dibuja una línea de 10 metros de ancho que sigue al jugador horizontalmente pero se mantiene fija en la altura del agua. Indica dónde está el límite para salir a la superficie.
 
             //  Línea de Límite del Barco = Amarilla
             if (boatTransform != null)
             {
                 Gizmos.color = Color.yellow;
                 float minY = boatTransform.position.y - minDepthFromBoat;
-                Gizmos.DrawLine(new Vector3(xPos - 3f, minY, 0f),new Vector3(xPos + 3f, minY, 0f)); // Indica la altura mínima a la que el buceador puede acercarse al barco. Si intenta subir por encima de esta línea, se le bloqueará el movimiento hacia arriba para evitar que se meta dentro del barco o salga a la superficie demasiado cerca de él.
+                Gizmos.DrawLine(new Vector3(xPos - 3f, minY, 0f), new Vector3(xPos + 3f, minY, 0f)); // Indica la altura mínima a la que el buceador puede acercarse al barco. Si intenta subir por encima de esta línea, se le bloqueará el movimiento hacia arriba para evitar que se meta dentro del barco o salga a la superficie demasiado cerca de él.
             }
         }
 

@@ -22,6 +22,7 @@ namespace AbyssalReach.Core
         [SerializeField] private GameObject boat;
         [SerializeField] private GameObject diver;
         [SerializeField] private GameObject tetherSystem;
+        [SerializeField] private TetherSystem tether;
         [SerializeField] private GameObject boatCamera;
         [SerializeField] private GameObject diverCamera;
         [SerializeField] private GameObject ropeObject;
@@ -84,6 +85,7 @@ namespace AbyssalReach.Core
             oxygenSlider.maxValue = maxTimer;
             oxygenSlider.value = oxygenTimer;
             oxygenTimer = maxTimer;
+            tether = tetherSystem.GetComponent<TetherSystem>();
         }
 
         private void OnEnable()
@@ -201,6 +203,7 @@ namespace AbyssalReach.Core
             boatCamera.SetActive(true);
             diverCamera.SetActive(false);
             ropeObject.SetActive(false);
+            stopTimer = false;
 
             //  Activar barco y sus físicas
             if (boat != null)

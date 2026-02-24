@@ -148,7 +148,7 @@ namespace AbyssalReach.Gameplay
             // Obtener velocidad actual del buzo
             Vector2 diverVelocity = diverMovement.GetCurrentVelocity();
             Vector3 diverVelocity3D = new Vector3(diverVelocity.x, diverVelocity.y, 0f);
-          
+
             // Calcular el producto punto entre la velocidad y la dirección hacia el barco.Haciendo asi podemos determinar si el buzo se está moviendo hacia el barco o alejándose de él.
             float dot = Vector3.Dot(diverVelocity3D.normalized, toBoat);
 
@@ -238,7 +238,7 @@ namespace AbyssalReach.Gameplay
 
         private void OnDrawGizmos()
         {
-           
+
 
             if (boatAnchor != null)
             {
@@ -268,7 +268,7 @@ namespace AbyssalReach.Gameplay
             for (int i = 1; i <= segments; i++)
             {
                 float angle = angleStep * i * Mathf.Deg2Rad;
-                Vector3 currentPoint = center + new Vector3( Mathf.Cos(angle) * radius, Mathf.Sin(angle) * radius, 0);
+                Vector3 currentPoint = center + new Vector3(Mathf.Cos(angle) * radius, Mathf.Sin(angle) * radius, 0);
 
                 Gizmos.DrawLine(previousPoint, currentPoint);
                 previousPoint = currentPoint;
