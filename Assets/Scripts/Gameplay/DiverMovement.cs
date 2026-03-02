@@ -35,9 +35,9 @@ namespace AbyssalReach.Gameplay
         [Header("References")]
         [SerializeField] private Transform boatTransform;
         [SerializeField] private ropeVerlet rope;
-        private bool emergencyAscent = false;
+        public bool emergencyAscent = false;
 
-        private Rigidbody rb;
+        [SerializeField] private Rigidbody rb;
         private AbyssalReachControls controls;
 
         private Vector2 moveInput = Vector2.zero;
@@ -87,15 +87,13 @@ namespace AbyssalReach.Gameplay
             {
                 UpdateMovement();
             }
-            // En emergencia → NO control del jugador
-
-            EnforceSurfaceLimit();
-
-            // Debug de velocidad real
-            if (emergencyAscent)
+            else
             {
                 Debug.DrawRay(transform.position, rb.linearVelocity.normalized * 6f, Color.green, 0.15f);
             }
+            // En emergencia → NO control del jugador
+
+            EnforceSurfaceLimit();
         }
 
         #endregion
@@ -241,8 +239,15 @@ namespace AbyssalReach.Gameplay
             emergencyAscent = true;
             moveInput = Vector2.zero;
             currentVelocity = Vector2.zero;
-            rb.linearDamping = 0.4f;          // ← bajo para responder a la cuerda
+            rb.linearDamping = 0.4f;
             Debug.Log("[DiverMovement] Emergencia activada - solo física de cuerda");
+        }
+
+        public void ExitEmergencyAscent()
+        {
+            emergencyAscent = false;
+            rb.mass = 10f;
+            rb.linearDamping = rbDrag;
         }
 
         // Posiciona el buceador y asegura que esté bajo el agua

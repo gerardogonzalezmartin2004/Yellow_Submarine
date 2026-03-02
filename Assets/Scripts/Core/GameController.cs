@@ -54,6 +54,7 @@ namespace AbyssalReach.Core
         private AbyssalReachControls controls;
         private bool isDiving = false;
 
+
         #region Unity ciclo de vida
 
         private void Awake()
@@ -127,15 +128,19 @@ namespace AbyssalReach.Core
 
                 if (oxygenTimer <= 0f)
                 {
-                    stopTimer = true;
-                    emergencyAscent = true;
-
-                    // === NUEVO: activamos modo emergencia ===
                     if (diverMovement != null)
                         diverMovement.EnterEmergencyAscent();
 
+                    stopTimer = true;
+                    emergencyAscent = true;
+
                     Debug.Log("[GameController] ¡Oxígeno agotado! Modo emergencia activado");
                 }
+            }
+
+            if (diverMovement.emergencyAscent && tether.maxLength >= 0)
+            {
+                tether.maxLength -= Time.deltaTime * 5f;
             }
         }
 
@@ -196,10 +201,16 @@ namespace AbyssalReach.Core
             if (isDiving)
             {
                 SetSailingMode();
+                stopTimer = false;
+                diverMovement.ExitEmergencyAscent();
+                tether.maxLength = 10f;
+                diverMovement.emergencyAscent = false;
             }
             else
             {
                 SetDivingMode();
+                diverMovement.ExitEmergencyAscent();
+                diverMovement.emergencyAscent = false;
             }
         }
 
@@ -210,7 +221,6 @@ namespace AbyssalReach.Core
             boatCamera.SetActive(true);
             diverCamera.SetActive(false);
             ropeObject.SetActive(false);
-            stopTimer = false;
 
             //  Activar barco y sus físicas
             if (boat != null)
@@ -256,6 +266,7 @@ namespace AbyssalReach.Core
         public void SetDivingMode()
         {
             isDiving = true;
+            stopTimer = false;
             currentState = GameState.Diving;
             boatCamera.SetActive(false);
             diverCamera.SetActive(true);

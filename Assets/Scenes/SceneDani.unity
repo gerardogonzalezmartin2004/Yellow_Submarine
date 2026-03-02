@@ -5368,8 +5368,8 @@ MonoBehaviour:
   boatCamera: {fileID: 591149471}
   diverCamera: {fileID: 1337339125}
   ropeObject: {fileID: 1787755040}
-  oxygenTimer: 20
-  maxTimer: 20
+  oxygenTimer: 5
+  maxTimer: 5
   oxygenSlider: {fileID: 670141711}
   lanternTimer: 0
   lanternMax: 0
@@ -5614,6 +5614,8 @@ MonoBehaviour:
   minDepthFromBoat: 1
   boatTransform: {fileID: 1724961923}
   rope: {fileID: 1787755041}
+  emergencyAscent: 0
+  rb: {fileID: 1735820694}
 --- !u!136 &1735820693
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -5662,7 +5664,7 @@ Rigidbody:
   m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
-  m_Constraints: 0
+  m_Constraints: 120
   m_CollisionDetection: 0
 --- !u!1 &1787755040
 GameObject:
@@ -5706,6 +5708,7 @@ MonoBehaviour:
   numOfConstraintRuns: 80
   collisionSegmentInterval: 1
   tensionStrength: 0
+  emergencyForce: 10
   ropeStartPoint: {x: 0, y: 0, z: 0}
   ropeStartTransform: {fileID: 1724961923}
   ropeEndTransform: {fileID: 1735820689}

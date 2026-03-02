@@ -24,6 +24,7 @@ public class ropeVerlet : MonoBehaviour
 
     [Header("Tension")]
     [SerializeField] private float tensionStrength = 25f;
+    [SerializeField] private float emergencyForce = 20f;
 
     private LineRenderer lineRenderer;
     private List<RopeSegment> ropeSegments = new List<RopeSegment>();
@@ -103,13 +104,13 @@ public class ropeVerlet : MonoBehaviour
         Rigidbody rb = ropeEndTransform.GetComponent<Rigidbody>();
         if (rb == null) return;
 
-        bool isEmergency = gameController != null && gameController.IsEmergencyAscent();
+        bool isEmergency = gameController.IsEmergencyAscent();
 
         float currentLength = GetCurrentRopeLength();
         float totalLength = (numOfRopeSegments - 1) * ropeSegmentLength;
 
         // Activar si está casi estirado o en emergencia
-        if (currentLength < totalLength * 0.92f && !isEmergency) return;
+        //if (currentLength < totalLength * 0.92f && !isEmergency) return;
 
         Vector2 tensionDir = Vector2.up; // fallback
 
@@ -130,14 +131,16 @@ public class ropeVerlet : MonoBehaviour
 
         float force = tensionStrength;
 
-        if (isEmergency)
+        if (isEmergency == true)
         {
-            force *= 18f;           // ← valor alto — prueba entre 12–30
-            rb.linearDamping = 0.4f; // ← muy bajo en emergencia
+            force *= emergencyForce;
+            rb.linearDamping = 0f; // ← muy bajo en emergencia
+            rb.mass = .5f;
         }
         else
         {
-            rb.linearDamping = 3f;   // valor normal
+            rb.linearDamping = 0f;   // valor normal
+            rb.mass = 10f;
         }
 
         // Aplicamos fuerza siguiendo la dirección de la cuerda

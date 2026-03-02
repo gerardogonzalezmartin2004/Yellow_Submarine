@@ -17,7 +17,7 @@ namespace AbyssalReach.Gameplay
 
         [Header("Tether Properties")]
         [Tooltip("Longitud máxima del cable en metros")]
-        [SerializeField] private float maxLength = 30f;
+        public float maxLength = 30f;
 
         [Tooltip("Fuerza aplicada cuando se excede la longitud")]
         [SerializeField] private float pullForce = 50f;
