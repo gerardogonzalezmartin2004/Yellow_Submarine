@@ -32,6 +32,7 @@ namespace AbyssalReach.Core
         [SerializeField] private float maxTimer;
         [SerializeField] private Slider oxygenSlider;
         private bool stopTimer;
+        private bool emergencyAscent = false;
 
         [Header("Lantern")]
         [SerializeField] private float lanternTimer;
@@ -122,12 +123,18 @@ namespace AbyssalReach.Core
             if (currentState == GameState.Diving && !stopTimer)
             {
                 oxygenTimer -= Time.deltaTime;
-
                 oxygenSlider.value = oxygenTimer;
 
-                if (oxygenTimer <= 0)
+                if (oxygenTimer <= 0f)
                 {
                     stopTimer = true;
+                    emergencyAscent = true;
+
+                    // === NUEVO: activamos modo emergencia ===
+                    if (diverMovement != null)
+                        diverMovement.EnterEmergencyAscent();
+
+                    Debug.Log("[GameController] ¡Oxígeno agotado! Modo emergencia activado");
                 }
             }
         }
@@ -369,6 +376,11 @@ namespace AbyssalReach.Core
         public GameState GetCurrentState()
         {
             return currentState;
+        }
+
+        public bool IsEmergencyAscent()
+        {
+            return emergencyAscent;
         }
 
         public bool IsDiving()

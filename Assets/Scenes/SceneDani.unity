@@ -5410,7 +5410,7 @@ RectTransform:
   m_Father: {fileID: 1267335373}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 10, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -5572,7 +5572,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1735820689
 Transform:
   m_ObjectHideFlags: 0
@@ -5697,22 +5697,21 @@ MonoBehaviour:
   numOfRopeSegments: 40
   ropeSegmentLength: 0.15
   gravityForce: {x: 0, y: -0.1}
-  "damp\xECngFactor": 0.98
+  dampingFactor: 0.98
   collisionMask:
     serializedVersion: 2
     m_Bits: 1073741824
   collisionRadius: 0.1
   bounceFactor: 0.1
-  correctionClampAmount: 0.1
-  numOfConstraintRuns: 20
+  numOfConstraintRuns: 80
   collisionSegmentInterval: 1
-  maxRopeLength: 50
   tensionStrength: 0
   ropeStartPoint: {x: 0, y: 0, z: 0}
   ropeStartTransform: {fileID: 1724961923}
   ropeEndTransform: {fileID: 1735820689}
   anchorStart: 1
   anchorEnd: 1
+  tensionDir: {x: 0, y: 0}
   tetherSystem: {fileID: 930908958}
 --- !u!120 &1787755042
 LineRenderer:

@@ -1,4 +1,4 @@
-using UnityEngine;
+Ôªøusing UnityEngine;
 using AbyssalReach.Core;
 
 namespace AbyssalReach.Gameplay
@@ -6,20 +6,20 @@ namespace AbyssalReach.Gameplay
     [RequireComponent(typeof(Rigidbody))]
     public class DiverMovement : MonoBehaviour
     {
-        // Controla el movimiento del buceador con fÌsica de agua.
+        // Controla el movimiento del buceador con f√≠sica de agua.
 
         [Header("Movement Settings")]
-        [Tooltip("Velocidad m·xima de nado")]
+        [Tooltip("Velocidad m√°xima de nado")]
         [SerializeField] private float swimSpeed = 5f;
 
-        [Tooltip("AceleraciÛn al empezar a nadar")]
+        [Tooltip("Aceleraci√≥n al empezar a nadar")]
         [SerializeField] private float acceleration = 8f;
 
-        [Tooltip("DesaceleraciÛn al soltar los controles (inercia del agua)")]
+        [Tooltip("Desaceleraci√≥n al soltar los controles (inercia del agua)")]
         [SerializeField] private float waterDrag = 12f;
 
         [Header("Water Physics")]
-        [Tooltip("Gravedad aplicada bajo el agua (m·s suave que en aire)")]
+        [Tooltip("Gravedad aplicada bajo el agua (m√°s suave que en aire)")]
         [SerializeField] private float underwaterGravity = 2f;
 
         [Tooltip("Drag del Rigidbody en agua")]
@@ -35,6 +35,7 @@ namespace AbyssalReach.Gameplay
         [Header("References")]
         [SerializeField] private Transform boatTransform;
         [SerializeField] private ropeVerlet rope;
+        private bool emergencyAscent = false;
 
         private Rigidbody rb;
         private AbyssalReachControls controls;
@@ -62,14 +63,14 @@ namespace AbyssalReach.Gameplay
         {
             controls.Enable();
 
-            // SuscripciÛn a los eventos de Input: Esta explicado en BoatMovement.
+            // Suscripci√≥n a los eventos de Input: Esta explicado en BoatMovement.
             controls.DiverControls.Move.performed += OnMovePerformed;
             controls.DiverControls.Move.canceled += OnMoveCanceled;
         }
 
         private void OnDisable()
         {
-            // DesuscripciÛn obligatoria para evitar errores
+            // Desuscripci√≥n obligatoria para evitar errores
             controls.DiverControls.Move.performed -= OnMovePerformed;
             controls.DiverControls.Move.canceled -= OnMoveCanceled;
 
@@ -78,15 +79,23 @@ namespace AbyssalReach.Gameplay
 
         private void FixedUpdate()
         {
-            // Si el script est· desactivado, no hacemos nada
-            if (!enabled)
-            {
-                return;
-            }
+            if (!enabled) return;
 
             ApplyGravity();
-            UpdateMovement();
+
+            if (!emergencyAscent)
+            {
+                UpdateMovement();
+            }
+            // En emergencia ‚Üí NO control del jugador
+
             EnforceSurfaceLimit();
+
+            // Debug de velocidad real
+            if (emergencyAscent)
+            {
+                Debug.DrawRay(transform.position, rb.linearVelocity.normalized * 6f, Color.green, 0.15f);
+            }
         }
 
         #endregion
@@ -111,8 +120,14 @@ namespace AbyssalReach.Gameplay
 
         private void ApplyGravity()
         {
-            // Aplicar gravedad suave constante hacia abajo
-            rb.AddForce(Vector3.down * underwaterGravity, ForceMode.Force);
+            if (!emergencyAscent)
+            {
+                rb.AddForce(Vector3.down * underwaterGravity, ForceMode.Force);
+            }
+            else
+            {
+                rb.AddForce(rope.tensionDir * underwaterGravity, ForceMode.Force);
+            }
         }
 
         private void UpdateMovement()
@@ -150,12 +165,12 @@ namespace AbyssalReach.Gameplay
                 return velocity;
             }
 
-            // LÛgica: Si intentamos subir (Y > 0)
+            // L√≥gica: Si intentamos subir (Y > 0)
             if (velocity.y > 0)
             {
                 float distanceToBoat = Mathf.Abs(transform.position.y - boatTransform.position.y);
 
-                // Si estamos demasiado cerca del barco, prohibimos subir m·s
+                // Si estamos demasiado cerca del barco, prohibimos subir m√°s
                 if (distanceToBoat < minDepthFromBoat)
                 {
                     // Forzamos la velocidad Y a 0 (o menos)
@@ -168,7 +183,7 @@ namespace AbyssalReach.Gameplay
 
         private void EnforceSurfaceLimit()
         {
-            // LÛgica: Si salimos del agua
+            // L√≥gica: Si salimos del agua
             if (transform.position.y > waterSurfaceY)
             {
                 //  Teletransportar de vuelta a la superficie
@@ -179,14 +194,14 @@ namespace AbyssalReach.Gameplay
 
                 if (moveInput.y > 0f)
                 {
-                    currentVelocity.y = 0f;// Cancelamos cualquier intento de seguir subiendo si el jugador sigue pulsando hacia arriba, para evitar que se quede atascado intentando subir sin poder porque ya est· en la superficie.
+                    currentVelocity.y = 0f;// Cancelamos cualquier intento de seguir subiendo si el jugador sigue pulsando hacia arriba, para evitar que se quede atascado intentando subir sin poder porque ya est√° en la superficie.
                     Vector3 vel = rb.linearVelocity;
                     vel.y = 0f;
                     rb.linearVelocity = vel;
                 }
                 else if (moveInput.y < 0f)
                 {
-                    // Si el jugador est· intentando bajar, permitimos que siga bajando aunque estÈ en la superficie, para que pueda volver a sumergirse sin problemas.
+                    // Si el jugador est√° intentando bajar, permitimos que siga bajando aunque est√© en la superficie, para que pueda volver a sumergirse sin problemas.
 
                     Debug.Log("[DiverMovement] En superficie - Permitiendo movimiento hacia abajo");
 
@@ -221,7 +236,16 @@ namespace AbyssalReach.Gameplay
             }
         }
 
-        // Posiciona el buceador y asegura que estÈ bajo el agua
+        public void EnterEmergencyAscent()
+        {
+            emergencyAscent = true;
+            moveInput = Vector2.zero;
+            currentVelocity = Vector2.zero;
+            rb.linearDamping = 0.4f;          // ‚Üê bajo para responder a la cuerda
+            Debug.Log("[DiverMovement] Emergencia activada - solo f√≠sica de cuerda");
+        }
+
+        // Posiciona el buceador y asegura que est√© bajo el agua
         public void SetPosition(Vector3 position)
         {
             position.z = 0f;
@@ -254,7 +278,7 @@ namespace AbyssalReach.Gameplay
 
         private void OnDrawGizmos()
         {
-            // Si no estamos jugando, no dibujamos la velocidad porque serÌa 0
+            // Si no estamos jugando, no dibujamos la velocidad porque ser√≠a 0
             if (!Application.isPlaying)
             {
                 return;
@@ -263,19 +287,19 @@ namespace AbyssalReach.Gameplay
             // Flecha de Velocidad = Cyan
             Gizmos.color = Color.cyan;
             Vector3 vel3D = new Vector3(currentVelocity.x, currentVelocity.y, 0f);
-            Gizmos.DrawRay(transform.position, vel3D); // Sirve para ver hacia dÛnde y quÈ tan r·pido se est· intentando mover el personaje en ese instante.
+            Gizmos.DrawRay(transform.position, vel3D); // Sirve para ver hacia d√≥nde y qu√© tan r√°pido se est√° intentando mover el personaje en ese instante.
 
-            // LÌnea de Superficie del agua
+            // L√≠nea de Superficie del agua
             Gizmos.color = Color.blue;
             float xPos = transform.position.x;
-            Gizmos.DrawLine(new Vector3(xPos - 5f, waterSurfaceY, 0f), new Vector3(xPos + 5f, waterSurfaceY, 0f)); // Dibuja una lÌnea de 10 metros de ancho que sigue al jugador horizontalmente pero se mantiene fija en la altura del agua. Indica dÛnde est· el lÌmite para salir a la superficie.
+            Gizmos.DrawLine(new Vector3(xPos - 5f, waterSurfaceY, 0f), new Vector3(xPos + 5f, waterSurfaceY, 0f)); // Dibuja una l√≠nea de 10 metros de ancho que sigue al jugador horizontalmente pero se mantiene fija en la altura del agua. Indica d√≥nde est√° el l√≠mite para salir a la superficie.
 
-            //  LÌnea de LÌmite del Barco = Amarilla
+            //  L√≠nea de L√≠mite del Barco = Amarilla
             if (boatTransform != null)
             {
                 Gizmos.color = Color.yellow;
                 float minY = boatTransform.position.y - minDepthFromBoat;
-                Gizmos.DrawLine(new Vector3(xPos - 3f, minY, 0f), new Vector3(xPos + 3f, minY, 0f)); // Indica la altura mÌnima a la que el buceador puede acercarse al barco. Si intenta subir por encima de esta lÌnea, se le bloquear· el movimiento hacia arriba para evitar que se meta dentro del barco o salga a la superficie demasiado cerca de Èl.
+                Gizmos.DrawLine(new Vector3(xPos - 3f, minY, 0f), new Vector3(xPos + 3f, minY, 0f)); // Indica la altura m√≠nima a la que el buceador puede acercarse al barco. Si intenta subir por encima de esta l√≠nea, se le bloquear√° el movimiento hacia arriba para evitar que se meta dentro del barco o salga a la superficie demasiado cerca de √©l.
             }
         }
 
