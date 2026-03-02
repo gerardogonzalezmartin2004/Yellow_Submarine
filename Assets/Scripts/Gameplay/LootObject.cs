@@ -1,15 +1,15 @@
 using AbyssalReach.Data;
 using UnityEngine;
-using static UnityEditor.PlayerSettings;
 
 namespace AbyssalReach.Gameplay
 {
-    [RequireComponent(typeof(Rigidbody))]
-    [RequireComponent(typeof(Collider))]
+    
+   
+    [RequireComponent(typeof(Rigidbody2D))]
     public class LootObject : MonoBehaviour
     {
-        //Gestionar el estado, físicas y degradación de valor de los tesoros
-         [Header("Item Data")]
+        // Gestionar el estado, físicas y degradación de valor de los tesoros
+        [Header("Item Data")]
         [Tooltip("ScriptableObject que define qué es este objeto (valor, peso, rareza)")]
         [SerializeField] private LootItemData itemData;
 
@@ -29,7 +29,7 @@ namespace AbyssalReach.Gameplay
 
         [Header("Visual Feedback")]
         [Tooltip("Renderer del objeto (para cambiar color al dañarse)")]
-        [SerializeField] private Renderer objectRenderer;
+        [SerializeField] private SpriteRenderer objectRenderer; // Cambiado a SpriteRenderer
 
         [Tooltip("Color cuando está intacto")]
         [SerializeField] private Color intactColor = Color.white;
@@ -40,7 +40,7 @@ namespace AbyssalReach.Gameplay
         [Header("Debug")]
         [SerializeField] private bool showDebug = false;
 
-        private Rigidbody rb;
+        private Rigidbody2D rb; // Cambiado a Rigidbody2D
         private int currentValue;
         private int baseValue;
         private bool isGrabbed = false;
@@ -49,13 +49,14 @@ namespace AbyssalReach.Gameplay
 
         private void Awake()
         {
-            rb = GetComponent<Rigidbody>();
-           
+            rb = GetComponent<Rigidbody2D>();
 
-            // Configurar físicas bajo el agua
+            // Configurar físicas bajo el agua para 2D
             rb.linearDamping = waterDrag;
             rb.angularDamping = waterAngularDrag;
-            rb.useGravity = false; // La gravedad la aplicamos manualmente en el agua
+
+            // IMPORTANTE: En 2D no existe "useGravity = false", se pone gravityScale a 0
+            rb.gravityScale = 0f;
 
             if (itemData == null)
             {
@@ -75,7 +76,7 @@ namespace AbyssalReach.Gameplay
             // Cachear el renderer si no está asignado
             if (objectRenderer == null)
             {
-                objectRenderer = GetComponent<Renderer>();
+                objectRenderer = GetComponent<SpriteRenderer>();
             }
 
             UpdateVisualState();
@@ -86,7 +87,8 @@ namespace AbyssalReach.Gameplay
             // Solo aplicamos la gravedad artificial si no está enganchado
             if (!isGrabbed)
             {
-                rb.AddForce(Vector3.down * 2f, ForceMode.Force);
+                // Usamos Vector2 y ForceMode2D para 2D
+                rb.AddForce(Vector2.down * 2f, ForceMode2D.Force);
             }
         }
 
@@ -94,17 +96,25 @@ namespace AbyssalReach.Gameplay
 
         #region Collision Damage
 
-        private void OnCollisionEnter(Collision collision)
+        // IMPORTANTE: Cambiado a OnCollisionEnter2D
+        private void OnCollisionEnter2D(Collision2D collision)
         {
             // Solo recibe daño si está siendo arrastrado por el buzo
-            if (!isGrabbed || IsDestroyed()) return;
+            if (!isGrabbed || IsDestroyed())
+            {
+                return;
+            }
 
             float impactSpeed = collision.relativeVelocity.magnitude;
 
             if (impactSpeed >= damageThreshold)
             {
                 ApplyDamage();
-               
+
+                if (showDebug)
+                {
+                    Debug.Log("[LootObject] ¡Golpe! Velocidad: " + impactSpeed + " | Valor restante: " + currentValue);
+                }
             }
         }
 
@@ -136,7 +146,9 @@ namespace AbyssalReach.Gameplay
 
             // Aplicar el color multiplicado con el color de rareza
             Color rarityColor = itemData.GetAuraColor();
-            objectRenderer.material.color = targetColor * rarityColor;
+
+            // IMPORTANTE: En 2D con SpriteRenderer se cambia directamente el .color, no el material
+            objectRenderer.color = targetColor * rarityColor;
         }
 
         #endregion
@@ -147,8 +159,10 @@ namespace AbyssalReach.Gameplay
         public void SetGrabbed(bool grabbed)
         {
             isGrabbed = grabbed;
-
-         
+        }
+        public bool IsGrabbed()
+        {
+            return isGrabbed;
         }
 
         // Devuelve el valor actual 
@@ -169,8 +183,8 @@ namespace AbyssalReach.Gameplay
             return itemData;
         }
 
-        // Devuelve el Rigidbody para el sistema de joints
-        public Rigidbody GetRigidbody()
+        // Devuelve el Rigidbody2D para el sistema de joints
+        public Rigidbody2D GetRigidbody()
         {
             return rb;
         }
@@ -212,7 +226,7 @@ namespace AbyssalReach.Gameplay
                 Gizmos.color = Color.Lerp(Color.red, Color.green, healthPct);
                 Gizmos.DrawWireSphere(transform.position, 0.5f);
             }
-        }        
+        }
 
         #endregion
     }

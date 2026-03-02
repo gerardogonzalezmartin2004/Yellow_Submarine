@@ -166,7 +166,7 @@ namespace AbyssalReach.Gameplay
         {
             //  Crear el SpringJoint
             SpringJoint joint = gameObject.AddComponent<SpringJoint>();
-            joint.connectedBody = loot.GetRigidbody();
+           // joint.connectedBody = loot.GetRigidbody();
             joint.anchor = Vector3.zero;
             joint.spring = springForce;
             joint.damper = springDamper;
