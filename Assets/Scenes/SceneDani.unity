@@ -3300,12 +3300,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::AbyssalReach.Gameplay.TetherSystem
   boatAnchor: {fileID: 1202090459}
   diverAnchor: {fileID: 1735820689}
+  ropeVerlet: {fileID: 1787755041}
   maxLength: 10
-  pullForce: 50
   tensionThreshold: 0.9
-  lineWidth: 0.1
-  relaxedColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
-  tenseColor: {r: 1, g: 0, b: 0, a: 1}
+  showDebug: 1
 --- !u!120 &930908959
 LineRenderer:
   serializedVersion: 3
@@ -5616,13 +5614,16 @@ MonoBehaviour:
   rope: {fileID: 1787755041}
   emergencyAscent: 0
   rb: {fileID: 1735820694}
---- !u!136 &1735820693
-CapsuleCollider:
+--- !u!70 &1735820693
+CapsuleCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1735820688}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -5631,41 +5632,52 @@ CapsuleCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
   m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 0.25933605
-  m_Height: 1.5053942
-  m_Direction: 1
-  m_Center: {x: -0.018049777, y: -0.012033105, z: 0}
---- !u!54 &1735820694
-Rigidbody:
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: 0}
+  m_Size: {x: 0.5, y: 1}
+  m_Direction: 0
+--- !u!50 &1735820694
+Rigidbody2D:
+  serializedVersion: 5
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1735820688}
-  serializedVersion: 5
+  m_BodyType: 0
+  m_Simulated: 1
+  m_UseFullKinematicContacts: 0
+  m_UseAutoMass: 0
   m_Mass: 10
   m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_AngularDamping: 0.5
+  m_GravityScale: 0
+  m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
     m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
   m_Interpolate: 0
-  m_Constraints: 120
+  m_SleepingMode: 1
   m_CollisionDetection: 0
+  m_Constraints: 0
 --- !u!1 &1787755040
 GameObject:
   m_ObjectHideFlags: 0
@@ -5705,17 +5717,17 @@ MonoBehaviour:
     m_Bits: 1073741824
   collisionRadius: 0.1
   bounceFactor: 0.1
-  numOfConstraintRuns: 80
   collisionSegmentInterval: 1
+  numOfConstraintRuns: 80
   tensionStrength: 0
-  emergencyForce: 10
-  ropeStartPoint: {x: 0, y: 0, z: 0}
+  emergencyForceMultiplier: 20
+  tensionThreshold: 0.92
   ropeStartTransform: {fileID: 1724961923}
   ropeEndTransform: {fileID: 1735820689}
   anchorStart: 1
   anchorEnd: 1
-  tensionDir: {x: 0, y: 0}
-  tetherSystem: {fileID: 930908958}
+  showDebug: 0
+  showTensionDirection: 1
 --- !u!120 &1787755042
 LineRenderer:
   serializedVersion: 3
@@ -5850,8 +5862,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1839085669}
-  - component: {fileID: 1839085671}
   - component: {fileID: 1839085670}
+  - component: {fileID: 1839085671}
   m_Layer: 7
   m_Name: BoardingZone
   m_TagString: Untagged
@@ -5890,13 +5902,16 @@ MonoBehaviour:
   boardingMessage: 'Press ''Espacio'' o ''Boton Sur'' para subir al barco '
   showDebug: 1
   gizmoColor: {r: 1, g: 1, b: 0, a: 0.3}
---- !u!65 &1839085671
-BoxCollider:
+--- !u!61 &1839085671
+BoxCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1839085668}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -5905,12 +5920,34 @@ BoxCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
   m_IsTrigger: 1
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 3, y: 2, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: -0.068758726, y: 0.25669837}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0, y: 0}
+    oldSize: {x: 0, y: 0}
+    newSize: {x: 0, y: 0}
+    adaptiveTilingThreshold: 0
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  m_Size: {x: 2.6227002, y: 1.5133967}
+  m_EdgeRadius: 0
 --- !u!1 &1868921709
 GameObject:
   m_ObjectHideFlags: 0

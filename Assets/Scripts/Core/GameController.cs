@@ -129,7 +129,10 @@ namespace AbyssalReach.Core
                 if (oxygenTimer <= 0f)
                 {
                     if (diverMovement != null)
+                    {
                         diverMovement.EnterEmergencyAscent();
+                    }
+                        
 
                     stopTimer = true;
                     emergencyAscent = true;
@@ -138,9 +141,9 @@ namespace AbyssalReach.Core
                 }
             }
 
-            if (diverMovement.emergencyAscent && tether.maxLength >= 0)
+            if (diverMovement.emergencyAscent && tether != null)
             {
-                tether.maxLength -= Time.deltaTime * 5f;
+                tether.ReelInRope(Time.deltaTime * 5f);
             }
         }
 
@@ -310,7 +313,7 @@ namespace AbyssalReach.Core
             // Activar Cable
             if (tetherSystem != null)
             {
-                tetherSystem.SetActive(true);
+                tether.ResetTetherToMax();
             }
 
             // Cambiar Inputs
@@ -369,7 +372,27 @@ namespace AbyssalReach.Core
         {
             if (currentState == GameState.Diving)
             {
+                // Cambiamos el modo de cámara e inputs
                 SetSailingMode();
+
+                //  Apagamos todas las alertas de emergencia
+                emergencyAscent = false;
+                stopTimer = false;
+
+                //  Restauramos las físicas normales del buzo para la próxima vez
+                if (diverMovement != null)
+                {
+                    diverMovement.ExitEmergencyAscent();
+                    diverMovement.emergencyAscent = false;
+                }
+
+                //  Devolvemos el cable a su longitud original comprada en la tienda
+                if (tether != null)
+                {
+                    tether.ResetTetherToMax();
+                }
+
+                
             }
         }
         public enum GameState

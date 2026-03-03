@@ -1,266 +1,223 @@
 using UnityEngine;
+using static AbyssalReach.Gameplay.ropeVerlet;
 
 namespace AbyssalReach.Gameplay
 {
-    [RequireComponent(typeof(LineRenderer))]
+    // TetherSystem simplificado - Solo gestiona estado, upgrades y provee API
+    // La física y visual la maneja RopeVerlet
     public class TetherSystem : MonoBehaviour
     {
-        // En este script hay un sistema de cable que conecta el barco con el buceador.
-        // Limita la distancia máxima entre ambos.
-
         [Header("References")]
-        [Tooltip("Transform del barco (punto de anclaje superior)")]
+        [Tooltip("Transform del barco (anclaje superior)")]
         [SerializeField] private Transform boatAnchor;
 
-        [Tooltip("Transform del buceador (punto de anclaje inferior)")]
+        [Tooltip("Transform del buceador (anclaje inferior)")]
         [SerializeField] private Transform diverAnchor;
+
+        [Tooltip("Script de la cuerda Verlet")]
+        [SerializeField] private ropeVerlet ropeVerlet;
 
         [Header("Tether Properties")]
         [Tooltip("Longitud máxima del cable en metros")]
         public float maxLength = 30f;
 
-        [Tooltip("Fuerza aplicada cuando se excede la longitud")]
-        [SerializeField] private float pullForce = 50f;
-
         [Tooltip("A partir de qué porcentaje empieza la tensión (0-1)")]
         [SerializeField] private float tensionThreshold = 0.9f;
 
-        [Header("Visual")]
-        [Tooltip("Ancho del cable")]
-        [SerializeField] private float lineWidth = 0.1f;
-
-        [Tooltip("Color cuando está relajado")]
-        [SerializeField] private Color relaxedColor = Color.gray;
-
-        [Tooltip("Color cuando está tenso")]
-        [SerializeField] private Color tenseColor = Color.red;
-
-        private LineRenderer lineRenderer;
-        private Rigidbody diverRb;
-        private DiverMovement diverMovement;
+        [Header("Debug")]
+        [SerializeField] private bool showDebug = true;
 
         private float currentLength = 0f;
         private float tension = 0f;
 
-        #region Unity ciclo de vida
-
-        private void Awake()
-        {
-            lineRenderer = GetComponent<LineRenderer>();
-            SetupLineRenderer();
-        }
+        #region Unity Lifecycle
 
         private void Start()
         {
-            if (diverAnchor != null)
-            {
-                diverRb = diverAnchor.GetComponent<Rigidbody>();
-                diverMovement = diverAnchor.GetComponent<DiverMovement>();
-            }
-
             ValidateReferences();
+
+            // Sincronizar longitud inicial con la cuerda
+            if (ropeVerlet != null)
+            {
+                ropeVerlet.SetMaxLength(maxLength);
+            }
         }
 
-        private void LateUpdate()
+        private void Update()
         {
-            UpdateTetherVisual();
-        }
-
-        private void FixedUpdate()
-        {
-            UpdateTetherPhysics();
+            UpdateTetherState();
         }
 
         #endregion
 
         #region Setup
 
-        private void SetupLineRenderer()
-        {
-            // Configuración básica de la línea visual
-            lineRenderer.positionCount = 2;
-            lineRenderer.startWidth = lineWidth;
-            lineRenderer.endWidth = lineWidth;
-            lineRenderer.startColor = relaxedColor;
-            lineRenderer.endColor = relaxedColor;
-            lineRenderer.numCornerVertices = 5;
-            lineRenderer.numCapVertices = 5;
-        }
-
         private void ValidateReferences()
         {
             if (boatAnchor == null)
             {
-                Debug.LogError("[TetherSystem] Boat Anchor no esta asignado");
+                Debug.LogError("[TetherSystem] Boat Anchor no asignado");
             }
 
             if (diverAnchor == null)
             {
-                Debug.LogError("[TetherSystem] Diver Anchor no esta asignado");
+                Debug.LogError("[TetherSystem] Diver Anchor no asignado");
             }
 
-            if (diverRb == null && diverAnchor != null)
+            if (ropeVerlet == null)
             {
-                Debug.LogWarning("[TetherSystem] Diver no tiene Rigidbody");
+                ropeVerlet = GetComponent<ropeVerlet>();
+                if (ropeVerlet == null)
+                {
+                    Debug.LogError("[TetherSystem] RopeVerlet no encontrado");
+                }
             }
         }
 
         #endregion
 
-        #region Tether Fisicas
+        #region State Update
 
-        private void UpdateTetherPhysics()
+        private void UpdateTetherState()
         {
-            if (boatAnchor == null || diverAnchor == null)
-            {
-                return;
-            }
+            if (boatAnchor == null || diverAnchor == null) return;
 
-            // Calcular distancia real
-            currentLength = Vector3.Distance(boatAnchor.position, diverAnchor.position);
+            // Calcular distancia real (en línea recta, no siguiendo la cuerda)
+            currentLength = Vector2.Distance(boatAnchor.position, diverAnchor.position);
 
-            //  Calcular factor de tensión
-            // Esto convierte la distancia en un valor de 0 a 1 basándose en el umbral
+            // Calcular tensión basándose en la distancia
             float range = maxLength * (1f - tensionThreshold);
             float excessOverThreshold = currentLength - (maxLength * tensionThreshold);
-
             tension = Mathf.Clamp01(excessOverThreshold / range);
 
-            //  Aplicar físicas si nos pasamos
-            if (currentLength > maxLength)
+            if (showDebug)
             {
-                ApplyPullForce();
-            }
-
-            Debug.Log("[Tether] Length: " + currentLength + "/" + maxLength + " | Tension: " + tension);
-        }
-
-        private void ApplyPullForce()
-        {
-            if (diverRb == null || diverMovement == null)
-            {
-                return;
-            }
-
-            // Calcular dirección: Desde el buzo hacia el barco.
-            Vector3 toBoat = (boatAnchor.position - diverAnchor.position).normalized; // Es como si fuese una flecha invisible que apunta desde el buzo hacia el barco. Al normalizarlo, la flecha mide exactamente 1 metro, lo que nos permite multiplicarla después por la fuerza que queramos.
-
-            // Obtener velocidad actual del buzo
-            Vector2 diverVelocity = diverMovement.GetCurrentVelocity();
-            Vector3 diverVelocity3D = new Vector3(diverVelocity.x, diverVelocity.y, 0f);
-
-            // Calcular el producto punto entre la velocidad y la dirección hacia el barco.Haciendo asi podemos determinar si el buzo se está moviendo hacia el barco o alejándose de él.
-            float dot = Vector3.Dot(diverVelocity3D.normalized, toBoat);
-
-            // Si se está alejando del barco, aplicar fuerza de retroceso
-            if (dot < 0f)
-            {
-                // Calcular fuerza proporcional al exceso
-                float excessLength = currentLength - maxLength;
-                float forceMagnitude = pullForce * excessLength;
-
-                // Aplicar fuerza hacia el barco
-                diverRb.AddForce(toBoat * forceMagnitude, ForceMode.Force);
+                Debug.Log($"[Tether] Length: {currentLength:F2}/{maxLength:F2} | Tension: {tension:F2}");
             }
         }
 
         #endregion
 
-        #region Visual
+        #region Public API
 
-        private void UpdateTetherVisual()
-        {
-            if (boatAnchor == null || diverAnchor == null)
-            {
-                return;
-            }
-
-            // Actualizar los puntos de la línea
-            lineRenderer.SetPosition(0, boatAnchor.position);
-            lineRenderer.SetPosition(1, diverAnchor.position);
-
-            // Interpolar color entre gris (relajado) y rojo (tenso) según la tensión
-            Color currentColor = Color.Lerp(relaxedColor, tenseColor, tension);
-            lineRenderer.startColor = currentColor;
-            lineRenderer.endColor = currentColor;
-        }
-
-        #endregion
-
-        #region Aplicaciones
-
-
-        // Sirve como para que otros scripts puedan consultar el estado del cable, concretamente si este esta estirado al max.
+        /// <summary>
+        /// Verifica si el cable está estirado al máximo
+        /// </summary>
         public bool IsAtMaxLength()
         {
             return currentLength >= maxLength * 0.99f;
         }
 
+        /// <summary>
+        /// Obtiene la longitud actual del cable
+        /// </summary>
         public float GetCurrentLength()
         {
             return currentLength;
         }
 
+        /// <summary>
+        /// Obtiene la longitud máxima del cable
+        /// </summary>
         public float GetMaxLength()
         {
             return maxLength;
         }
 
+        /// <summary>
+        /// Obtiene el factor de tensión (0-1)
+        /// </summary>
         public float GetTension()
         {
             return tension;
         }
 
+        /// <summary>
+        /// Mejora la longitud del cable
+        /// </summary>
         public void UpgradeLength(float newLength)
         {
             if (newLength > maxLength)
             {
                 maxLength = newLength;
-                Debug.Log("[TetherSystem] Cable upgraded to " + newLength + "m");
+
+                // Sincronizar con la cuerda
+                if (ropeVerlet != null)
+                {
+                    ropeVerlet.SetMaxLength(maxLength);
+                }
+
+                if (showDebug)
+                {
+                    Debug.Log($"[TetherSystem] Cable upgraded to {newLength}m");
+                }
+            }
+        }
+        public void ReelInRope(float amount)
+        {
+            if (ropeVerlet != null)
+            {
+                ropeVerlet.ReelIn(amount);
+            }
+        }
+        public void ResetTetherToMax()
+        {
+            if (ropeVerlet != null)
+            {
+                ropeVerlet.SetMaxLength(maxLength);
+                ropeVerlet.ResetRope();
             }
         }
 
+        /// <summary>
+        /// Configura los anclajes
+        /// </summary>
         public void SetAnchors(Transform boat, Transform diver)
         {
             boatAnchor = boat;
             diverAnchor = diver;
+        }
 
-            if (diver != null)
-            {
-                diverRb = diver.GetComponent<Rigidbody>();
-                diverMovement = diver.GetComponent<DiverMovement>();
-            }
+        /// <summary>
+        /// Obtiene el transform del buceador
+        /// </summary>
+        public Transform GetDiverAnchor()
+        {
+            return diverAnchor;
+        }
+
+        /// <summary>
+        /// Obtiene el transform del barco
+        /// </summary>
+        public Transform GetBoatAnchor()
+        {
+            return boatAnchor;
         }
 
         #endregion
 
-        #region Debug (Gizmos)
+        #region Debug Gizmos
 
         private void OnDrawGizmos()
         {
+            if (!showDebug) return;
 
-
+            // Círculo de rango máximo
             if (boatAnchor != null)
             {
                 Gizmos.color = new Color(1f, 0.5f, 0f, 0.3f);
                 DrawCircle(boatAnchor.position, maxLength, 30);
             }
 
+            // Línea directa (para comparar con la cuerda)
             if (boatAnchor != null && diverAnchor != null)
             {
-                if (IsAtMaxLength())
-                {
-                    Gizmos.color = Color.red;
-                }
-                else
-                {
-                    Gizmos.color = Color.yellow;
-                }
+                Gizmos.color = IsAtMaxLength() ? Color.red : Color.yellow;
                 Gizmos.DrawLine(boatAnchor.position, diverAnchor.position);
             }
         }
 
-        private void DrawCircle(Vector3 center, float radius, int segments) // este metodo es para dibujar un circulo alrededor del barco que representa la longitud máxima del cable. Y la diferencia es q es 3D, no 2D, por eso el punto del buzo no esta exactamente en el centro del circulo sino q esta a una altura determinada. 
+        private void DrawCircle(Vector3 center, float radius, int segments)
         {
             float angleStep = 360f / segments;
             Vector3 previousPoint = center + new Vector3(radius, 0, 0);
@@ -268,16 +225,17 @@ namespace AbyssalReach.Gameplay
             for (int i = 1; i <= segments; i++)
             {
                 float angle = angleStep * i * Mathf.Deg2Rad;
-                Vector3 currentPoint = center + new Vector3(Mathf.Cos(angle) * radius, Mathf.Sin(angle) * radius, 0);
+                Vector3 currentPoint = center + new Vector3(
+                    Mathf.Cos(angle) * radius,
+                    Mathf.Sin(angle) * radius,
+                    0
+                );
 
                 Gizmos.DrawLine(previousPoint, currentPoint);
                 previousPoint = currentPoint;
             }
-        }
-        public Transform GetDiverAnchor()
-        {
-            return diverAnchor;
-        }
+        } 
+
         #endregion
     }
 }

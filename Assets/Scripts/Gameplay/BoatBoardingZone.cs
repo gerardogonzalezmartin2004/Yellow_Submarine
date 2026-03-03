@@ -5,7 +5,7 @@ namespace AbyssalReach.Gameplay
 {
     // Este componente se coloca en un objeto hijo del Barco con un BoxCollider.
     // Detecta si el buceador entra en la zona y permite pulsar un botón para "subir a bordo".
-    [RequireComponent(typeof(BoxCollider))]
+    [RequireComponent(typeof(BoxCollider2D))]
     public class BoatBoardingZone : MonoBehaviour
     {
         [Header("Detection")]
@@ -35,10 +35,11 @@ namespace AbyssalReach.Gameplay
             controls = new AbyssalReachControls();
 
            // Aseguramos que el collider es un trigger, por si
-            BoxCollider boxCollider = GetComponent<BoxCollider>();
-            if (boxCollider != null)
+            
+            BoxCollider2D boxCollider2D = GetComponent<BoxCollider2D>();
+            if (boxCollider2D != null)
             {
-                boxCollider.isTrigger = true;
+                boxCollider2D.isTrigger = true;
             }
         }
 
@@ -82,18 +83,23 @@ namespace AbyssalReach.Gameplay
         #region Trigger Detection
 
         // Se llama cuando algo entra en la zona
-        private void OnTriggerEnter(Collider other)
+        private void OnTriggerEnter2D(Collider2D other)
         {
             // Verificamos si ese algo es el buceador (el algo es other, pero por si)
             if (other.CompareTag(diverTag))
             {
                 diverInRange = true;
-                
+                if (GameController.Instance != null && GameController.Instance.IsEmergencyAscent())
+                {
+                  
+                    BoardTheBoat();
+                }
+
             }
         }
 
         // Se llama cuando el buceador sale de la zona
-        private void OnTriggerExit(Collider other)
+        private void OnTriggerExit2D(Collider2D other)
         {
             if (other.CompareTag(diverTag))
             {

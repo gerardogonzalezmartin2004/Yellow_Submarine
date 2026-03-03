@@ -3,7 +3,8 @@ using AbyssalReach.Core;
 
 namespace AbyssalReach.Gameplay
 {
-    [RequireComponent(typeof(Rigidbody))]
+    // CAMBIO A 2D: Requerimos Rigidbody2D en lugar de Rigidbody
+    [RequireComponent(typeof(Rigidbody2D))]
     public class DiverMovement : MonoBehaviour
     {
         // Controla el movimiento del buceador con física de agua.
@@ -34,10 +35,11 @@ namespace AbyssalReach.Gameplay
 
         [Header("References")]
         [SerializeField] private Transform boatTransform;
-        [SerializeField] private ropeVerlet rope;
+        [SerializeField] private ropeVerlet rope; // Corregido a mayúscula según tu arreglo anterior
         public bool emergencyAscent = false;
 
-        [SerializeField] private Rigidbody rb;
+        // CAMBIO A 2D: rb ahora es Rigidbody2D
+        [SerializeField] private Rigidbody2D rb;
         private AbyssalReachControls controls;
 
         private Vector2 moveInput = Vector2.zero;
@@ -47,14 +49,15 @@ namespace AbyssalReach.Gameplay
 
         private void Awake()
         {
-            rb = GetComponent<Rigidbody>();
+            // CAMBIO A 2D: GetComponent<Rigidbody2D>
+            rb = GetComponent<Rigidbody2D>();
 
-            // Configurar Rigidbody
-            rb.useGravity = false;
-            rb.linearDamping = rbDrag;
+            // Configurar Rigidbody2D
+            rb.gravityScale = 0f; // CAMBIO A 2D: En 2D no hay useGravity, se pone scale a 0
+            rb.linearDamping = rbDrag; // linearDamping es el equivalente a drag en 2D moderno
 
-            // Congelar rotaciones para que no de vueltas como un loco
-            rb.constraints = RigidbodyConstraints.FreezePositionZ | RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationY | RigidbodyConstraints.FreezeRotationZ;
+            // CAMBIO A 2D: Congelar rotación en el eje Z (único eje de rotación en 2D)
+            rb.constraints = RigidbodyConstraints2D.FreezeRotation;
 
             controls = new AbyssalReachControls();
         }
@@ -89,7 +92,8 @@ namespace AbyssalReach.Gameplay
             }
             else
             {
-                Debug.DrawRay(transform.position, rb.linearVelocity.normalized * 6f, Color.green, 0.15f);
+                // Debug usando Vector3 pero basado en datos 2D
+                Debug.DrawRay(transform.position, new Vector3(rb.linearVelocity.x, rb.linearVelocity.y, 0f).normalized * 6f, Color.green, 0.15f);
             }
             // En emergencia → NO control del jugador
 
@@ -120,11 +124,13 @@ namespace AbyssalReach.Gameplay
         {
             if (!emergencyAscent)
             {
-                rb.AddForce(Vector3.down * underwaterGravity, ForceMode.Force);
+                // CAMBIO A 2D: Usamos Vector2.down y ForceMode2D.Force
+                rb.AddForce(Vector2.down * underwaterGravity, ForceMode2D.Force);
             }
             else
             {
-                rb.AddForce(rope.tensionDir * underwaterGravity, ForceMode.Force);
+                // CAMBIO A 2D: Usamos ForceMode2D.Force
+                rb.AddForce(rope.GetTensionDirection() * underwaterGravity, ForceMode2D.Force);
             }
         }
 
@@ -150,8 +156,8 @@ namespace AbyssalReach.Gameplay
             // Aplicar restricciones especiales (Barco)
             currentVelocity = ApplyHemisphereConstraint(currentVelocity);
 
-            //  Mover el Rigidbody
-            Vector3 movement = new Vector3(currentVelocity.x, currentVelocity.y, 0f) * Time.fixedDeltaTime;
+            //  Mover el Rigidbody2D
+            Vector2 movement = currentVelocity * Time.fixedDeltaTime;
             rb.MovePosition(rb.position + movement);
         }
 
@@ -185,36 +191,33 @@ namespace AbyssalReach.Gameplay
             if (transform.position.y > waterSurfaceY)
             {
                 //  Teletransportar de vuelta a la superficie
-                Vector3 pos = transform.position;
+                Vector2 pos = transform.position; // Usamos Vector2
                 pos.y = waterSurfaceY;
-                transform.position = pos;
+                transform.position = pos; // Unity convierte implícitamente Vector2 a Vector3 para transform.position
                 rb.position = pos;
 
                 if (moveInput.y > 0f)
                 {
                     currentVelocity.y = 0f;// Cancelamos cualquier intento de seguir subiendo si el jugador sigue pulsando hacia arriba, para evitar que se quede atascado intentando subir sin poder porque ya está en la superficie.
-                    Vector3 vel = rb.linearVelocity;
+                    Vector2 vel = rb.linearVelocity; // Usamos Vector2
                     vel.y = 0f;
                     rb.linearVelocity = vel;
                 }
                 else if (moveInput.y < 0f)
                 {
                     // Si el jugador está intentando bajar, permitimos que siga bajando aunque esté en la superficie, para que pueda volver a sumergirse sin problemas.
-
                     Debug.Log("[DiverMovement] En superficie - Permitiendo movimiento hacia abajo");
-
                 }
                 else
                 {
                     // Solo cancelar velocidad hacia arriba si la hay
-                    Vector3 vel = rb.linearVelocity;
+                    Vector2 vel = rb.linearVelocity; // Usamos Vector2
                     if (vel.y > 0)
                     {
                         vel.y = 0f;
                         rb.linearVelocity = vel;
                     }
                 }
-
             }
         }
 
@@ -230,7 +233,7 @@ namespace AbyssalReach.Gameplay
 
             if (rb != null)
             {
-                rb.linearVelocity = Vector3.zero;
+                rb.linearVelocity = Vector2.zero;
             }
         }
 
@@ -251,13 +254,14 @@ namespace AbyssalReach.Gameplay
         }
 
         // Posiciona el buceador y asegura que esté bajo el agua
-        public void SetPosition(Vector3 position)
+        // Acepta Vector2 (2D)
+        public void SetPosition(Vector2 position)
         {
-            position.z = 0f;
             // Mathf.Min asegura que nunca spawnee por encima de la superficie
             position.y = Mathf.Min(position.y, waterSurfaceY);
 
-            transform.position = position;
+            // Convertir a Vector3 para el transform
+            transform.position = new Vector3(position.x, position.y, 0f);
             rb.position = position;
             Stop();
         }
