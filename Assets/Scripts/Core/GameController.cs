@@ -26,6 +26,7 @@ namespace AbyssalReach.Core
         [SerializeField] private GameObject boatCamera;
         [SerializeField] private GameObject diverCamera;
         [SerializeField] private GameObject ropeObject;
+        [SerializeField] private GameObject bagObject;
 
         [Header("Timer")]
         [SerializeField] private float oxygenTimer;
@@ -224,6 +225,7 @@ namespace AbyssalReach.Core
             boatCamera.SetActive(true);
             diverCamera.SetActive(false);
             ropeObject.SetActive(false);
+            bagObject.SetActive(false);
 
             //  Activar barco y sus físicas
             if (boat != null)
@@ -274,6 +276,7 @@ namespace AbyssalReach.Core
             boatCamera.SetActive(false);
             diverCamera.SetActive(true);
             ropeObject.SetActive(true);
+            bagObject.SetActive(true);
 
             // Congelar Barco
             if (boatMovement != null)
