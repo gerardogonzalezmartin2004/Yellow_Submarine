@@ -82,7 +82,7 @@ namespace AbyssalReach.Gameplay
         private GameController gameController;
         private Rigidbody2D diverRb2D;
 
-        // NOTA: maxDistance es la variable MAESTRA para el límite
+        
         private float activeRopeLength = 30f; // Para Verlet visual
         private Vector2 tensionDirection = Vector2.up;
 
