@@ -267,6 +267,15 @@ namespace AbyssalReach.Core
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Interact"",
+                    ""type"": ""Button"",
+                    ""id"": ""b808b1f3-3ed0-4b25-94e8-201456a51e0d"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -355,6 +364,28 @@ namespace AbyssalReach.Core
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""Ascend"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""33f25eb2-8abb-43d1-9e50-4096135cbcbd"",
+                    ""path"": ""<Keyboard>/e"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Interact"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""1955086b-52e6-4e28-a698-ed46b0f0d18e"",
+                    ""path"": ""<Gamepad>/buttonSouth"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Interact"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -583,6 +614,7 @@ namespace AbyssalReach.Core
             m_DiverControls = asset.FindActionMap("DiverControls", throwIfNotFound: true);
             m_DiverControls_Move = m_DiverControls.FindAction("Move", throwIfNotFound: true);
             m_DiverControls_Ascend = m_DiverControls.FindAction("Ascend", throwIfNotFound: true);
+            m_DiverControls_Interact = m_DiverControls.FindAction("Interact", throwIfNotFound: true);
             // UI
             m_UI = asset.FindActionMap("UI", throwIfNotFound: true);
             m_UI_Navigate = m_UI.FindAction("Navigate", throwIfNotFound: true);
@@ -790,6 +822,7 @@ namespace AbyssalReach.Core
         private List<IDiverControlsActions> m_DiverControlsActionsCallbackInterfaces = new List<IDiverControlsActions>();
         private readonly InputAction m_DiverControls_Move;
         private readonly InputAction m_DiverControls_Ascend;
+        private readonly InputAction m_DiverControls_Interact;
         /// <summary>
         /// Provides access to input actions defined in input action map "DiverControls".
         /// </summary>
@@ -809,6 +842,10 @@ namespace AbyssalReach.Core
             /// Provides access to the underlying input action "DiverControls/Ascend".
             /// </summary>
             public InputAction @Ascend => m_Wrapper.m_DiverControls_Ascend;
+            /// <summary>
+            /// Provides access to the underlying input action "DiverControls/Interact".
+            /// </summary>
+            public InputAction @Interact => m_Wrapper.m_DiverControls_Interact;
             /// <summary>
             /// Provides access to the underlying input action map instance.
             /// </summary>
@@ -841,6 +878,9 @@ namespace AbyssalReach.Core
                 @Ascend.started += instance.OnAscend;
                 @Ascend.performed += instance.OnAscend;
                 @Ascend.canceled += instance.OnAscend;
+                @Interact.started += instance.OnInteract;
+                @Interact.performed += instance.OnInteract;
+                @Interact.canceled += instance.OnInteract;
             }
 
             /// <summary>
@@ -858,6 +898,9 @@ namespace AbyssalReach.Core
                 @Ascend.started -= instance.OnAscend;
                 @Ascend.performed -= instance.OnAscend;
                 @Ascend.canceled -= instance.OnAscend;
+                @Interact.started -= instance.OnInteract;
+                @Interact.performed -= instance.OnInteract;
+                @Interact.canceled -= instance.OnInteract;
             }
 
             /// <summary>
@@ -1059,6 +1102,13 @@ namespace AbyssalReach.Core
             /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
             /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
             void OnAscend(InputAction.CallbackContext context);
+            /// <summary>
+            /// Method invoked when associated input action "Interact" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+            /// </summary>
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+            void OnInteract(InputAction.CallbackContext context);
         }
         /// <summary>
         /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "UI" which allows adding and removing callbacks.

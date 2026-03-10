@@ -1,32 +1,41 @@
-using System.Collections.Generic;
+Ôªøusing System.Collections.Generic;
 using UnityEngine;
 using AbyssalReach.Data;
 
 namespace AbyssalReach.Core
 {
-    // Este script es el "Inventario" del jugador.
-    // Guarda una lista de los tesoros LootItemData que has recogido pero a˙n no has vendido.
-    // Es un Singleton para poder acceder a Èl desde cualquier sitio 
+    /// <summary>
+    /// Manager principal del sistema de inventario.
+    /// Gestiona dos inventarios grid: Diver (limitado) y Boat (grande).
+    /// Singleton para acceso global.
+    /// </summary>
     public class InventoryManager : MonoBehaviour
     {
-        // Instancia est·tica privada
         private static InventoryManager instance;
 
-        [Header("Current Inventory")]
-        [Tooltip("Lista de objetos que llevas actualmente")]
-        [SerializeField] private List<LootItemData> collectedItems = new List<LootItemData>();
+        [Header("Grid Inventories")]
+        [Tooltip("Inventario del buceador (limitado)")]
+        [SerializeField] private GridInventory diverInventory;
 
-        [Header("Capacity")]
-        [Tooltip("M·ximo n˙mero de items que puede llevar (0 = ilimitado)")]
-        [SerializeField] private int maxCapacity = 0;
+        [Tooltip("Inventario del barco (grande)")]
+        [SerializeField] private GridInventory boatInventory;
+
+        [Header("Initial Diver Settings")]
+        [SerializeField] private int diverGridWidth = 3;
+        [SerializeField] private int diverGridHeight = 3;
+        [SerializeField] private float diverMaxWeight = 20f;
+
+        [Header("Initial Boat Settings")]
+        [SerializeField] private int boatGridWidth = 5;
+        [SerializeField] private int boatGridHeight = 5;
+        [SerializeField] private float boatMaxWeight = 200f;
 
         [Header("Debug")]
-        [Tooltip("Muestra informaciÛn en pantalla si es true")]
         [SerializeField] private bool showDebug = true;
 
         #region Events
 
-        // delegate y eventos para notificar a la UI cuando algo cambia
+        // Eventos para mantener compatibilidad con ShopUI y otros sistemas
         public delegate void InventoryChanged();
         public static event InventoryChanged OnInventoryChanged;
 
@@ -40,18 +49,13 @@ namespace AbyssalReach.Core
 
         #region Singleton
 
-        // Getter p˙blico para acceder a la instancia
         public static InventoryManager Instance
         {
-            get
-            {
-                return instance;
-            }
+            get { return instance; }
         }
 
         private void Awake()
         {
-            // ConfiguraciÛn del Singleton
             if (instance != null && instance != this)
             {
                 Destroy(gameObject);
@@ -60,231 +64,443 @@ namespace AbyssalReach.Core
 
             instance = this;
             DontDestroyOnLoad(gameObject);
+
+            // Inicializar inventarios
+            InitializeInventories();
+
+            // Cargar inventarios guardados
+            LoadInventories();
+        }
+
+        private void OnApplicationQuit()
+        {
+            // Guardar autom√°ticamente al cerrar
+            SaveInventories();
         }
 
         #endregion
 
-        #region Aplicaciones
+        #region Initialization
 
-        // Intenta aÒadir un item al inventario.
-        // Devuelve true si tuvo Èxito, false si el inventario estaba lleno.
-        public bool AddItem(LootItemData item)
+        private void InitializeInventories()
         {
-            if (item == null)
-            {
-                Debug.LogWarning("[InventoryManager] Se intentÛ aÒadir un item nulo");
-                return false;
-            }
+            // Crear inventario del diver
+            diverInventory = new GridInventory(diverGridWidth, diverGridHeight, diverMaxWeight);
 
-            // Verificar si tenemos espacio (si maxCapacity es mayor que 0)
-            if (maxCapacity > 0)
-            {
-                if (collectedItems.Count >= maxCapacity)
-                {
-                    if (showDebug)
-                    {
-                        Debug.LogWarning("[InventoryManager] Inventario lleno! (" + collectedItems.Count + "/" + maxCapacity + ")");
-                    }
-                    return false;
-                }
-            }
-
-            // AÒadir el item a la lista
-            collectedItems.Add(item);
+            // Crear inventario del boat
+            boatInventory = new GridInventory(boatGridWidth, boatGridHeight, boatMaxWeight);
 
             if (showDebug)
             {
-                Debug.Log("[InventoryManager] AÒadido: " + item.itemName + " (" + item.rarity + ") - Valor: " + item.value + "G");
+                Debug.Log("[InventoryManager] Inventarios inicializados:");
+                Debug.Log("  Diver: " + diverGridWidth + "x" + diverGridHeight + " / " + diverMaxWeight + "kg");
+                Debug.Log("  Boat: " + boatGridWidth + "x" + boatGridHeight + " / " + boatMaxWeight + "kg");
             }
-
-            // Notificar eventos 
-            if (OnItemAdded != null)
-            {
-                OnItemAdded.Invoke(item);
-            }
-
-            if (OnInventoryChanged != null)
-            {
-                OnInventoryChanged.Invoke();
-            }
-
-            return true;
         }
 
-        // Elimina un item especÌfico 
-        public bool RemoveItem(LootItemData item)
+        #endregion
+
+        #region Pickup System (Diver)
+
+        /// <summary>
+        /// Intenta recoger un item con el buceador
+        /// Retorna true si tuvo √©xito
+        /// </summary>
+        public bool TryPickupItem(LootItemData item)
         {
-            if (collectedItems.Remove(item))
+            if (item == null) return false;
+
+            string errorMessage;
+            bool success = diverInventory.TryAddItem(item, out errorMessage);
+
+            if (success)
             {
                 if (showDebug)
                 {
-                    Debug.Log("[InventoryManager] Eliminado: " + item.itemName);
+                    Debug.Log("[InventoryManager] Recogido: " + item.itemName + " (Peso: " + item.weight + "kg)");
                 }
 
-                if (OnItemRemoved != null)
+                // Disparar eventos
+                OnItemAdded?.Invoke(item);
+                OnInventoryChanged?.Invoke();
+
+                // Guardar
+                SaveInventories();
+            }
+            else
+            {
+                if (showDebug)
                 {
-                    OnItemRemoved.Invoke(item);
+                    Debug.LogWarning("[InventoryManager] No se pudo recoger " + item.itemName + ": " + errorMessage);
                 }
-
-                if (OnInventoryChanged != null)
-                {
-                    OnInventoryChanged.Invoke();
-                }
-
-                return true;
             }
 
-            return false;
+            return success;
         }
 
-        // Vende todo el inventario, limpia la lista y devuelve el oro total ganado
-        public int SellAllItems()
+        /// <summary>
+        /// Verifica si el diver puede recoger un item
+        /// </summary>
+        public bool CanPickupItem(LootItemData item)
         {
-            int totalValue = CalculateTotalValue();
-            int itemCount = collectedItems.Count;
+            return diverInventory.CanFitItem(item);
+        }
 
-            // Limpiamos la lista
-            collectedItems.Clear();
+        #endregion
+
+        #region Transfer System (Diver ‚Üí Boat)
+
+        /// <summary>
+        /// Transfiere todos los items del diver al boat
+        /// Los items que no quepan quedan en el diver (staging area)
+        /// Retorna el n√∫mero de items transferidos exitosamente
+        /// </summary>
+        public int TransferDiverToBoat()
+        {
+            List<GridItem> diverItems = diverInventory.GetAllItems();
+            int transferredCount = 0;
+            List<GridItem> itemsToRemove = new List<GridItem>();
+
+            foreach (GridItem item in diverItems)
+            {
+                string errorMessage;
+                bool success = boatInventory.TryAddItem(item.itemData, out errorMessage);
+
+                if (success)
+                {
+                    itemsToRemove.Add(item);
+                    transferredCount++;
+                }
+                else
+                {
+                    if (showDebug)
+                    {
+                        Debug.LogWarning("[InventoryManager] No se pudo transferir " + item.itemData.itemName + ": " + errorMessage);
+                    }
+                }
+            }
+
+            // Eliminar items transferidos del diver
+            foreach (GridItem item in itemsToRemove)
+            {
+                diverInventory.RemoveItem(item);
+            }
 
             if (showDebug)
             {
-                Debug.Log("[InventoryManager] Vendido todo: " + itemCount + " items por " + totalValue + "G");
+                Debug.Log("[InventoryManager] Transferidos " + transferredCount + " de " + diverItems.Count + " items");
+
+                int remaining = diverItems.Count - transferredCount;
+                if (remaining > 0)
+                {
+                    Debug.LogWarning("[InventoryManager] " + remaining + " items quedaron en el diver (staging area)");
+                }
             }
 
-            if (OnInventoryChanged != null)
+            OnInventoryChanged?.Invoke();
+            SaveInventories();
+
+            return transferredCount;
+        }
+
+        /// <summary>
+        /// Descarta items del diver (los tira al mar)
+        /// Se usa cuando el jugador confirma desechar items de la staging area
+        /// </summary>
+        public void DiscardDiverItems()
+        {
+            int count = diverInventory.GetItemCount();
+            diverInventory.Clear();
+
+            if (showDebug)
             {
-                OnInventoryChanged.Invoke();
+                Debug.Log("[InventoryManager] Descartados " + count + " items del diver");
             }
+
+            OnInventoryChanged?.Invoke();
+            SaveInventories();
+        }
+
+        #endregion
+
+        #region Selling System (Para ShopUI)
+
+        /// <summary>
+        /// Vende todos los items del BOAT y retorna el oro total
+        /// IMPORTANTE: ShopUI espera que este m√©todo exista
+        /// </summary>
+        public int SellAllItems()
+        {
+            int totalValue = boatInventory.CalculateTotalValue();
+            int itemCount = boatInventory.GetItemCount();
+
+            boatInventory.Clear();
+
+            if (showDebug)
+            {
+                Debug.Log("[InventoryManager] Vendidos " + itemCount + " items por " + totalValue + "G");
+            }
+
+            OnInventoryChanged?.Invoke();
+            SaveInventories();
 
             return totalValue;
         }
 
-        // Calcula cu·nto vale todo lo que llevas encima
+        /// <summary>
+        /// Calcula el valor total del BOAT
+        /// IMPORTANTE: ShopUI espera que este m√©todo exista
+        /// </summary>
         public int CalculateTotalValue()
         {
-            int total = 0;
-
-            // Recorremos la lista sumando el valor de cada item
-            foreach (LootItemData item in collectedItems)
-            {
-                total = total + item.value;
-            }
-
-            return total;
+            return boatInventory.CalculateTotalValue();
         }
 
-        // Calcula cu·nto pesa todo lo que llevas encima 
+        /// <summary>
+        /// Calcula el peso total del BOAT
+        /// </summary>
         public float CalculateTotalWeight()
         {
-            float total = 0f;
-
-            foreach (LootItemData item in collectedItems)
-            {
-                total = total + item.weight;
-            }
-
-            return total;
+            return boatInventory.GetCurrentWeight();
         }
 
-        // Devuelve una copia de la lista de items
-        public List<LootItemData> GetItems()
-        {
-            return new List<LootItemData>(collectedItems);
-        }
-
-        // Getters 
+        /// <summary>
+        /// Retorna el n√∫mero de items en el BOAT
+        /// IMPORTANTE: ShopUI espera que este m√©todo exista
+        /// </summary>
         public int GetItemCount()
         {
-            return collectedItems.Count;
+            return boatInventory.GetItemCount();
         }
 
-        public bool IsFull()
-        {
-            if (maxCapacity > 0 && collectedItems.Count >= maxCapacity)
-            {
-                return true;
-            }
-            return false;
-        }
-
+        /// <summary>
+        /// Verifica si el BOAT est√° vac√≠o
+        /// IMPORTANTE: ShopUI espera que este m√©todo exista
+        /// </summary>
         public bool IsEmpty()
         {
-            if (collectedItems.Count == 0)
-            {
-                return true;
-            }
-            return false;
+            return boatInventory.IsEmpty();
         }
 
+        /// <summary>
+        /// Retorna una lista de items del BOAT (para compatibilidad)
+        /// </summary>
+        public List<LootItemData> GetItems()
+        {
+            List<LootItemData> items = new List<LootItemData>();
+
+            foreach (GridItem gridItem in boatInventory.GetAllItems())
+            {
+                items.Add(gridItem.itemData);
+            }
+
+            return items;
+        }
+
+        /// <summary>
+        /// Limpia el BOAT
+        /// </summary>
         public void Clear()
         {
-            collectedItems.Clear();
+            boatInventory.Clear();
+            OnInventoryChanged?.Invoke();
+            SaveInventories();
+        }
 
-            if (OnInventoryChanged != null)
+        #endregion
+
+        #region Upgrade System
+
+        /// <summary>
+        /// Mejora el tama√±o del grid del diver
+        /// </summary>
+        public void UpgradeDiverGrid(int newWidth, int newHeight)
+        {
+            diverInventory.UpgradeGridSize(newWidth, newHeight);
+            OnInventoryChanged?.Invoke();
+            SaveInventories();
+        }
+
+        /// <summary>
+        /// Mejora el tama√±o del grid del boat
+        /// </summary>
+        public void UpgradeBoatGrid(int newWidth, int newHeight)
+        {
+            boatInventory.UpgradeGridSize(newWidth, newHeight);
+            OnInventoryChanged?.Invoke();
+            SaveInventories();
+        }
+
+        /// <summary>
+        /// Mejora la capacidad de peso del diver
+        /// </summary>
+        public void UpgradeDiverWeight(float additionalCapacity)
+        {
+            diverInventory.UpgradeWeightCapacity(additionalCapacity);
+            OnInventoryChanged?.Invoke();
+            SaveInventories();
+        }
+
+        /// <summary>
+        /// Mejora la capacidad de peso del boat
+        /// </summary>
+        public void UpgradeBoatWeight(float additionalCapacity)
+        {
+            boatInventory.UpgradeWeightCapacity(additionalCapacity);
+            OnInventoryChanged?.Invoke();
+            SaveInventories();
+        }
+
+        #endregion
+
+        #region API for UI
+
+        /// <summary>
+        /// Obtiene el inventario del diver (para UI)
+        /// </summary>
+        public GridInventory GetDiverInventory()
+        {
+            return diverInventory;
+        }
+
+        /// <summary>
+        /// Obtiene el inventario del boat (para UI)
+        /// </summary>
+        public GridInventory GetBoatInventory()
+        {
+            return boatInventory;
+        }
+
+        #endregion
+
+        #region Save/Load System
+
+        /// <summary>
+        /// Guarda ambos inventarios en PlayerPrefs como JSON
+        /// </summary>
+        public void SaveInventories()
+        {
+            try
             {
-                OnInventoryChanged.Invoke();
+                string diverJson = JsonUtility.ToJson(diverInventory);
+                string boatJson = JsonUtility.ToJson(boatInventory);
+
+                PlayerPrefs.SetString("DiverInventory", diverJson);
+                PlayerPrefs.SetString("BoatInventory", boatJson);
+                PlayerPrefs.Save();
+
+                if (showDebug)
+                {
+                    Debug.Log("[InventoryManager] Inventarios guardados");
+                }
             }
+            catch (System.Exception e)
+            {
+                Debug.LogError("[InventoryManager] Error al guardar: " + e.Message);
+            }
+        }
+
+        /// <summary>
+        /// Carga ambos inventarios desde PlayerPrefs
+        /// </summary>
+        public void LoadInventories()
+        {
+            try
+            {
+                if (PlayerPrefs.HasKey("DiverInventory"))
+                {
+                    string diverJson = PlayerPrefs.GetString("DiverInventory");
+                    GridInventory loadedDiver = JsonUtility.FromJson<GridInventory>(diverJson);
+
+                    if (loadedDiver != null)
+                    {
+                        diverInventory = loadedDiver;
+                    }
+                }
+
+                if (PlayerPrefs.HasKey("BoatInventory"))
+                {
+                    string boatJson = PlayerPrefs.GetString("BoatInventory");
+                    GridInventory loadedBoat = JsonUtility.FromJson<GridInventory>(boatJson);
+
+                    if (loadedBoat != null)
+                    {
+                        boatInventory = loadedBoat;
+                    }
+                }
+
+                if (showDebug)
+                {
+                    Debug.Log("[InventoryManager] Inventarios cargados");
+                }
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError("[InventoryManager] Error al cargar: " + e.Message);
+            }
+        }
+
+        /// <summary>
+        /// Resetea los inventarios a valores por defecto (√∫til para debugging)
+        /// </summary>
+        public void ResetInventories()
+        {
+            PlayerPrefs.DeleteKey("DiverInventory");
+            PlayerPrefs.DeleteKey("BoatInventory");
+            InitializeInventories();
 
             if (showDebug)
             {
-                Debug.Log("[InventoryManager] Inventario limpiado");
+                Debug.Log("[InventoryManager] Inventarios reseteados");
             }
         }
 
         #endregion
 
-        #region Debug (Gizmos)
+        #region Debug Display
 
         private void OnGUI()
         {
-            if (!showDebug)
-            {
-                return;
-            }
+            if (!showDebug) return;
 
             GUIStyle style = new GUIStyle();
             style.fontSize = 14;
             style.normal.textColor = Color.white;
 
-            // PosiciÛn vertical base para dibujar
-            int yOffset = 120; // Debajo del GameManager debug
+            int yOffset = 120;
 
-            // Construir string de capacidad
-            string capacityText = "";
-            if (maxCapacity > 0)
-            {
-                capacityText = "/" + maxCapacity;
-            }
+            // === DIVER INVENTORY ===
+            GUI.Label(new Rect(10, yOffset, 300, 20), "=== DIVER INVENTORY ===", style);
+            yOffset += 25;
 
-            // Dibujar contadores generales
-            GUI.Label(new Rect(10, yOffset, 300, 20), "Inventory: " + GetItemCount() + capacityText, style);
-            GUI.Label(new Rect(10, yOffset + 20, 300, 20), "Total Value: " + CalculateTotalValue() + "G", style);
-            // "F1" formatea el float a 1 decimal
-            GUI.Label(new Rect(10, yOffset + 40, 300, 20), "Total Weight: " + CalculateTotalWeight().ToString("F1") + "kg", style);
+            Vector2Int diverSize = diverInventory.GetGridSize();
+            GUI.Label(new Rect(10, yOffset, 300, 20),
+                "Grid: " + diverSize.x + "x" + diverSize.y + " | Items: " + diverInventory.GetItemCount(), style);
+            yOffset += 20;
 
-            // Listar los primeros 5 items en pantalla
-            style.fontSize = 12;
-            int itemYOffset = yOffset + 65;
-            int itemsToShow = Mathf.Min(collectedItems.Count, 5);
+            GUI.Label(new Rect(10, yOffset, 300, 20),
+                "Weight: " + diverInventory.GetCurrentWeight().ToString("F1") + "/" + diverInventory.GetMaxWeight().ToString("F1") + "kg", style);
+            yOffset += 20;
 
-            for (int i = 0; i < itemsToShow; i++)
-            {
-                LootItemData item = collectedItems[i];
+            GUI.Label(new Rect(10, yOffset, 300, 20),
+                "Value: " + diverInventory.CalculateTotalValue() + "G", style);
+            yOffset += 30;
 
-                // Usamos el color de rareza del item para el texto
-                Color rarityColor = item.GetAuraColor();
-                style.normal.textColor = rarityColor;
+            // === BOAT INVENTORY ===
+            GUI.Label(new Rect(10, yOffset, 300, 20), "=== BOAT INVENTORY ===", style);
+            yOffset += 25;
 
-                GUI.Label(new Rect(10, itemYOffset + (i * 15), 300, 15), "ï " + item.itemName + " (" + item.value + "G)", style);
-            }
+            Vector2Int boatSize = boatInventory.GetGridSize();
+            GUI.Label(new Rect(10, yOffset, 300, 20),
+                "Grid: " + boatSize.x + "x" + boatSize.y + " | Items: " + boatInventory.GetItemCount(), style);
+            yOffset += 20;
 
-            // Si hay m·s de 5, mostrar aviso
-            if (collectedItems.Count > 5)
-            {
-                style.normal.textColor = Color.gray;
-                int remaining = collectedItems.Count - 5;
-                GUI.Label(new Rect(10, itemYOffset + 75, 300, 15), "... and " + remaining + " more", style);
-            }
+            GUI.Label(new Rect(10, yOffset, 300, 20),
+                "Weight: " + boatInventory.GetCurrentWeight().ToString("F1") + "/" + boatInventory.GetMaxWeight().ToString("F1") + "kg", style);
+            yOffset += 20;
+
+            GUI.Label(new Rect(10, yOffset, 300, 20),
+                "Value: " + boatInventory.CalculateTotalValue() + "G", style);
         }
 
         #endregion
