@@ -13,7 +13,8 @@ MonoBehaviour:
   m_Name: EjemploCommon
   m_EditorClassIdentifier: Assembly-CSharp::AbyssalReach.Data.LootItemData
   itemName: Lata
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: ecc67a32971bc5746a0fd0561a152052, type: 3}
+  worldPrefab: {fileID: 7252156863450275833, guid: 16c2fc21b01875f4bab4ccb0be96eb6f, type: 3}
   shape: 0
   value: 5
   weight: 1

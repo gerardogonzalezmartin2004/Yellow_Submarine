@@ -14,8 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::AbyssalReach.Data.LootItemData
   itemName: Pala
   icon: {fileID: 0}
+  worldPrefab: {fileID: 8778847778797646946, guid: 21974772b46b6634ca6194a9694a6a25, type: 3}
+  shape: 0
   value: 10
-  weight: 1
+  weight: 5
   rarity: 1
   auraColor: {r: 0.2, g: 0.6, b: 1, a: 1}
   description: Se le ha caida a tu padre minetras pescaba

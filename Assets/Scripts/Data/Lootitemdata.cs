@@ -29,6 +29,9 @@ namespace AbyssalReach.Data
         [Tooltip("Icono para mostrar en UI")]
         public Sprite icon;
 
+        [Header("Visual")]
+        public GameObject worldPrefab;
+
         [Header("Grid Properties")]
         [Tooltip("Forma que ocupa el item en el inventario grid")]
         public ItemShape shape = ItemShape.Single_1x1;
