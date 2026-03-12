@@ -1,21 +1,21 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 
 namespace AbyssalReach.Data
 {
     /// <summary>
     /// Define las formas que puede tener un item en el inventario grid
-    /// Cada forma está predefinida para facilitar el diseño de items
+    /// Cada forma estÃ¡ predefinida para facilitar el diseÃ±o de items
     /// </summary>
     public enum ItemShape
     {
-        Single_1x1,      // 1x1 - Moneda, anillo, gema pequeña
+        Single_1x1,      // 1x1 - Moneda, anillo, gema pequeÃ±a
         Horizontal_2x1,  // 2x1 - Cuchillo, llave
         Vertical_1x2,    // 1x2 - Botella, vial
-        Horizontal_3x1,  // 3x1 - Espada corta, rifle pequeño
-        Vertical_1x3,    // 1x3 - Espada larga, arpón
-        Square_2x2,      // 2x2 - Cofre pequeño, libro
+        Horizontal_3x1,  // 3x1 - Espada corta, rifle pequeÃ±o
+        Vertical_1x3,    // 1x3 - Espada larga, arpÃ³n
+        Square_2x2,      // 2x2 - Cofre pequeÃ±o, libro
         Square_3x3,      // 3x3 - Cofre grande, escudo
-        LShape_2x2,      // Forma L (2x2) - Ancla pequeña
+        LShape_2x2,      // Forma L (2x2) - Ancla pequeÃ±a
         TShape_3x2       // Forma T (3x2) - Ancla grande, tridente
     }
 
@@ -38,7 +38,7 @@ namespace AbyssalReach.Data
         [Min(1)]
         public int value = 5;
 
-        [Tooltip("Peso en kg (afecta la física del cable y límite de inventario)")]
+        [Tooltip("Peso en kg (afecta la fÃ­sica del cable y lÃ­mite de inventario)")]
         [Min(0.1f)]
         public float weight = 1f;
 
@@ -46,22 +46,22 @@ namespace AbyssalReach.Data
         public ItemRarity rarity = ItemRarity.Common;
 
         [Header("Visual")]
-        [Tooltip("Color del aura según rareza (calculado automáticamente)")]
+        [Tooltip("Color del aura segÃºn rareza (calculado automÃ¡ticamente)")]
         [SerializeField] private Color auraColor;
 
         [Header("Optional")]
         [TextArea(2, 4)]
-        [Tooltip("Descripción del item")]
+        [Tooltip("DescripciÃ³n del item")]
         public string description;
 
         #region Auto-Configuration
 
         private void OnValidate()
         {
-            // Auto asignar el color de aura según rareza
+            // Auto asignar el color de aura segÃºn rareza
             auraColor = GetAuraColorForRarity(rarity);
 
-            // Auto ajusta el valor sugerido según rareza
+            // Auto ajusta el valor sugerido segÃºn rareza
             if (value == 0)
             {
                 value = GetSuggestedValueForRarity(rarity);
@@ -73,7 +73,7 @@ namespace AbyssalReach.Data
         #region Helper Methods
 
         /// <summary>
-        /// Obtiene el color de aura según la rareza
+        /// Obtiene el color de aura segÃºn la rareza
         /// </summary>
         public Color GetAuraColor()
         {
@@ -118,38 +118,60 @@ namespace AbyssalReach.Data
         /// Obtiene las dimensiones del grid que ocupa este item
         /// Retorna (width, height)
         /// </summary>
-        public Vector2Int GetGridSize()
+        /// <param name="rotated">Si true, retorna dimensiones rotadas 90Â°</param>
+        public Vector2Int GetGridSize(bool rotated = false)
         {
+            Vector2Int baseSize;
+
             switch (shape)
             {
                 case ItemShape.Single_1x1:
-                    return new Vector2Int(1, 1);
+                    baseSize = new Vector2Int(1, 1);
+                    break;
                 case ItemShape.Horizontal_2x1:
-                    return new Vector2Int(2, 1);
+                    baseSize = new Vector2Int(2, 1);
+                    break;
                 case ItemShape.Vertical_1x2:
-                    return new Vector2Int(1, 2);
+                    baseSize = new Vector2Int(1, 2);
+                    break;
                 case ItemShape.Horizontal_3x1:
-                    return new Vector2Int(3, 1);
+                    baseSize = new Vector2Int(3, 1);
+                    break;
                 case ItemShape.Vertical_1x3:
-                    return new Vector2Int(1, 3);
+                    baseSize = new Vector2Int(1, 3);
+                    break;
                 case ItemShape.Square_2x2:
-                    return new Vector2Int(2, 2);
+                    baseSize = new Vector2Int(2, 2);
+                    break;
                 case ItemShape.Square_3x3:
-                    return new Vector2Int(3, 3);
+                    baseSize = new Vector2Int(3, 3);
+                    break;
                 case ItemShape.LShape_2x2:
-                    return new Vector2Int(2, 2);
+                    baseSize = new Vector2Int(2, 2);
+                    break;
                 case ItemShape.TShape_3x2:
-                    return new Vector2Int(3, 2);
+                    baseSize = new Vector2Int(3, 2);
+                    break;
                 default:
-                    return new Vector2Int(1, 1);
+                    baseSize = new Vector2Int(1, 1);
+                    break;
             }
+
+            // Si estÃ¡ rotado, intercambiar width y height (excepto cuadrados)
+            if (rotated && baseSize.x != baseSize.y)
+            {
+                return new Vector2Int(baseSize.y, baseSize.x);
+            }
+
+            return baseSize;
         }
 
         /// <summary>
         /// Obtiene las posiciones locales que ocupa el item relativas a su origen (0,0)
         /// Por ejemplo, una forma L retorna las 3 celdas que ocupa
         /// </summary>
-        public Vector2Int[] GetOccupiedCells()
+        /// <param name="rotated">Si true, devuelve las celdas rotadas 90Â° en sentido horario</param>
+        public Vector2Int[] GetOccupiedCells(bool rotated = false)
         {
             switch (shape)
             {
@@ -221,6 +243,38 @@ namespace AbyssalReach.Data
                 default:
                     return new Vector2Int[] { new Vector2Int(0, 0) };
             }
+        }
+
+        /// <summary>
+        /// Rota un array de celdas 90Â° en sentido horario
+        /// Usado internamente por GetOccupiedCells cuando rotated = true
+        /// </summary>
+        private Vector2Int[] RotateCells90Degrees(Vector2Int[] cells)
+        {
+            if (cells.Length == 1)
+            {
+                // Items 1x1 no rotan
+                return cells;
+            }
+
+            Vector2Int[] rotatedCells = new Vector2Int[cells.Length];
+
+            // Encontrar el max_y para ajustar la rotaciÃ³n
+            int maxY = 0;
+            foreach (Vector2Int cell in cells)
+            {
+                if (cell.y > maxY) maxY = cell.y;
+            }
+
+            // Rotar cada celda 90Â° en sentido horario: (x, y) â†’ (max_y - y, x)
+            for (int i = 0; i < cells.Length; i++)
+            {
+                int newX = maxY - cells[i].y;
+                int newY = cells[i].x;
+                rotatedCells[i] = new Vector2Int(newX, newY);
+            }
+
+            return rotatedCells;
         }
 
         #endregion

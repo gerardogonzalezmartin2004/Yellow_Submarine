@@ -333,6 +333,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "Position",
+                    "type": "Button",
+                    "id": "75b80fa4-5715-4bcf-abba-7f9e3f84a1fe",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -509,6 +518,17 @@
                     "processors": "",
                     "groups": "",
                     "action": "Cancel",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "b8e8271d-b432-4b35-9e04-c35676825c98",
+                    "path": "",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Position",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

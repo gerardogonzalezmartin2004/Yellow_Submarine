@@ -421,6 +421,15 @@ namespace AbyssalReach.Core
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Position"",
+                    ""type"": ""Button"",
+                    ""id"": ""75b80fa4-5715-4bcf-abba-7f9e3f84a1fe"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -599,6 +608,17 @@ namespace AbyssalReach.Core
                     ""action"": ""Cancel"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""b8e8271d-b432-4b35-9e04-c35676825c98"",
+                    ""path"": """",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Position"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -620,6 +640,7 @@ namespace AbyssalReach.Core
             m_UI_Navigate = m_UI.FindAction("Navigate", throwIfNotFound: true);
             m_UI_Submit = m_UI.FindAction("Submit", throwIfNotFound: true);
             m_UI_Cancel = m_UI.FindAction("Cancel", throwIfNotFound: true);
+            m_UI_Position = m_UI.FindAction("Position", throwIfNotFound: true);
         }
 
         ~@AbyssalReachControls()
@@ -941,6 +962,7 @@ namespace AbyssalReach.Core
         private readonly InputAction m_UI_Navigate;
         private readonly InputAction m_UI_Submit;
         private readonly InputAction m_UI_Cancel;
+        private readonly InputAction m_UI_Position;
         /// <summary>
         /// Provides access to input actions defined in input action map "UI".
         /// </summary>
@@ -964,6 +986,10 @@ namespace AbyssalReach.Core
             /// Provides access to the underlying input action "UI/Cancel".
             /// </summary>
             public InputAction @Cancel => m_Wrapper.m_UI_Cancel;
+            /// <summary>
+            /// Provides access to the underlying input action "UI/Position".
+            /// </summary>
+            public InputAction @Position => m_Wrapper.m_UI_Position;
             /// <summary>
             /// Provides access to the underlying input action map instance.
             /// </summary>
@@ -999,6 +1025,9 @@ namespace AbyssalReach.Core
                 @Cancel.started += instance.OnCancel;
                 @Cancel.performed += instance.OnCancel;
                 @Cancel.canceled += instance.OnCancel;
+                @Position.started += instance.OnPosition;
+                @Position.performed += instance.OnPosition;
+                @Position.canceled += instance.OnPosition;
             }
 
             /// <summary>
@@ -1019,6 +1048,9 @@ namespace AbyssalReach.Core
                 @Cancel.started -= instance.OnCancel;
                 @Cancel.performed -= instance.OnCancel;
                 @Cancel.canceled -= instance.OnCancel;
+                @Position.started -= instance.OnPosition;
+                @Position.performed -= instance.OnPosition;
+                @Position.canceled -= instance.OnPosition;
             }
 
             /// <summary>
@@ -1138,6 +1170,13 @@ namespace AbyssalReach.Core
             /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
             /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
             void OnCancel(InputAction.CallbackContext context);
+            /// <summary>
+            /// Method invoked when associated input action "Position" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+            /// </summary>
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+            void OnPosition(InputAction.CallbackContext context);
         }
     }
 }

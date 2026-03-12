@@ -37,10 +37,7 @@ namespace AbyssalReach.UI
                 confirmTransferButton.onClick.AddListener(OnConfirmTransfer);
             }
 
-            if (discardRemainingButton != null)
-            {
-                discardRemainingButton.onClick.AddListener(OnDiscardRemaining);
-            }
+           
 
             if (cancelButton != null)
             {
@@ -60,31 +57,7 @@ namespace AbyssalReach.UI
 
         #region Public Methods
 
-        /// <summary>
-        /// Abre la UI de transferencia y ejecuta la transferencia automática
-        /// Se llama cuando el diver sube al barco
-        /// </summary>
-        public void OpenTransferUI()
-        {
-            if (InventoryManager.Instance == null)
-            {
-                Debug.LogError("[TransferUI] InventoryManager no encontrado");
-                return;
-            }
-
-            // Mostrar panel
-            if (transferPanel != null)
-            {
-                transferPanel.SetActive(true);
-            }
-
-            // Ejecutar transferencia automática
-            PerformAutoTransfer();
-
-            // Actualizar UI
-            UpdateDisplay();
-        }
-
+        
         /// <summary>
         /// Cierra la UI de transferencia
         /// </summary>
@@ -100,16 +73,7 @@ namespace AbyssalReach.UI
 
         #region Transfer Logic
 
-        /// <summary>
-        /// Transfiere automáticamente todo lo posible del diver al boat
-        /// </summary>
-        private void PerformAutoTransfer()
-        {
-            int transferred = InventoryManager.Instance.TransferDiverToBoat();
-            itemsInDiver = InventoryManager.Instance.GetDiverInventory().GetItemCount();
-
-            Debug.Log("[TransferUI] Transferidos: " + transferred + " | Restantes en diver: " + itemsInDiver);
-        }
+        
 
         /// <summary>
         /// Actualiza los textos de la UI según el estado actual
@@ -182,28 +146,7 @@ namespace AbyssalReach.UI
             }
         }
 
-        /// <summary>
-        /// Botón "Desechar items restantes"
-        /// Muestra confirmación y tira los items al mar
-        /// </summary>
-        private void OnDiscardRemaining()
-        {
-            if (InventoryManager.Instance == null) return;
-
-            // TODO: Mostrar un diálogo de confirmación bonito
-            // Por ahora usamos un log y descartamos directamente
-            Debug.LogWarning("[TransferUI] " + confirmDiscardMessage);
-
-            // Descartar todos los items del diver
-            InventoryManager.Instance.DiscardDiverItems();
-
-            // Actualizar
-            itemsInDiver = 0;
-            UpdateDisplay();
-
-            // Cerrar UI
-            CloseTransferUI();
-        }
+        
 
         /// <summary>
         /// Botón "Cancelar"
@@ -216,34 +159,6 @@ namespace AbyssalReach.UI
 
         #endregion
 
-        #region Public Helpers for Custom UI
-
-        /// <summary>
-        /// Método helper para tu UI custom
-        /// Retorna el inventario del diver (staging area) para que lo visualices
-        /// </summary>
-        public GridInventory GetStagingInventory()
-        {
-            if (InventoryManager.Instance != null)
-            {
-                return InventoryManager.Instance.GetDiverInventory();
-            }
-            return null;
-        }
-
-        /// <summary>
-        /// Método helper para tu UI custom
-        /// Retorna el inventario del boat para que lo visualices
-        /// </summary>
-        public GridInventory GetBoatInventory()
-        {
-            if (InventoryManager.Instance != null)
-            {
-                return InventoryManager.Instance.GetBoatInventory();
-            }
-            return null;
-        }
-
-        #endregion
+        
     }
 }
