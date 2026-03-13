@@ -423,10 +423,46 @@ namespace AbyssalReach.Core
                     ""initialStateCheck"": false
                 },
                 {
-                    ""name"": ""Position"",
-                    ""type"": ""Button"",
+                    ""name"": ""Point"",
+                    ""type"": ""PassThrough"",
                     ""id"": ""75b80fa4-5715-4bcf-abba-7f9e3f84a1fe"",
+                    ""expectedControlType"": ""Vector2"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Click"",
+                    ""type"": ""Button"",
+                    ""id"": ""707bdf59-4d77-4494-a4ef-c17f1f3eb5b2"",
                     ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""RightClick"",
+                    ""type"": ""Button"",
+                    ""id"": ""434f3001-6202-4b10-b93d-173a9615c431"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""MiddleClick"",
+                    ""type"": ""Button"",
+                    ""id"": ""b333c636-67d8-4a80-8123-3b91918291f5"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""ScrollWheel"",
+                    ""type"": ""PassThrough"",
+                    ""id"": ""705baccf-b286-4e5d-96ec-a0ac55cace2a"",
+                    ""expectedControlType"": ""Vector2"",
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
@@ -556,6 +592,17 @@ namespace AbyssalReach.Core
                 },
                 {
                     ""name"": """",
+                    ""id"": ""08351b6e-64a5-40c9-b1f0-5cb1d6251668"",
+                    ""path"": ""<Gamepad>/leftStick"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Navigate"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
                     ""id"": ""51079d86-c6cd-4bc5-9939-2c060d667bc6"",
                     ""path"": ""<Keyboard>/space"",
                     ""interactions"": """",
@@ -612,11 +659,55 @@ namespace AbyssalReach.Core
                 {
                     ""name"": """",
                     ""id"": ""b8e8271d-b432-4b35-9e04-c35676825c98"",
-                    ""path"": """",
+                    ""path"": ""<Mouse>/position"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
-                    ""action"": ""Position"",
+                    ""action"": ""Point"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""10a71233-2aae-4ede-a2af-b5e53663510a"",
+                    ""path"": ""<Mouse>/leftButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Click"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""164930f3-ddb6-4aee-9eaa-e48adcc30c5c"",
+                    ""path"": ""<Mouse>/rightButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""RightClick"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""f5c029c1-56fa-4417-bbf3-653658d42edd"",
+                    ""path"": ""<Mouse>/middleButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""MiddleClick"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""6445815f-9711-4d63-90f1-2c7206e01e8f"",
+                    ""path"": ""<Mouse>/scroll"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""ScrollWheel"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -640,7 +731,11 @@ namespace AbyssalReach.Core
             m_UI_Navigate = m_UI.FindAction("Navigate", throwIfNotFound: true);
             m_UI_Submit = m_UI.FindAction("Submit", throwIfNotFound: true);
             m_UI_Cancel = m_UI.FindAction("Cancel", throwIfNotFound: true);
-            m_UI_Position = m_UI.FindAction("Position", throwIfNotFound: true);
+            m_UI_Point = m_UI.FindAction("Point", throwIfNotFound: true);
+            m_UI_Click = m_UI.FindAction("Click", throwIfNotFound: true);
+            m_UI_RightClick = m_UI.FindAction("RightClick", throwIfNotFound: true);
+            m_UI_MiddleClick = m_UI.FindAction("MiddleClick", throwIfNotFound: true);
+            m_UI_ScrollWheel = m_UI.FindAction("ScrollWheel", throwIfNotFound: true);
         }
 
         ~@AbyssalReachControls()
@@ -962,7 +1057,11 @@ namespace AbyssalReach.Core
         private readonly InputAction m_UI_Navigate;
         private readonly InputAction m_UI_Submit;
         private readonly InputAction m_UI_Cancel;
-        private readonly InputAction m_UI_Position;
+        private readonly InputAction m_UI_Point;
+        private readonly InputAction m_UI_Click;
+        private readonly InputAction m_UI_RightClick;
+        private readonly InputAction m_UI_MiddleClick;
+        private readonly InputAction m_UI_ScrollWheel;
         /// <summary>
         /// Provides access to input actions defined in input action map "UI".
         /// </summary>
@@ -987,9 +1086,25 @@ namespace AbyssalReach.Core
             /// </summary>
             public InputAction @Cancel => m_Wrapper.m_UI_Cancel;
             /// <summary>
-            /// Provides access to the underlying input action "UI/Position".
+            /// Provides access to the underlying input action "UI/Point".
             /// </summary>
-            public InputAction @Position => m_Wrapper.m_UI_Position;
+            public InputAction @Point => m_Wrapper.m_UI_Point;
+            /// <summary>
+            /// Provides access to the underlying input action "UI/Click".
+            /// </summary>
+            public InputAction @Click => m_Wrapper.m_UI_Click;
+            /// <summary>
+            /// Provides access to the underlying input action "UI/RightClick".
+            /// </summary>
+            public InputAction @RightClick => m_Wrapper.m_UI_RightClick;
+            /// <summary>
+            /// Provides access to the underlying input action "UI/MiddleClick".
+            /// </summary>
+            public InputAction @MiddleClick => m_Wrapper.m_UI_MiddleClick;
+            /// <summary>
+            /// Provides access to the underlying input action "UI/ScrollWheel".
+            /// </summary>
+            public InputAction @ScrollWheel => m_Wrapper.m_UI_ScrollWheel;
             /// <summary>
             /// Provides access to the underlying input action map instance.
             /// </summary>
@@ -1025,9 +1140,21 @@ namespace AbyssalReach.Core
                 @Cancel.started += instance.OnCancel;
                 @Cancel.performed += instance.OnCancel;
                 @Cancel.canceled += instance.OnCancel;
-                @Position.started += instance.OnPosition;
-                @Position.performed += instance.OnPosition;
-                @Position.canceled += instance.OnPosition;
+                @Point.started += instance.OnPoint;
+                @Point.performed += instance.OnPoint;
+                @Point.canceled += instance.OnPoint;
+                @Click.started += instance.OnClick;
+                @Click.performed += instance.OnClick;
+                @Click.canceled += instance.OnClick;
+                @RightClick.started += instance.OnRightClick;
+                @RightClick.performed += instance.OnRightClick;
+                @RightClick.canceled += instance.OnRightClick;
+                @MiddleClick.started += instance.OnMiddleClick;
+                @MiddleClick.performed += instance.OnMiddleClick;
+                @MiddleClick.canceled += instance.OnMiddleClick;
+                @ScrollWheel.started += instance.OnScrollWheel;
+                @ScrollWheel.performed += instance.OnScrollWheel;
+                @ScrollWheel.canceled += instance.OnScrollWheel;
             }
 
             /// <summary>
@@ -1048,9 +1175,21 @@ namespace AbyssalReach.Core
                 @Cancel.started -= instance.OnCancel;
                 @Cancel.performed -= instance.OnCancel;
                 @Cancel.canceled -= instance.OnCancel;
-                @Position.started -= instance.OnPosition;
-                @Position.performed -= instance.OnPosition;
-                @Position.canceled -= instance.OnPosition;
+                @Point.started -= instance.OnPoint;
+                @Point.performed -= instance.OnPoint;
+                @Point.canceled -= instance.OnPoint;
+                @Click.started -= instance.OnClick;
+                @Click.performed -= instance.OnClick;
+                @Click.canceled -= instance.OnClick;
+                @RightClick.started -= instance.OnRightClick;
+                @RightClick.performed -= instance.OnRightClick;
+                @RightClick.canceled -= instance.OnRightClick;
+                @MiddleClick.started -= instance.OnMiddleClick;
+                @MiddleClick.performed -= instance.OnMiddleClick;
+                @MiddleClick.canceled -= instance.OnMiddleClick;
+                @ScrollWheel.started -= instance.OnScrollWheel;
+                @ScrollWheel.performed -= instance.OnScrollWheel;
+                @ScrollWheel.canceled -= instance.OnScrollWheel;
             }
 
             /// <summary>
@@ -1171,12 +1310,40 @@ namespace AbyssalReach.Core
             /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
             void OnCancel(InputAction.CallbackContext context);
             /// <summary>
-            /// Method invoked when associated input action "Position" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+            /// Method invoked when associated input action "Point" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
             /// </summary>
             /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
             /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
             /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
-            void OnPosition(InputAction.CallbackContext context);
+            void OnPoint(InputAction.CallbackContext context);
+            /// <summary>
+            /// Method invoked when associated input action "Click" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+            /// </summary>
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+            void OnClick(InputAction.CallbackContext context);
+            /// <summary>
+            /// Method invoked when associated input action "RightClick" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+            /// </summary>
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+            void OnRightClick(InputAction.CallbackContext context);
+            /// <summary>
+            /// Method invoked when associated input action "MiddleClick" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+            /// </summary>
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+            void OnMiddleClick(InputAction.CallbackContext context);
+            /// <summary>
+            /// Method invoked when associated input action "ScrollWheel" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+            /// </summary>
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+            void OnScrollWheel(InputAction.CallbackContext context);
         }
     }
 }

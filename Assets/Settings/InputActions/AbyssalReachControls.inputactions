@@ -335,10 +335,46 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "Position",
-                    "type": "Button",
+                    "name": "Point",
+                    "type": "PassThrough",
                     "id": "75b80fa4-5715-4bcf-abba-7f9e3f84a1fe",
+                    "expectedControlType": "Vector2",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Click",
+                    "type": "Button",
+                    "id": "707bdf59-4d77-4494-a4ef-c17f1f3eb5b2",
                     "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "RightClick",
+                    "type": "Button",
+                    "id": "434f3001-6202-4b10-b93d-173a9615c431",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "MiddleClick",
+                    "type": "Button",
+                    "id": "b333c636-67d8-4a80-8123-3b91918291f5",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "ScrollWheel",
+                    "type": "PassThrough",
+                    "id": "705baccf-b286-4e5d-96ec-a0ac55cace2a",
+                    "expectedControlType": "Vector2",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
@@ -468,6 +504,17 @@
                 },
                 {
                     "name": "",
+                    "id": "08351b6e-64a5-40c9-b1f0-5cb1d6251668",
+                    "path": "<Gamepad>/leftStick",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Navigate",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "51079d86-c6cd-4bc5-9939-2c060d667bc6",
                     "path": "<Keyboard>/space",
                     "interactions": "",
@@ -524,11 +571,55 @@
                 {
                     "name": "",
                     "id": "b8e8271d-b432-4b35-9e04-c35676825c98",
-                    "path": "",
+                    "path": "<Mouse>/position",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Position",
+                    "action": "Point",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "10a71233-2aae-4ede-a2af-b5e53663510a",
+                    "path": "<Mouse>/leftButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Click",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "164930f3-ddb6-4aee-9eaa-e48adcc30c5c",
+                    "path": "<Mouse>/rightButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "RightClick",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "f5c029c1-56fa-4417-bbf3-653658d42edd",
+                    "path": "<Mouse>/middleButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "MiddleClick",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "6445815f-9711-4d63-90f1-2c7206e01e8f",
+                    "path": "<Mouse>/scroll",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ScrollWheel",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
