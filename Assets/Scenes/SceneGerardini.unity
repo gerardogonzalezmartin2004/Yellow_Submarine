@@ -581,6 +581,18 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 584808322317816148, guid: 0a3337c7dcacfa643b745621ebb95c29, type: 3}
     - target: {fileID: 99164930774890918, guid: f3fb0083660ae334da4e2247137d0814, type: 3}
+      propertyPath: rotateAction
+      value: 
+      objectReference: {fileID: 9119207868695943447, guid: e6eb39108db053540b786b281ef7398d, type: 3}
+    - target: {fileID: 99164930774890918, guid: f3fb0083660ae334da4e2247137d0814, type: 3}
+      propertyPath: interactAction
+      value: 
+      objectReference: {fileID: -1478018495716317226, guid: e6eb39108db053540b786b281ef7398d, type: 3}
+    - target: {fileID: 99164930774890918, guid: f3fb0083660ae334da4e2247137d0814, type: 3}
+      propertyPath: canvasTransform
+      value: 
+      objectReference: {fileID: 1900170638}
+    - target: {fileID: 99164930774890918, guid: f3fb0083660ae334da4e2247137d0814, type: 3}
       propertyPath: canvasTrasnform
       value: 
       objectReference: {fileID: 1900170638}
@@ -604,6 +616,18 @@ PrefabInstance:
       propertyPath: 'items.Array.data[2]'
       value: 
       objectReference: {fileID: 11400000, guid: 21e7af149c540e74bbf6a19db215c20b, type: 2}
+    - target: {fileID: 99164930774890918, guid: f3fb0083660ae334da4e2247137d0814, type: 3}
+      propertyPath: pointerPositionAction
+      value: 
+      objectReference: {fileID: -6014923590643066684, guid: e6eb39108db053540b786b281ef7398d, type: 3}
+    - target: {fileID: 99164930774890918, guid: f3fb0083660ae334da4e2247137d0814, type: 3}
+      propertyPath: spawnRandomItemAction
+      value: 
+      objectReference: {fileID: -8478965545212275806, guid: e6eb39108db053540b786b281ef7398d, type: 3}
+    - target: {fileID: 99164930774890918, guid: f3fb0083660ae334da4e2247137d0814, type: 3}
+      propertyPath: insertRandomItemAction
+      value: 
+      objectReference: {fileID: -2502179976176349971, guid: e6eb39108db053540b786b281ef7398d, type: 3}
     - target: {fileID: 685809798250334512, guid: f3fb0083660ae334da4e2247137d0814, type: 3}
       propertyPath: m_RaycastPadding.w
       value: 1
@@ -4808,7 +4832,6 @@ Transform:
   - {fileID: 1303879523}
   - {fileID: 1444464063}
   - {fileID: 930908960}
-  - {fileID: 1831360304}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1243404247
@@ -6544,53 +6567,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1912236101}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1831360303
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1831360304}
-  - component: {fileID: 1831360305}
-  m_Layer: 0
-  m_Name: REInventoryController
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 0
---- !u!4 &1831360304
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1831360303}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1238167133}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1831360305
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1831360303}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 29aff3c286ec4984aab2118b5e6ef9f4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::InventoryController
-  items: []
-  itemPrefab: {fileID: 0}
-  canvasTrasnform: {fileID: 0}
 --- !u!1 &1835012161 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 3456200497316151208, guid: f3fb0083660ae334da4e2247137d0814, type: 3}
