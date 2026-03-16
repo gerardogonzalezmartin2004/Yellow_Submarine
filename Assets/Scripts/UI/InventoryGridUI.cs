@@ -101,9 +101,9 @@ namespace AbyssalReach.UI
             }
 
             // Obtener el inventario a mostrar
-            currentInventory = (inventoryType == InventoryType.Diver)
+            /*currentInventory = (inventoryType == InventoryType.Diver)
                 ? InventoryManager.Instance.GetDiverInventory()
-                : InventoryManager.Instance.GetBoatInventory();
+                : InventoryManager.Instance.GetBoatInventory();*/
 
             if (currentInventory == null)
             {

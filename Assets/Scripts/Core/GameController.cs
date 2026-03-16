@@ -27,7 +27,7 @@ namespace AbyssalReach.Core
         [SerializeField] private GameObject diverCamera;
         [SerializeField] private GameObject ropeObject;
         [SerializeField] private GameObject bagObject;
-        [SerializeField] private BagVisualizer bagVisualizer;
+        [SerializeField] private BagFillVisualizer bagVisualizer;
 
         [Header("Timer")]
         [SerializeField] private float oxygenTimer;
@@ -212,7 +212,6 @@ namespace AbyssalReach.Core
                 diverMovement.emergencyAscent = false;
                 InventoryManager.Instance.TransferDiverToBoat();
                 InventoryManager.Instance.TransferDiverToBoat();
-                bagVisualizer.ClearBagVisuals();
             }
             else
             {

@@ -3468,9 +3468,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4c22bd0465458be429666c7e9f762c06, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AbyssalReach.Gameplay.BagFillVisualizer
-  visual: {fileID: 2065037053}
-  emptyScale: {x: 1, y: 1, z: 1}
-  fullScale: {x: 1.5, y: 1.5, z: 1}
+  bagCircle: {fileID: 2065037053}
+  bagTriangle: {fileID: 1582099841}
+  emptyCircle: {x: 0.8, y: 0.8}
+  fullCircle: {x: 1.3, y: 1.3}
+  triangleMin: 0.8
+  triangleMax: 1.3
+  animationSpeed: 3
 --- !u!1 &930908957
 GameObject:
   m_ObjectHideFlags: 0
@@ -4772,11 +4776,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AbyssalReach.Core.InventoryManager
   diverInventory:
-    gridWidth: 0
-    gridHeight: 0
-    currentWeight: 0
-    maxWeightCapacity: 0
     items: []
+    maxWeight: 20
   boatInventory:
     gridWidth: 0
     gridHeight: 0
@@ -5647,8 +5648,8 @@ Transform:
   m_GameObject: {fileID: 1582099840}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: 0.7075201, w: 0.7066932}
-  m_LocalPosition: {x: 0.74005973, y: 0.006431401, z: 0}
-  m_LocalScale: {x: 1, y: 1.3322002, z: 1}
+  m_LocalPosition: {x: 0.7847, y: 0.0065, z: 0}
+  m_LocalScale: {x: 1, y: 1.3949467, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1146491861}
@@ -5700,10 +5701,10 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: -5
   m_MaskInteraction: 0
   m_Sprite: {fileID: 7482667652216324306, guid: 75f5f34dc1b5347e0b8351032682f224, type: 3}
-  m_Color: {r: 0.65882355, g: 0.65882355, b: 0.65882355, a: 0.63529414}
+  m_Color: {r: 0.65882355, g: 0.65882355, b: 0.65882355, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -5764,7 +5765,7 @@ MonoBehaviour:
   diverCamera: {fileID: 1337339125}
   ropeObject: {fileID: 1787755040}
   bagObject: {fileID: 1442341823}
-  bagVisualizer: {fileID: 0}
+  bagVisualizer: {fileID: 924442844}
   oxygenTimer: 50
   maxTimer: 50
   oxygenSlider: {fileID: 670141711}
@@ -7097,7 +7098,6 @@ GameObject:
   - component: {fileID: 2065037053}
   - component: {fileID: 2065037056}
   - component: {fileID: 2065037055}
-  - component: {fileID: 2065037054}
   m_Layer: 0
   m_Name: Circle
   m_TagString: Untagged
@@ -7120,21 +7120,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 924442839}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &2065037054
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2065037052}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4c22bd0465458be429666c7e9f762c06, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::AbyssalReach.Gameplay.BagFillVisualizer
-  visual: {fileID: 0}
-  emptyScale: {x: 0.75, y: 0.75, z: 1}
-  fullScale: {x: 1.5, y: 1.5, z: 1}
 --- !u!58 &2065037055
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -7218,10 +7203,10 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: -5
   m_MaskInteraction: 0
   m_Sprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
-  m_Color: {r: 0.65882355, g: 0.65882355, b: 0.65882355, a: 0.63529414}
+  m_Color: {r: 0.65882355, g: 0.65882355, b: 0.65882355, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0

@@ -222,7 +222,7 @@ namespace AbyssalReach.UI
         /// Método helper para tu UI custom
         /// Retorna el inventario del diver (staging area) para que lo visualices
         /// </summary>
-        public GridInventory GetStagingInventory()
+        public DiverInventory GetStagingInventory()
         {
             if (InventoryManager.Instance != null)
             {

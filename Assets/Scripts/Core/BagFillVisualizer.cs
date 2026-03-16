@@ -1,39 +1,53 @@
 using UnityEngine;
 using AbyssalReach.Core;
 
-namespace AbyssalReach.Gameplay
+public class BagFillVisualizer : MonoBehaviour
 {
-    public class BagFillVisualizer : MonoBehaviour
+    [Header("References")]
+    [SerializeField] private Transform bagCircle;
+    [SerializeField] private Transform bagTriangle;
+
+    [Header("Circle Scale")]
+    [SerializeField] private Vector2 emptyCircle = new Vector2(1f, 1f);
+    [SerializeField] private Vector2 fullCircle = new Vector2(1.6f, 1.6f);
+
+    [Header("Triangle Width")]
+    [SerializeField] private float triangleMin = 1f;
+    [SerializeField] private float triangleMax = 1.7f;
+
+    [Header("Animation")]
+    [SerializeField] private float animationSpeed = 5f;
+
+    void Update()
     {
-        [SerializeField] private Transform visual;
+        if (InventoryManager.Instance == null)
+            return;
 
-        [SerializeField] private Vector3 emptyScale = Vector3.one;
-        [SerializeField] private Vector3 fullScale = new Vector3(1.5f, 1.5f, 1.5f);
+        var diverInventory = InventoryManager.Instance.GetDiverInventory();
 
-        private GridInventory diverInventory;
+        float percent = diverInventory.GetCurrentWeight() / diverInventory.GetMaxWeight();
 
-        private void Start()
-        {
-            diverInventory = InventoryManager.Instance.GetDiverInventory();
+        // Tamaño objetivo del círculo
+        Vector2 targetCircle = Vector2.Lerp(emptyCircle, fullCircle, percent);
+        Vector3 targetCircleScale = new Vector3(targetCircle.x, targetCircle.y, 1);
 
-            InventoryManager.OnInventoryChanged += UpdateBag;
+        // Interpolación suave del círculo
+        bagCircle.localScale = Vector3.Lerp(
+            bagCircle.localScale,
+            targetCircleScale,
+            Time.deltaTime * animationSpeed
+        );
 
-            UpdateBag();
-        }
+        // Tamaño objetivo del triángulo
+        float targetWidth = Mathf.Lerp(triangleMin, triangleMax, percent);
 
-        private void OnDestroy()
-        {
-            InventoryManager.OnInventoryChanged -= UpdateBag;
-        }
+        Vector3 currentTri = bagTriangle.localScale;
+        currentTri.x = Mathf.Lerp(
+            currentTri.x,
+            targetWidth,
+            Time.deltaTime * animationSpeed
+        );
 
-        private void UpdateBag()
-        {
-            if (diverInventory == null)
-                return;
-
-            float percent = diverInventory.GetCurrentWeight() / diverInventory.GetMaxWeight();
-
-            visual.localScale = Vector3.Lerp(emptyScale, fullScale, percent);
-        }
+        bagTriangle.localScale = currentTri;
     }
 }

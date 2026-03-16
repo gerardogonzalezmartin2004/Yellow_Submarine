@@ -15,7 +15,7 @@ namespace AbyssalReach.Core
 
         [Header("Grid Inventories")]
         [Tooltip("Inventario del buceador (limitado)")]
-        [SerializeField] private GridInventory diverInventory;
+        [SerializeField] private DiverInventory diverInventory;
 
         [Tooltip("Inventario del barco (grande)")]
         [SerializeField] private GridInventory boatInventory;
@@ -85,7 +85,7 @@ namespace AbyssalReach.Core
         private void InitializeInventories()
         {
             // Crear inventario del diver
-            diverInventory = new GridInventory(diverGridWidth, diverGridHeight, diverMaxWeight);
+            diverInventory = new DiverInventory();
 
             // Crear inventario del boat
             boatInventory = new GridInventory(boatGridWidth, boatGridHeight, boatMaxWeight);
@@ -115,24 +115,13 @@ namespace AbyssalReach.Core
 
             if (success)
             {
-                if (showDebug)
-                {
-                    Debug.Log("[InventoryManager] Recogido: " + item.itemName + " (Peso: " + item.weight + "kg)");
-                }
-
-                // Disparar eventos
                 OnItemAdded?.Invoke(item);
                 OnInventoryChanged?.Invoke();
-
-                // Guardar
                 SaveInventories();
             }
             else
             {
-                if (showDebug)
-                {
-                    Debug.LogWarning("[InventoryManager] No se pudo recoger " + item.itemName + ": " + errorMessage);
-                }
+                Debug.LogWarning(errorMessage);
             }
 
             return success;
@@ -141,10 +130,10 @@ namespace AbyssalReach.Core
         /// <summary>
         /// Verifica si el diver puede recoger un item
         /// </summary>
-        public bool CanPickupItem(LootItemData item)
+        /*public bool CanPickupItem(LootItemData item)
         {
             return diverInventory.CanFitItem(item);
-        }
+        }*/
 
         #endregion
 
@@ -157,50 +146,32 @@ namespace AbyssalReach.Core
         /// </summary>
         public int TransferDiverToBoat()
         {
-            List<GridItem> diverItems = diverInventory.GetAllItems();
-            int transferredCount = 0;
-            List<GridItem> itemsToRemove = new List<GridItem>();
+            List<LootItemData> items = diverInventory.GetItems();
 
-            foreach (GridItem item in diverItems)
+            int transferred = 0;
+            List<LootItemData> toRemove = new List<LootItemData>();
+
+            foreach (var item in items)
             {
-                string errorMessage;
-                bool success = boatInventory.TryAddItem(item.itemData, out errorMessage);
+                string error;
+                bool success = boatInventory.TryAddItem(item, out error);
 
                 if (success)
                 {
-                    itemsToRemove.Add(item);
-                    transferredCount++;
-                }
-                else
-                {
-                    if (showDebug)
-                    {
-                        Debug.LogWarning("[InventoryManager] No se pudo transferir " + item.itemData.itemName + ": " + errorMessage);
-                    }
+                    toRemove.Add(item);
+                    transferred++;
                 }
             }
 
-            // Eliminar items transferidos del diver
-            foreach (GridItem item in itemsToRemove)
+            foreach (var item in toRemove)
             {
-                diverInventory.RemoveItem(item);
-            }
-
-            if (showDebug)
-            {
-                Debug.Log("[InventoryManager] Transferidos " + transferredCount + " de " + diverItems.Count + " items");
-
-                int remaining = diverItems.Count - transferredCount;
-                if (remaining > 0)
-                {
-                    Debug.LogWarning("[InventoryManager] " + remaining + " items quedaron en el diver (staging area)");
-                }
+                items.Remove(item);
             }
 
             OnInventoryChanged?.Invoke();
             SaveInventories();
 
-            return transferredCount;
+            return transferred;
         }
 
         /// <summary>
@@ -316,7 +287,7 @@ namespace AbyssalReach.Core
         /// </summary>
         public void UpgradeDiverGrid(int newWidth, int newHeight)
         {
-            diverInventory.UpgradeGridSize(newWidth, newHeight);
+            //diverInventory.UpgradeGridSize(newWidth, newHeight);
             OnInventoryChanged?.Invoke();
             SaveInventories();
         }
@@ -336,7 +307,7 @@ namespace AbyssalReach.Core
         /// </summary>
         public void UpgradeDiverWeight(float additionalCapacity)
         {
-            diverInventory.UpgradeWeightCapacity(additionalCapacity);
+            //diverInventory.UpgradeWeightCapacity(additionalCapacity);
             OnInventoryChanged?.Invoke();
             SaveInventories();
         }
@@ -358,7 +329,7 @@ namespace AbyssalReach.Core
         /// <summary>
         /// Obtiene el inventario del diver (para UI)
         /// </summary>
-        public GridInventory GetDiverInventory()
+        public DiverInventory GetDiverInventory()
         {
             return diverInventory;
         }
@@ -410,12 +381,12 @@ namespace AbyssalReach.Core
                 if (PlayerPrefs.HasKey("DiverInventory"))
                 {
                     string diverJson = PlayerPrefs.GetString("DiverInventory");
-                    GridInventory loadedDiver = JsonUtility.FromJson<GridInventory>(diverJson);
+                    /*GridInventory loadedDiver = JsonUtility.FromJson<GridInventory>(diverJson);
 
                     if (loadedDiver != null)
                     {
                         diverInventory = loadedDiver;
-                    }
+                    }*/
                 }
 
                 if (PlayerPrefs.HasKey("BoatInventory"))
@@ -470,7 +441,7 @@ namespace AbyssalReach.Core
             int yOffset = 120;
 
             // === DIVER INVENTORY ===
-            GUI.Label(new Rect(10, yOffset, 300, 20), "=== DIVER INVENTORY ===", style);
+            /*GUI.Label(new Rect(10, yOffset, 300, 20), "=== DIVER INVENTORY ===", style);
             yOffset += 25;
 
             Vector2Int diverSize = diverInventory.GetGridSize();
@@ -484,7 +455,7 @@ namespace AbyssalReach.Core
 
             GUI.Label(new Rect(10, yOffset, 300, 20),
                 "Value: " + diverInventory.CalculateTotalValue() + "G", style);
-            yOffset += 30;
+            yOffset += 30;*/
 
             // === BOAT INVENTORY ===
             GUI.Label(new Rect(10, yOffset, 300, 20), "=== BOAT INVENTORY ===", style);
