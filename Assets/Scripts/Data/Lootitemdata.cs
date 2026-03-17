@@ -29,9 +29,6 @@ namespace AbyssalReach.Data
         [Tooltip("Icono para mostrar en UI")]
         public Sprite icon;
 
-        [Header("Visual")]
-        public GameObject worldPrefab;
-
         [Header("Grid Properties")]
         [Tooltip("Forma que ocupa el item en el inventario grid")]
         public ItemShape shape = ItemShape.Single_1x1;
@@ -121,38 +118,60 @@ namespace AbyssalReach.Data
         /// Obtiene las dimensiones del grid que ocupa este item
         /// Retorna (width, height)
         /// </summary>
-        public Vector2Int GetGridSize()
+        /// <param name="rotated">Si true, retorna dimensiones rotadas 90°</param>
+        public Vector2Int GetGridSize(bool rotated = false)
         {
+            Vector2Int baseSize;
+
             switch (shape)
             {
                 case ItemShape.Single_1x1:
-                    return new Vector2Int(1, 1);
+                    baseSize = new Vector2Int(1, 1);
+                    break;
                 case ItemShape.Horizontal_2x1:
-                    return new Vector2Int(2, 1);
+                    baseSize = new Vector2Int(2, 1);
+                    break;
                 case ItemShape.Vertical_1x2:
-                    return new Vector2Int(1, 2);
+                    baseSize = new Vector2Int(1, 2);
+                    break;
                 case ItemShape.Horizontal_3x1:
-                    return new Vector2Int(3, 1);
+                    baseSize = new Vector2Int(3, 1);
+                    break;
                 case ItemShape.Vertical_1x3:
-                    return new Vector2Int(1, 3);
+                    baseSize = new Vector2Int(1, 3);
+                    break;
                 case ItemShape.Square_2x2:
-                    return new Vector2Int(2, 2);
+                    baseSize = new Vector2Int(2, 2);
+                    break;
                 case ItemShape.Square_3x3:
-                    return new Vector2Int(3, 3);
+                    baseSize = new Vector2Int(3, 3);
+                    break;
                 case ItemShape.LShape_2x2:
-                    return new Vector2Int(2, 2);
+                    baseSize = new Vector2Int(2, 2);
+                    break;
                 case ItemShape.TShape_3x2:
-                    return new Vector2Int(3, 2);
+                    baseSize = new Vector2Int(3, 2);
+                    break;
                 default:
-                    return new Vector2Int(1, 1);
+                    baseSize = new Vector2Int(1, 1);
+                    break;
             }
+
+            // Si está rotado, intercambiar width y height (excepto cuadrados)
+            if (rotated && baseSize.x != baseSize.y)
+            {
+                return new Vector2Int(baseSize.y, baseSize.x);
+            }
+
+            return baseSize;
         }
 
         /// <summary>
         /// Obtiene las posiciones locales que ocupa el item relativas a su origen (0,0)
         /// Por ejemplo, una forma L retorna las 3 celdas que ocupa
         /// </summary>
-        public Vector2Int[] GetOccupiedCells()
+        /// <param name="rotated">Si true, devuelve las celdas rotadas 90° en sentido horario</param>
+        public Vector2Int[] GetOccupiedCells(bool rotated = false)
         {
             switch (shape)
             {
@@ -224,6 +243,38 @@ namespace AbyssalReach.Data
                 default:
                     return new Vector2Int[] { new Vector2Int(0, 0) };
             }
+        }
+
+        /// <summary>
+        /// Rota un array de celdas 90° en sentido horario
+        /// Usado internamente por GetOccupiedCells cuando rotated = true
+        /// </summary>
+        private Vector2Int[] RotateCells90Degrees(Vector2Int[] cells)
+        {
+            if (cells.Length == 1)
+            {
+                // Items 1x1 no rotan
+                return cells;
+            }
+
+            Vector2Int[] rotatedCells = new Vector2Int[cells.Length];
+
+            // Encontrar el max_y para ajustar la rotación
+            int maxY = 0;
+            foreach (Vector2Int cell in cells)
+            {
+                if (cell.y > maxY) maxY = cell.y;
+            }
+
+            // Rotar cada celda 90° en sentido horario: (x, y) → (max_y - y, x)
+            for (int i = 0; i < cells.Length; i++)
+            {
+                int newX = maxY - cells[i].y;
+                int newY = cells[i].x;
+                rotatedCells[i] = new Vector2Int(newX, newY);
+            }
+
+            return rotatedCells;
         }
 
         #endregion
