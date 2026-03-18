@@ -1,21 +1,21 @@
-ï»¿using UnityEngine;
+using UnityEngine;
 
 namespace AbyssalReach.Data
 {
     /// <summary>
     /// Define las formas que puede tener un item en el inventario grid
-    /// Cada forma estï¿½ predefinida para facilitar el diseï¿½o de items
+    /// Cada forma está predefinida para facilitar el diseño de items
     /// </summary>
     public enum ItemShape
     {
-        Single_1x1,      // 1x1 - Moneda, anillo, gema pequeï¿½a
+        Single_1x1,      // 1x1 - Moneda, anillo, gema pequeña
         Horizontal_2x1,  // 2x1 - Cuchillo, llave
         Vertical_1x2,    // 1x2 - Botella, vial
-        Horizontal_3x1,  // 3x1 - Espada corta, rifle pequeï¿½o
-        Vertical_1x3,    // 1x3 - Espada larga, arpï¿½n
-        Square_2x2,      // 2x2 - Cofre pequeï¿½o, libro
+        Horizontal_3x1,  // 3x1 - Espada corta, rifle pequeño
+        Vertical_1x3,    // 1x3 - Espada larga, arpón
+        Square_2x2,      // 2x2 - Cofre pequeño, libro
         Square_3x3,      // 3x3 - Cofre grande, escudo
-        LShape_2x2,      // Forma L (2x2) - Ancla pequeï¿½a
+        LShape_2x2,      // Forma L (2x2) - Ancla pequeña
         TShape_3x2       // Forma T (3x2) - Ancla grande, tridente
     }
 
@@ -41,7 +41,7 @@ namespace AbyssalReach.Data
         [Min(1)]
         public int value = 5;
 
-        [Tooltip("Peso en kg (afecta la fï¿½sica del cable y lï¿½mite de inventario)")]
+        [Tooltip("Peso en kg (afecta la física del cable y límite de inventario)")]
         [Min(0.1f)]
         public float weight = 1f;
 
@@ -49,22 +49,22 @@ namespace AbyssalReach.Data
         public ItemRarity rarity = ItemRarity.Common;
 
         [Header("Visual")]
-        [Tooltip("Color del aura segï¿½n rareza (calculado automï¿½ticamente)")]
+        [Tooltip("Color del aura según rareza (calculado automáticamente)")]
         [SerializeField] private Color auraColor;
 
         [Header("Optional")]
         [TextArea(2, 4)]
-        [Tooltip("Descripciï¿½n del item")]
+        [Tooltip("Descripción del item")]
         public string description;
 
         #region Auto-Configuration
 
         private void OnValidate()
         {
-            // Auto asignar el color de aura segï¿½n rareza
+            // Auto asignar el color de aura según rareza
             auraColor = GetAuraColorForRarity(rarity);
 
-            // Auto ajusta el valor sugerido segï¿½n rareza
+            // Auto ajusta el valor sugerido según rareza
             if (value == 0)
             {
                 value = GetSuggestedValueForRarity(rarity);
@@ -76,7 +76,7 @@ namespace AbyssalReach.Data
         #region Helper Methods
 
         /// <summary>
-        /// Obtiene el color de aura segï¿½n la rareza
+        /// Obtiene el color de aura según la rareza
         /// </summary>
         public Color GetAuraColor()
         {
