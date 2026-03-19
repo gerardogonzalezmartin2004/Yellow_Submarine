@@ -30,47 +30,7 @@ namespace AbyssalReach.Gameplay
         /// Método público que InteractablePrompt2D llamará cuando el jugador pulse E/Botón
         /// IMPORTANTE: Este método debe ser arrastrado al evento OnInteract del InteractablePrompt2D
         /// </summary>
-        public void Interact()
-        {
-            if (lootData == null)
-            {
-                Debug.LogError("[LootObject] No hay LootItemData asignado en " + gameObject.name);
-                return;
-            }
-
-            if (InventoryManager.Instance == null)
-            {
-                Debug.LogError("[LootObject] InventoryManager no encontrado");
-                return;
-            }
-
-            // Intentar recoger el item
-            bool success = InventoryManager.Instance.TryPickupItem(lootData);
-
-            if (success)
-            {
-                if (showDebug)
-                {
-                    Debug.Log("[LootObject] Recogido: " + lootData.itemName);
-                }
-
-                // Feedback visual/audio
-                OnPickupSuccess();
-
-                // Destruir el objeto del mundo
-                Destroy(gameObject);
-            }
-            else
-            {
-                if (showDebug)
-                {
-                    Debug.LogWarning("[LootObject] No se pudo recoger " + lootData.itemName + " (Inventario lleno o demasiado pesado)");
-                }
-
-                // Feedback de error (opcional)
-                OnPickupFailed();
-            }
-        }
+       
 
         #endregion
 
