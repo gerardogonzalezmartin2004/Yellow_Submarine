@@ -5416,7 +5416,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2431fbe0b3a2bf14b986c1fb3d39b724, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AbyssalReach.Core.CurrencyManager
-  currentGold: 100
+  currentGold: 500
   showDebug: 1
 --- !u!1 &1457459691
 GameObject:
@@ -7282,7 +7282,11 @@ MonoBehaviour:
   upgradeCableLengthButton: {fileID: 6295533}
   upgradeCableStrengthButton: {fileID: 1406400595}
   upgradeSwimSpeedButton: {fileID: 722155035}
-  portArea: {fileID: 0}
+  portArea: {fileID: 901970973}
+  tetherSystem: {fileID: 930908958}
+  diverMovement: {fileID: 1735820692}
+  mejoraLongitudCable: 10
+  mejoraVelocidad: 5
 --- !u!114 &2118195374
 MonoBehaviour:
   m_ObjectHideFlags: 0
