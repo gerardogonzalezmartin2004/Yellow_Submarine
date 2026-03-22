@@ -1,15 +1,15 @@
 using System.Collections.Generic;
 using UnityEngine;
-using AbyssalReach.Data;
+
 
 [System.Serializable]
 public class DiverInventory
 {
-    [SerializeField] private List<LootItemData> items = new List<LootItemData>();
+    [SerializeField] private List<ItemData> items = new List<ItemData>();
 
     [SerializeField] private float maxWeight = 20f;
 
-    public bool TryAddItem(LootItemData item, out string error)
+    public bool TryAddItem(ItemData item, out string error)
     {
         error = "";
 
@@ -42,7 +42,7 @@ public class DiverInventory
         return maxWeight;
     }
 
-    public List<LootItemData> GetItems()
+    public List<ItemData> GetItems()
     {
         return items;
     }

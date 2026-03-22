@@ -64,7 +64,7 @@ public class ItemGrid : MonoBehaviour
 
     #region Unity Lifecycle
 
-    private void Start()
+    private void Awake()
     {
         rectTransform = GetComponent<RectTransform>();
 
@@ -81,10 +81,10 @@ public class ItemGrid : MonoBehaviour
 
     #region Initialization
 
-   
+
     // Inicializa el grid con las dimensiones especificadas.
     // Crea el array 2D y ajusta el tamaño del RectTransform.
-   
+
     private void Init(int width, int height)
     {
         // Validar dimensiones
@@ -169,11 +169,19 @@ public class ItemGrid : MonoBehaviour
     #endregion
 
     #region Item Placement
+    // Permite forzar la inicialización desde fuera cuando el grid
+    // está en un Canvas desactivado y Start no ha corrido todavía.
+    public void ForceInit()
+    {
+        if (inventoryItemSlots != null) return; // Ya inicializado
 
-   
+        rectTransform = GetComponent<RectTransform>();
+        Init(gridWidth, gridHeight);
+    }
+
     // Intenta colocar un item en el grid en la posición especificada.
     // Valida límites, solapamientos y maneja el swap de items si es necesario.
-   
+
     public bool PlaceItem(InventoryItem inventoryItem, int posX, int posY, ref InventoryItem overlapItem)
     {
         if (inventoryItem == null)

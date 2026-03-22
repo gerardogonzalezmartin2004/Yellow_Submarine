@@ -141,5 +141,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 85b9a99ff8d294f47b573f7095dd7396, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LootPickup
-  itemData: {fileID: 11400000, guid: d4c5a47b1d8a9b64688aca4fbc6a6789, type: 2}
-  pickupKey: 101
+  itemData: {fileID: 11400000, guid: ff27a88175a3acc418050bfab5bb5460, type: 2}

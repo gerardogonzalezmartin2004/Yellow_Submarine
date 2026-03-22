@@ -1,78 +1,76 @@
 using UnityEngine;
 
-// ScriptableObject que almacena los datos de un item del inventario.
-// Define el tamaño (width x height) y el sprite visual.
-
 [CreateAssetMenu(fileName = "NewItemData", menuName = "Inventory/Item Data", order = 1)]
 public class ItemData : ScriptableObject
 {
-    #region Serialized Fields
+    [Header("Identificación")]
+    public string itemName = "Nuevo Item";
 
-    [Header("Tamaño del Item")]
-    [Tooltip("Ancho del item en celdas del grid")]
-    [Min(1)]
-    public int width = 1;
-
-    [Tooltip("Alto del item en celdas del grid")]
-    [Min(1)]
-    public int height = 1;
+    [Header("Tamaño en el Grid")]
+    [Min(1)] public int width = 1;
+    [Min(1)] public int height = 1;
 
     [Header("Visual")]
-    [Tooltip("Sprite que se mostrará en el inventario")]
     public Sprite itemIcon;
 
-    #endregion
+    [Header("Rareza")]
+    public ItemRarity rarity = ItemRarity.Common;
 
-    #region Validation
+    [Header("Propiedades")]
+    // El valor se sugiere automáticamente según rareza pero puedes cambiarlo
+    [Min(0)] public int value = 5;
+    // El peso afecta el límite de la bolsa del buzo
+    [Min(0)] public float weight = 1f;
 
-#if UNITY_EDITOR
-   
-    // Valida los datos en el editor para evitar configuraciones inválidas.
-   
+    [Header("Descripción")]
+    [TextArea(2, 4)]
+    public string description;
+
+    // Rareza con sus implicaciones de color y valor sugerido
+    public enum ItemRarity
+    {
+        Common,    // Gris   - Valor base: 5
+        Rare,      // Azul   - Valor base: 10  
+        Epic,      // Morado - Valor base: 20
+        Legendary  // Dorado - Valor base: 50
+    }
+
+    // Devuelve el color del aura según la rareza.
+    // BagVisualizer, ShopUI o cualquier UI puede llamar esto para colorear el borde.
+    public Color GetAuraColor()
+    {
+        switch (rarity)
+        {
+            case ItemRarity.Common: return new Color(0.7f, 0.7f, 0.7f);
+            case ItemRarity.Rare: return new Color(0.2f, 0.6f, 1f);
+            case ItemRarity.Epic: return new Color(0.6f, 0.2f, 1f);
+            case ItemRarity.Legendary: return new Color(1f, 0.8f, 0.2f);
+            default: return Color.white;
+        }
+    }
+
+    // Rellena value con el valor sugerido según rareza si está a 0.
+    // Se llama automáticamente al cambiar algo en el Inspector.
     private void OnValidate()
     {
-        // Asegurar que width y height sean al menos 1
-        if (width < 1)
-        {
-            Debug.LogWarning("[ItemData] Width no puede ser menor que 1 en " + name);
-            width = 1;
-        }
+        if (value == 0)
+            value = GetSuggestedValue();
 
-        if (height < 1)
-        {
-            Debug.LogWarning("[ItemData] Height no puede ser menor que 1 en " + name);
-            height = 1;
-        }
-
-        // Warning si falta el icono
-        if (itemIcon == null)
-        {
-            Debug.LogWarning("[ItemData] Falta asignar itemIcon en " + name);
-        }
+        if (string.IsNullOrEmpty(itemName))
+            itemName = name;
     }
-#endif
 
-    #endregion
-
-    #region Public Helpers
-
-    
-    // Obtiene el área total del item (width * height).
-    // Útil para comparar tamaños o calcular valor.
-    
-    public int GetArea()
+    private int GetSuggestedValue()
     {
-        return width * height;
+        switch (rarity)
+        {
+            case ItemRarity.Common: return 5;
+            case ItemRarity.Rare: return 10;
+            case ItemRarity.Epic: return 20;
+            case ItemRarity.Legendary: return 50;
+            default: return 5;
+        }
     }
 
-   
-    // Verifica si el item es cuadrado (width == height).
-    // Los items cuadrados no cambian de forma al rotar.
-    
-    public bool IsSquare()
-    {
-        return width == height;
-    }
-
-    #endregion
+    public int GetArea() => width * height;
 }

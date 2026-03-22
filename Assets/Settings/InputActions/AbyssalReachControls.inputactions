@@ -765,6 +765,45 @@
                     "isPartOfComposite": false
                 }
             ]
+        },
+        {
+            "name": "Global",
+            "id": "dd996614-cba1-466b-8fe6-58abfcb66aa0",
+            "actions": [
+                {
+                    "name": "ToggleInventory",
+                    "type": "Button",
+                    "id": "67123ae4-4692-4ae7-8e9d-981f3c519639",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "d59e03bf-a367-451b-886d-d50e1e210179",
+                    "path": "<Keyboard>/i",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ToggleInventory",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "5c2157ba-c210-4154-9368-7d6b2e01e2c7",
+                    "path": "<Gamepad>/start",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ToggleInventory",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
         }
     ],
     "controlSchemes": []
