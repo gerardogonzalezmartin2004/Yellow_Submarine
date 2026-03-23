@@ -11,7 +11,7 @@ namespace AbyssalReach.Gameplay
 
         [Header("Movement Settings")]
         [Tooltip("Velocidad máxima de nado")]
-        [SerializeField] private float swimSpeed = 5f;
+        public float swimSpeed = 5f;
 
         [Tooltip("Aceleración al empezar a nadar")]
         [SerializeField] private float acceleration = 8f;

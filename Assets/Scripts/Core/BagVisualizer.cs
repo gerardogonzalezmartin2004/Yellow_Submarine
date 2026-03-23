@@ -1,6 +1,5 @@
 using UnityEngine;
 using AbyssalReach.Core;
-using AbyssalReach.Data;
 
 namespace AbyssalReach.Gameplay
 {
@@ -21,15 +20,12 @@ namespace AbyssalReach.Gameplay
             InventoryManager.OnItemAdded -= OnItemAdded;
         }
 
-        private void OnItemAdded(LootItemData item)
+        private void OnItemAdded(ItemData item)
         {
-            if (currentSlot >= itemSlots.Length)
-                return;
+            if (item == null) return;
+            if (currentSlot >= itemSlots.Length) return;
 
-            if (item.worldPrefab != null)
-            {
-                Instantiate(item.worldPrefab, itemSlots[currentSlot]);
-            }
+           
 
             currentSlot++;
         }
@@ -43,7 +39,6 @@ namespace AbyssalReach.Gameplay
                     Destroy(child.gameObject);
                 }
             }
-
             currentSlot = 0;
         }
     }

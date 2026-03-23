@@ -2,6 +2,8 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using AbyssalReach.Core;
+using AbyssalReach.Gameplay;
+using UnityEngine.Rendering;
 
 namespace AbyssalReach.UI
 {
@@ -25,6 +27,12 @@ namespace AbyssalReach.UI
         [Header("Port Reference")]
         [Tooltip("Referencia al PortArea para notificar cierre")]
         [SerializeField] private Gameplay.PortArea portArea;
+
+        [Header("External References")]
+        [SerializeField] private TetherSystem tetherSystem;
+        [SerializeField] private DiverMovement diverMovement;
+        [SerializeField] private float mejoraLongitudCable;
+        [SerializeField] private float mejoraVelocidad;
 
         #region Unity ciclo de vida
 
@@ -137,6 +145,21 @@ namespace AbyssalReach.UI
             {
                 Debug.Log("[ShopUI] Purchased: " + upgradeName + " for " + cost + "G");
                 // Aquí tendriamos q introducir la lógica real de aplicar la mejora
+
+                if(upgradeName == "Cable Length")
+                {
+                    tetherSystem.maxLength += mejoraLongitudCable;
+                    Debug.Log(tetherSystem.maxLength);
+                }
+                else if(upgradeName == "Cable Strength")
+                {
+                    
+                }
+                else if(upgradeName == "Swim Speed")
+                {
+                    diverMovement.swimSpeed += mejoraVelocidad;
+                    Debug.Log(diverMovement.swimSpeed);
+                }
             }
             else
             {
