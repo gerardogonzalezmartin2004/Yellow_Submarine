@@ -1613,6 +1613,9 @@ MonoBehaviour:
   boatItemGrid: {fileID: 1571876818}
   itemPrefab: {fileID: 584808322317816148, guid: 0a3337c7dcacfa643b745621ebb95c29, type: 3}
   canvasTransform: {fileID: 2033992998}
+  enablePositionMemory: 1
+  returnStrategy: 1
+  showDebugLogs: 0
 --- !u!114 &385737323
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7343,6 +7346,14 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7098699630147794078, guid: f3fb0083660ae334da4e2247137d0814, type: 3}
+      propertyPath: gridWidth
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 7098699630147794078, guid: f3fb0083660ae334da4e2247137d0814, type: 3}
+      propertyPath: gridHeight
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 7098699630147794078, guid: f3fb0083660ae334da4e2247137d0814, type: 3}
       propertyPath: inventoryItemPrefab
       value: 
       objectReference: {fileID: 584808322317816148, guid: 0a3337c7dcacfa643b745621ebb95c29, type: 3}
@@ -7564,6 +7575,10 @@ MonoBehaviour:
   upgradeCableStrengthButton: {fileID: 1406400595}
   upgradeSwimSpeedButton: {fileID: 722155035}
   portArea: {fileID: 0}
+  tetherSystem: {fileID: 0}
+  diverMovement: {fileID: 0}
+  mejoraLongitudCable: 0
+  mejoraVelocidad: 0
 --- !u!114 &2118195374
 MonoBehaviour:
   m_ObjectHideFlags: 0

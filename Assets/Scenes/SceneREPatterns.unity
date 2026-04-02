@@ -1616,9 +1616,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 385737320}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ee8e8c914fd87ae448e0df45f6ef6563, type: 3}
+  m_Script: {fileID: 11500000, guid: 29aff3c286ec4984aab2118b5e6ef9f4, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::InventoryController_WithMemory
+  m_EditorClassIdentifier: Assembly-CSharp::InventoryController
   rotateAction: {fileID: 9119207868695943447, guid: e6eb39108db053540b786b281ef7398d, type: 3}
   pointerPositionAction: {fileID: -6014923590643066684, guid: e6eb39108db053540b786b281ef7398d, type: 3}
   toggleInventoryAction: {fileID: 26858362933449674, guid: e6eb39108db053540b786b281ef7398d, type: 3}

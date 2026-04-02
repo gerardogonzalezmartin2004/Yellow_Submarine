@@ -10,8 +10,6 @@ public class InventoryController : MonoBehaviour
     [Header("Input Actions")]
     [SerializeField] private InputActionReference rotateAction;
     [SerializeField] private InputActionReference pointerPositionAction;
-    // ToggleInventory vive en el Action Map Global que nunca se desactiva.
-    // Su callback delega en GameController.ToggleInventory() para gestión de estado.
     [SerializeField] private InputActionReference toggleInventoryAction;
 
     [Header("References")]
@@ -19,6 +17,19 @@ public class InventoryController : MonoBehaviour
     [SerializeField] private ItemGrid boatItemGrid;
     [SerializeField] private GameObject itemPrefab;
     [SerializeField] private Transform canvasTransform;
+
+    [Header("Memory System")]
+    [Tooltip("Si true, usa el sistema de memoria de posición")]
+    [SerializeField] private bool enablePositionMemory = true;
+
+    [Tooltip("Estrategia de retorno cuando falla colocación")]
+    [SerializeField]
+    private ReturnStrategyFactory.StrategyType returnStrategy =
+        ReturnStrategyFactory.StrategyType.Lerp;
+
+    [Header("Debug")]
+    [Tooltip("Mostrar logs de debugging")]
+    [SerializeField] private bool showDebugLogs = false;
 
     #endregion
 
@@ -30,10 +41,13 @@ public class InventoryController : MonoBehaviour
     private RectTransform heldItemRect;
     private InventotyHighlight inventoryHighlight;
 
-    // Cache para optimización del highlight — solo recalculamos si cambia la celda o la rotación.
+    // Cache para optimización del highlight
     private Vector2Int lastHighlightPos = new Vector2Int(-1, -1);
     private int lastRotationIdx = -1;
     private InventoryItem itemUnderCursor;
+
+    // Sistema de memoria de posición
+    private ItemPositionMemory currentItemMemory;
 
     #endregion
 
@@ -59,8 +73,6 @@ public class InventoryController : MonoBehaviour
         if (inventoryHighlight == null)
             Debug.LogError("[InventoryController] InventotyHighlight no encontrado");
 
-        // ForceInit garantiza que inventoryItemSlots esté listo aunque el Canvas esté desactivado.
-        // Sin esto, TransferDiverLoot falla porque Start() nunca corre en objetos desactivados.
         boatItemGrid?.ForceInit();
 
         if (inventoryCanvas != null)
@@ -74,12 +86,9 @@ public class InventoryController : MonoBehaviour
 
     private void Update()
     {
-        // El item en mano sigue al cursor cada frame.
         if (selectedItem != null && heldItemRect != null)
             heldItemRect.position = GetPointerPosition();
 
-        // Usamos Mouse.current en vez de InputAction para los clics en el Canvas.
-        // Esto evita conflictos entre el New Input System y el sistema de Raycast de la UI de Unity.
         if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
         {
             if (selectedItemGrid != null)
@@ -114,7 +123,6 @@ public class InventoryController : MonoBehaviour
         if (pointerPositionAction?.action != null)
             pointerPositionAction.action.Enable();
 
-        // Toggle siempre activo — GameController gestiona qué estados permiten abrirlo.
         if (toggleInventoryAction?.action != null)
         {
             toggleInventoryAction.action.Enable();
@@ -136,8 +144,6 @@ public class InventoryController : MonoBehaviour
         if (toggleInventoryAction?.action != null)
         {
             toggleInventoryAction.action.performed -= OnToggleInventoryPerformed;
-            // No desactivamos toggleInventoryAction — pertenece al mapa Global
-            // que GameController gestiona. Desactivarlo aquí causaría que no se pueda reabrir.
         }
     }
 
@@ -149,24 +155,19 @@ public class InventoryController : MonoBehaviour
     {
         if (selectedItem == null) return;
         selectedItem.Rotate();
-        // Invalidamos cache para que HandleHighlight recalcule aunque el cursor no se mueva.
         lastRotationIdx = -1;
     }
 
     private void OnToggleInventoryPerformed(InputAction.CallbackContext ctx)
     {
-        // Delegamos en GameController para que gestione el estado global del juego.
         if (GameController.Instance != null)
             GameController.Instance.ToggleInventory();
-        else
-            Debug.LogWarning("[InventoryController] GameController.Instance es null");
     }
 
     #endregion
 
     #region Public API
 
-    // GameController llama esto. visible=true también dispara la transferencia del botín.
     public void SetInventoryVisible(bool visible)
     {
         if (inventoryCanvas == null) return;
@@ -175,31 +176,37 @@ public class InventoryController : MonoBehaviour
 
         if (visible)
         {
-            // Al abrir, transferimos automáticamente lo que el buzo haya recogido.
             if (InventoryManager.Instance != null)
                 TransferDiverLoot(InventoryManager.Instance.GetDiverInventory());
         }
         else
         {
-            // Si cerramos con algo en la mano, lo destruimos para no dejar estado sucio.
             if (selectedItem != null)
             {
-                Destroy(selectedItem.gameObject);
+                // NUEVO: Si cerramos con item en mano, intentar retornar a última posición
+                if (enablePositionMemory && currentItemMemory != null &&
+                    currentItemMemory.HasValidReturnPosition)
+                {
+                    LogDebug("Inventario cerrado con item en mano - retornando a última posición");
+                    currentItemMemory.ReturnToLastPosition();
+                }
+                else
+                {
+                    // Sin memoria, destruir el item
+                    Destroy(selectedItem.gameObject);
+                }
+
                 selectedItem = null;
                 heldItemRect = null;
+                currentItemMemory = null;
             }
         }
     }
 
-    // Lee el DiverInventory e instancia un InventoryItem por cada ItemData,
-    // colocándolo automáticamente en el grid del barco.
-    // Los items que no quepan se quedan en el DiverInventory para la próxima vez.
     public void TransferDiverLoot(DiverInventory diverInv)
     {
-        if (diverInv == null) { Debug.LogWarning("[InventoryController] DiverInventory null"); return; }
-        if (boatItemGrid == null) { Debug.LogError("[InventoryController] boatItemGrid no asignado"); return; }
-        if (itemPrefab == null) { Debug.LogError("[InventoryController] itemPrefab no asignado"); return; }
-        if (canvasTransform == null) { Debug.LogError("[InventoryController] canvasTransform no asignado"); return; }
+        if (diverInv == null || boatItemGrid == null || itemPrefab == null || canvasTransform == null)
+            return;
 
         List<ItemData> diverItems = new List<ItemData>(diverInv.GetItems());
         List<ItemData> transferidos = new List<ItemData>();
@@ -210,35 +217,49 @@ public class InventoryController : MonoBehaviour
 
             InventoryItem newItem = Instantiate(itemPrefab, canvasTransform)
                                     .GetComponent<InventoryItem>();
-            if (newItem == null) { Debug.LogError("[InventoryController] prefab sin InventoryItem"); continue; }
+            if (newItem == null) continue;
 
             newItem.Set(loot);
 
-            // Buscamos hueco directamente en boatItemGrid sin depender de selectedItemGrid.
-            // La transferencia es una operación del sistema, no del jugador.
+            // NUEVO: Añadir componente de memoria si está habilitado
+            if (enablePositionMemory)
+            {
+                ItemPositionMemory memory = newItem.gameObject.AddComponent<ItemPositionMemory>();
+                memory.SetReturnStrategy(returnStrategy);
+                LogDebug($"ItemPositionMemory añadido a {loot.name}");
+            }
+
             Vector2Int? slot = boatItemGrid.FindSpaceForObject(newItem);
 
             if (slot == null)
             {
-                Debug.LogWarning("[InventoryController] Sin espacio para: " + loot.name);
+                Debug.LogWarning($"[InventoryController] Sin espacio para: {loot.name}");
                 Destroy(newItem.gameObject);
                 continue;
             }
 
             boatItemGrid.PlaceItem(newItem, slot.Value.x, slot.Value.y);
+
+            // NUEVO: Guardar posición inicial en memoria
+            if (enablePositionMemory)
+            {
+                ItemPositionMemory memory = newItem.GetComponent<ItemPositionMemory>();
+                memory?.SaveCurrentPosition(boatItemGrid);
+            }
+
             transferidos.Add(loot);
-            Debug.Log("[InventoryController] Transferido al barco: " + loot.name);
+            LogDebug($"Transferido al barco: {loot.name}");
         }
 
         foreach (ItemData loot in transferidos)
             diverInv.GetItems().Remove(loot);
 
-        Debug.Log("[InventoryController] Transferencia: " + transferidos.Count + "/" + diverItems.Count);
+        Debug.Log($"[InventoryController] Transferencia: {transferidos.Count}/{diverItems.Count}");
     }
 
     #endregion
 
-    #region Drag & Drop
+    #region Drag & Drop (CON MEMORIA)
 
     private void PickUpItem(Vector2Int tile)
     {
@@ -247,6 +268,18 @@ public class InventoryController : MonoBehaviour
 
         heldItemRect = selectedItem.GetComponent<RectTransform>();
         heldItemRect?.SetAsLastSibling();
+
+        // NUEVO: Obtener componente de memoria
+        if (enablePositionMemory)
+        {
+            currentItemMemory = selectedItem.GetComponent<ItemPositionMemory>();
+
+            if (currentItemMemory != null)
+            {
+                currentItemMemory.MarkAsPickedUp();
+                LogDebug($"Item recogido - memoria activa: {currentItemMemory.HasValidReturnPosition}");
+            }
+        }
     }
 
     private void PlaceItem(Vector2Int tile)
@@ -254,18 +287,73 @@ public class InventoryController : MonoBehaviour
         if (selectedItem == null || selectedItemGrid == null) return;
 
         bool placed = selectedItemGrid.PlaceItem(selectedItem, tile.x, tile.y, ref overlapItem);
-        if (!placed) return;
 
-        selectedItem = null;
-        heldItemRect = null;
-
-        // Swap estilo RE4: si había un item, lo recogemos automáticamente.
-        if (overlapItem != null)
+        if (placed)
         {
-            selectedItem = overlapItem;
-            overlapItem = null;
-            heldItemRect = selectedItem.GetComponent<RectTransform>();
-            heldItemRect?.SetAsLastSibling();
+            // COLOCACIÓN EXITOSA
+
+            // NUEVO: Guardar nueva posición en memoria
+            if (enablePositionMemory && currentItemMemory != null)
+            {
+                currentItemMemory.SaveCurrentPosition(selectedItemGrid);
+                LogDebug($"Nueva posición guardada: ({tile.x}, {tile.y})");
+            }
+
+            selectedItem = null;
+            heldItemRect = null;
+            currentItemMemory = null;
+
+            // Swap estilo RE4
+            if (overlapItem != null)
+            {
+                selectedItem = overlapItem;
+                overlapItem = null;
+                heldItemRect = selectedItem.GetComponent<RectTransform>();
+                heldItemRect?.SetAsLastSibling();
+
+                // NUEVO: Actualizar memoria del item swapeado
+                if (enablePositionMemory)
+                {
+                    currentItemMemory = selectedItem.GetComponent<ItemPositionMemory>();
+                    currentItemMemory?.MarkAsPickedUp();
+                }
+            }
+        }
+        else
+        {
+            // COLOCACIÓN FALLIDA - ACTIVAR RETORNO A ÚLTIMA POSICIÓN
+
+            LogDebug("⚠️ Colocación fallida - intentando retorno automático");
+
+            if (enablePositionMemory && currentItemMemory != null &&
+                currentItemMemory.HasValidReturnPosition)
+            {
+                // Ejecutar retorno automático
+                bool returned = currentItemMemory.ReturnToLastPosition();
+
+                if (returned)
+                {
+                    LogDebug("✅ Item retornado automáticamente a última posición");
+
+                    // Limpiar selección
+                    selectedItem = null;
+                    heldItemRect = null;
+                    currentItemMemory = null;
+                }
+                else
+                {
+                    Debug.LogError("❌ Fallo al retornar item - destruyendo");
+                    Destroy(selectedItem.gameObject);
+                    selectedItem = null;
+                    heldItemRect = null;
+                    currentItemMemory = null;
+                }
+            }
+            else
+            {
+                // Sin memoria o sin posición válida: el item sigue en la mano
+                LogDebug("Item sigue en la mano (sin memoria de posición)");
+            }
         }
     }
 
@@ -280,8 +368,6 @@ public class InventoryController : MonoBehaviour
         Vector2Int currentPos = GetTileGridPosition();
         int currentRot = selectedItem != null ? selectedItem.RotationIndex : -1;
 
-        // Solo recalculamos si la celda cambió o el item rotó.
-        // Esto evita trabajo innecesario 60 veces por segundo.
         if (currentPos == lastHighlightPos && currentRot == lastRotationIdx) return;
 
         lastHighlightPos = currentPos;
@@ -344,8 +430,14 @@ public class InventoryController : MonoBehaviour
         if (itemPrefab == null) Debug.LogWarning("[InventoryController] itemPrefab no asignado");
         if (canvasTransform == null) Debug.LogWarning("[InventoryController] canvasTransform no asignado");
         if (boatItemGrid == null) Debug.LogWarning("[InventoryController] boatItemGrid no asignado");
-        if (toggleInventoryAction == null) Debug.LogWarning("[InventoryController] toggleInventoryAction no asignado");
-        if (pointerPositionAction == null) Debug.LogWarning("[InventoryController] pointerPositionAction no asignado");
+    }
+
+    private void LogDebug(string message)
+    {
+        if (showDebugLogs)
+        {
+            Debug.Log($"[InventoryController] {message}");
+        }
     }
 
     #endregion
