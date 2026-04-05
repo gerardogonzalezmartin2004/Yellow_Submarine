@@ -1615,8 +1615,8 @@ MonoBehaviour:
   canvasTransform: {fileID: 2033992998}
   enablePositionMemory: 1
   returnStrategy: 1
-  showDebugLogs: 1
-  verboseDebug: 1
+  showDebugLogs: 0
+  verboseDebug: 0
 --- !u!114 &385737323
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3405,7 +3405,7 @@ MonoBehaviour:
   detectionRadius: 11.7
   arrivalThreshold: 0.5
   dockingPoint: {fileID: 603160692}
-  dockingSpeed: 10
+  dockingSpeed: 12.22
   brakingDistance: 5
   boatTag: Boat
   shopUIPanel: {fileID: 2118195371}
@@ -3413,7 +3413,7 @@ MonoBehaviour:
   dockPrompt: Press 'E' to Dock
   autoPilotMessage: Auto-Pilot Active...
   shopOpenMessage: Press 'ESC' to Exit Shop
-  showDebugLogs: 1
+  showDebugLogs: 0
   showDebugUI: 1
   detectionGizmoColor: {r: 0, g: 1, b: 0.5, a: 0.2}
   dockingGizmoColor: {r: 1, g: 0.5, b: 0, a: 0.5}
@@ -3583,7 +3583,7 @@ MonoBehaviour:
   ropeVerlet: {fileID: 1787755041}
   maxLength: 10.22
   tensionThreshold: 0.9
-  showDebug: 1
+  showDebug: 0
 --- !u!120 &930908959
 LineRenderer:
   serializedVersion: 3
@@ -4848,7 +4848,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1dd0a3cac1620fe48923495dce1582ae, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AbyssalReach.Core.InventoryManager
-  showDebug: 1
+  showDebug: 0
 --- !u!1 &1336565031
 GameObject:
   m_ObjectHideFlags: 0
@@ -7610,7 +7610,7 @@ MonoBehaviour:
   diverMovement: {fileID: 1735820692}
   mejoraLongitudCable: 10
   mejoraVelocidad: 5
-  showDebugLogs: 1
+  showDebugLogs: 0
 --- !u!114 &2118195374
 MonoBehaviour:
   m_ObjectHideFlags: 0
