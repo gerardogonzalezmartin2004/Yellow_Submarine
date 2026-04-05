@@ -1,276 +1,313 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using AbyssalReach.Core;
 
 namespace AbyssalReach.Gameplay
 {
+    // Sistema de puerto con zona de detecciÃ³n y auto-pilot.
+    // REFACTORIZADO: El barco ya no se bloquea al entrar al radio.
+    // La rotaciÃ³n ha sido eliminada del auto-pilot para evitar deformaciones en 2D.
     public class PortArea : MonoBehaviour
     {
-        // Sistema de atraque del barco con dos zonas: Detección y Docking. Zona Exterior: Muestra UI 
-        // Auto-Pilot: El barco navega automáticamente al punto de atraque. Zona Interior: Se abre la tienda cuando llega al punto exacto
+        #region Serialized Fields
 
         [Header("Detection Zones")]
-        [Tooltip("Radio de la zona exterior (detección)")]
-        [SerializeField] private float outerRadius = 15f;
+        [Tooltip("Radio de la zona de detecciÃ³n (muestra UI)")]
+        [SerializeField] private float detectionRadius = 15f;
 
-        [Tooltip("Radio de la zona interior (tienda)")]
-        [SerializeField] private float innerRadius = 3f;
+        [Tooltip("Distancia mÃ­nima para considerar que llegÃ³ al dock")]
+        [SerializeField] private float arrivalThreshold = 0.5f;
 
         [Header("Docking")]
         [Tooltip("Punto exacto donde debe llegar el barco")]
         [SerializeField] private Transform dockingPoint;
 
         [Tooltip("Velocidad del auto-pilot")]
-        [SerializeField] private float dockingSpeed = 2f;
+        [SerializeField] private float dockingSpeed = 3f;
 
-        [Tooltip("Distancia mínima para considerar que llegó")]
-        [SerializeField] private float arrivalThreshold = 0.5f;
-
-        [Tooltip("Cooldown para evitar re-captura inmediata (segundos)")]
-        [SerializeField] private float exitCooldown = 2f;
+        [Tooltip("Distancia para empezar a frenar")]
+        [SerializeField] private float brakingDistance = 5f;
 
         [Header("References")]
         [Tooltip("Tag del barco")]
-        [SerializeField] private string targetTag = "Boat";
+        [SerializeField] private string boatTag = "Boat";
 
+        [Tooltip("Panel UI de la tienda")]
         [SerializeField] private GameObject shopUIPanel;
 
+        [Header("Cooldown")]
+        [Tooltip("Tiempo antes de poder re-atracar (segundos)")]
+        [SerializeField] private float redockCooldown = 3f;
+
         [Header("UI Messages")]
-        [SerializeField] private string dockingMessage = "Press 'E' to Dock";
+        [SerializeField] private string dockPrompt = "Press 'E' to Dock";
         [SerializeField] private string autoPilotMessage = "Auto-Pilot Active...";
+        [SerializeField] private string shopOpenMessage = "Press 'ESC' to Exit Shop";
 
         [Header("Debug")]
-        [SerializeField] private bool showDebug = true;
-        [SerializeField] private Color outerGizmoColor = new Color(0f, 1f, 0.5f, 0.2f);
-        [SerializeField] private Color innerGizmoColor = new Color(1f, 0.5f, 0f, 0.3f);
+        [SerializeField] private bool showDebugLogs = true;
+        [SerializeField] private bool showDebugUI = true;
+        [SerializeField] private Color detectionGizmoColor = new Color(0f, 1f, 0.5f, 0.3f);
+        [SerializeField] private Color dockingGizmoColor = new Color(1f, 0.5f, 0f, 0.8f);
 
-        
-        private bool boatInOuterZone = false;
-        private bool isAutoPiloting = false;
-        private bool isInShop = false;
-        private bool isExiting = false;
-        private float exitTimer = 0f;
+        #endregion
 
-        private GameObject detectedBoat;
-        private Rigidbody boatRb;
+        #region Private Fields
+
+        private PortState currentState = PortState.Idle;
+        private GameObject boatObject;
+        private Rigidbody boatRigidbody;
         private BoatMovement boatMovement;
-
-        
         private AbyssalReachControls controls;
+        private float cooldownTimer = 0f;
+        private bool boatInDetectionZone = false;
 
-        #region Unity ciclo de vida
+        #endregion
+
+        #region Enums
+
+        private enum PortState
+        {
+            Idle,              // Sin barco detectado
+            BoatDetected,      // Barco en zona, navegando libremente
+            AutoPiloting,      // Navegando automÃ¡ticamente al dock
+            ShopOpen,          // Tienda abierta
+            Cooldown           // Post-salida, evita re-atraque inmediato
+        }
+
+        #endregion
+
+        #region Unity Lifecycle
 
         private void Awake()
         {
-            controls = new AbyssalReachControls();            
+            controls = new AbyssalReachControls();
+            ValidateReferences();
         }
 
         private void OnEnable()
         {
-            controls.Enable();
-            controls.BoatControls.Enable();
-
-            // Asignar evento al botón de interacción (definido en Input System)
-            // Asumiendo que has creado una acción (Interact) en el mapa BoatControls, de los input actions
-            controls.BoatControls.Interact.performed += OnDockPressed;
+            EnableControls();
         }
 
         private void OnDisable()
         {
-            controls.BoatControls.Interact.performed -= OnDockPressed;
-            controls.BoatControls.Disable();
-            controls.Disable();
-        }
-
-        private void OnDockPressed(UnityEngine.InputSystem.InputAction.CallbackContext context)
-        {
-            // Solo procesar si estamos en zona exterior y no en auto-pilot
-            if (boatInOuterZone && !isAutoPiloting && !isInShop)
-            {
-                StartAutoPilot();
-            }
+            DisableControls();
         }
 
         private void Update()
         {
-            UpdateCooldown();
-            CheckBoatInZones();
+            UpdateCooldownTimer();
+            DetectBoat();
+            UpdateStateMachine();
+        }
 
-            if (isAutoPiloting)
+        #endregion
+
+        #region Input Management
+
+        private void EnableControls()
+        {
+            controls.Enable();
+            controls.BoatControls.Enable();
+            controls.BoatControls.Interact.performed += OnInteractPressed;
+            LogDebug("Controles de puerto habilitados");
+        }
+
+        private void DisableControls()
+        {
+            controls.BoatControls.Interact.performed -= OnInteractPressed;
+            controls.BoatControls.Disable();
+            controls.Disable();
+            LogDebug("Controles de puerto deshabilitados");
+        }
+
+        private void OnInteractPressed(UnityEngine.InputSystem.InputAction.CallbackContext context)
+        {
+            if (currentState == PortState.BoatDetected)
             {
-                UpdateAutoPilot();
+                StartDocking();
             }
         }
 
         #endregion
 
-        #region Zone Detection
+        #region Boat Detection
 
-        private void CheckBoatInZones()
+        private void DetectBoat()
         {
-           
-            GameObject boat = GameObject.FindGameObjectWithTag(targetTag);
-            // Si no encontramos el barco, reseteamos estados y salimos
+            GameObject boat = GameObject.FindGameObjectWithTag(boatTag);
+
             if (boat == null)
             {
-               
-                if (boatInOuterZone || detectedBoat != null)
+                if (boatInDetectionZone)
                 {
-                    if (showDebug)
-                    {
-                        Debug.Log("[PortArea] Barco no encontrado - Reseteando estado");
-                    }
+                    OnBoatExitZone();
                 }
-
-                boatInOuterZone = false;
-                detectedBoat = null;
                 return;
             }
 
             float distance = Vector3.Distance(transform.position, boat.transform.position);
+            bool inZone = distance <= detectionRadius;
 
-            // Verificar zona exterior, y detectar cambios de estado para notificar eventos de entrada/salida
-            if (!isExiting)
+            if (inZone && !boatInDetectionZone)
             {
-                // Verificar zona exterior
-                bool wasInOuterZone = boatInOuterZone;
-                boatInOuterZone = distance <= outerRadius;
-
-                if (boatInOuterZone && !wasInOuterZone)
-                {
-                    OnBoatEnterOuterZone(boat);
-                }
-                else if (!boatInOuterZone && wasInOuterZone)
-                {
-                    OnBoatExitOuterZone();
-                }
+                OnBoatEnterZone(boat);
             }
-            else
+            else if (!inZone && boatInDetectionZone)
             {
-                // Durante el cooldown, seguir rastreando la distancia pero no cambiar estado
-                if (showDebug && Time.frameCount % 60 == 0) // Log cada 60 frames
-                {
-                    Debug.Log("[PortArea] Cooldown activo - Distancia: " + distance.ToString("F1") + "m | Tiempo restante: " + exitTimer.ToString("F1") + "s");
-                }
+                OnBoatExitZone();
             }
         }
 
-        private void OnBoatEnterOuterZone(GameObject boat)
+        private void OnBoatEnterZone(GameObject boat)
         {
-            detectedBoat = boat;
-            boatRb = boat.GetComponent<Rigidbody>();
+            boatInDetectionZone = true;
+            boatObject = boat;
+            boatRigidbody = boat.GetComponent<Rigidbody>();
             boatMovement = boat.GetComponent<BoatMovement>();
 
-            if (showDebug)
+            if (currentState == PortState.Idle)
             {
-                Debug.Log("[PortArea] Barco en zona de detección");
+                ChangeState(PortState.BoatDetected);
             }
 
-            // Notificar al GameController 
+            // Notificamos al GameController, pero el barco SIGUE MOVIÃ‰NDOSE.
             if (GameController.Instance != null)
             {
                 GameController.Instance.EnterPort();
             }
+
+            LogDebug($"Barco detectado en zona - Estado: {currentState}");
         }
 
-        private void OnBoatExitOuterZone()
+        private void OnBoatExitZone()
         {
-            detectedBoat = null;
+            boatInDetectionZone = false;
 
-            if (showDebug)
+            if (currentState == PortState.AutoPiloting)
             {
-                Debug.Log("[PortArea] Barco salió de zona de detección");
-            }
-            // Si el barco sale de la zona exterior, también consideramos que salió de la tienda, si estaba dentro
-            if (!isInShop)
-            {
-                detectedBoat = null;
-            }
-            // Si estaba en auto-pilot, cancelar
-            if (isAutoPiloting)
-            {
-                CancelAutoPilot();
+                CancelDocking();
             }
 
-            // Notificar al GameController
+            if (currentState == PortState.BoatDetected)
+            {
+                ChangeState(PortState.Idle);
+            }
+
             if (GameController.Instance != null)
             {
                 GameController.Instance.ExitPort();
+            }
+
+            LogDebug("Barco saliÃ³ de zona");
+        }
+
+        #endregion
+
+        #region State Machine
+
+        private void ChangeState(PortState newState)
+        {
+            if (currentState == newState) return;
+            LogDebug($"Cambio de estado: {currentState} â†’ {newState}");
+            currentState = newState;
+        }
+
+        private void UpdateStateMachine()
+        {
+            switch (currentState)
+            {
+                case PortState.Idle:
+                    break;
+                case PortState.BoatDetected:
+                    break;
+                case PortState.AutoPiloting:
+                    UpdateAutoPilot();
+                    break;
+                case PortState.ShopOpen:
+                    break;
+                case PortState.Cooldown:
+                    break;
             }
         }
 
         #endregion
 
-        #region Auto-Pilot
+        #region Docking System
 
-        private void StartAutoPilot()
+        private void StartDocking()
         {
-            if (dockingPoint == null || detectedBoat == null)
+            if (dockingPoint == null || boatObject == null)
             {
+                Debug.LogWarning("[PortArea] No se puede iniciar docking - referencias faltantes");
                 return;
             }
 
-            isAutoPiloting = true;
+            ChangeState(PortState.AutoPiloting);
 
-            // Desactivar control manual del barco
+            // AHORA detenemos el control del jugador porque asume el auto-pilot
             if (boatMovement != null)
             {
                 boatMovement.SetMovementActive(false);
             }
 
-            if (showDebug)
+            // Limpiamos cualquier rotaciÃ³n o fuerza residual antes de hacerlo cinemÃ¡tico
+            if (boatRigidbody != null)
             {
-                Debug.Log("[PortArea] Auto-Pilot activado");
+                boatRigidbody.angularVelocity = Vector3.zero;
+                boatRigidbody.linearVelocity = Vector3.zero;
+                boatRigidbody.isKinematic = true;
             }
+
+            if (GameController.Instance != null)
+            {
+                GameController.Instance.SetGameState(GameController.GameState.Docking);
+            }
+
+            LogDebug("Auto-Pilot iniciado - barco congelado y bajo control automÃ¡tico");
         }
 
         private void UpdateAutoPilot()
         {
-            if (detectedBoat == null || dockingPoint == null)
+            if (boatObject == null || dockingPoint == null)
             {
-                CancelAutoPilot();
+                CancelDocking();
                 return;
             }
 
-            // Calcular dirección hacia el punto de atraque
             Vector3 targetPos = dockingPoint.position;
-            Vector3 currentPos = detectedBoat.transform.position;
+            Vector3 currentPos = boatObject.transform.position;
             Vector3 direction = (targetPos - currentPos).normalized;
-
-            // Calcular distancia
             float distance = Vector3.Distance(currentPos, targetPos);
 
-            // Verificar si llegamos
             if (distance <= arrivalThreshold)
             {
                 ArriveAtDock();
                 return;
             }
 
-            // Mover el barco hacia el punto
-            // Reducir velocidad gradualmente según la distancia
-            float speedMultiplier = Mathf.Clamp01(distance / 5f); // Frena cuando está a menos de 5m
+            float speedMultiplier = Mathf.Clamp01(distance / brakingDistance);
             float currentSpeed = dockingSpeed * speedMultiplier;
 
-            if (boatRb != null)
+            if (boatRigidbody != null)
             {
+                // TRASLACIÃ“N PURA. Sin lÃ³gicas de Quaternion para evitar rotaciones errÃ¡ticas en Z.
                 Vector3 movement = direction * currentSpeed * Time.deltaTime;
-                boatRb.MovePosition(boatRb.position + movement);
+                boatRigidbody.MovePosition(boatRigidbody.position + movement);
 
-                // Asegurar que no rota
-                boatRb.angularVelocity = Vector3.zero;
+                // Mantenemos la velocidad angular a 0 por seguridad mientras es cinemÃ¡tico
+                boatRigidbody.angularVelocity = Vector3.zero;
             }
         }
 
         private void ArriveAtDock()
         {
-            isAutoPiloting = false;
+            LogDebug("Barco atracado - Abriendo tienda");
 
-            // Detener el barco completamente
-            if (boatRb != null)
+            if (boatRigidbody != null)
             {
-                boatRb.linearVelocity = Vector3.zero;
-                boatRb.angularVelocity = Vector3.zero;
-                boatRb.isKinematic = true;
+                boatRigidbody.linearVelocity = Vector3.zero;
+                boatRigidbody.angularVelocity = Vector3.zero;
             }
 
             if (boatMovement != null)
@@ -278,39 +315,43 @@ namespace AbyssalReach.Gameplay
                 boatMovement.Stop();
             }
 
-            // Abrir tienda
+            ChangeState(PortState.ShopOpen);
             OpenShop();
-
-            if (showDebug)
-            {
-                Debug.Log("[PortArea] Barco atracado - Tienda abierta");
-            }
         }
 
-        private void CancelAutoPilot()
+        private void CancelDocking()
         {
-            isAutoPiloting = false;
+            LogDebug("Auto-Pilot cancelado");
 
-            // Reactivar control manual
             if (boatMovement != null)
             {
                 boatMovement.SetMovementActive(true);
             }
 
-            if (boatRb != null)
+            if (boatRigidbody != null)
             {
-                boatRb.isKinematic = false;
+                boatRigidbody.angularVelocity = Vector3.zero; // Limpieza preventiva
+                boatRigidbody.isKinematic = false;
             }
 
-            if (showDebug)
+            if (boatInDetectionZone)
             {
-                Debug.Log("[PortArea] Auto-Pilot cancelado");
+                ChangeState(PortState.BoatDetected);
+            }
+            else
+            {
+                ChangeState(PortState.Idle);
+            }
+
+            if (GameController.Instance != null)
+            {
+                GameController.Instance.SetGameState(GameController.GameState.Sailing);
             }
         }
 
         #endregion
 
-        #region Shop Control
+        #region Shop Management
 
         private void OpenShop()
         {
@@ -320,114 +361,139 @@ namespace AbyssalReach.Gameplay
                 return;
             }
 
-            isInShop = true;
             shopUIPanel.SetActive(true);
 
-            // Desactivar controles del barco, activar controles de UI
-            controls.BoatControls.Disable();
-            if (showDebug)
+            if (GameController.Instance != null)
             {
-                Debug.Log("[PortArea] Tienda abierta");
+                GameController.Instance.SetGameState(GameController.GameState.InShop);
             }
+
+            LogDebug("Tienda abierta");
         }
 
         public void CloseShop()
         {
-            if (shopUIPanel == null)
-            {
-                return;
-            }
+            if (shopUIPanel == null) return;
 
-            isInShop = false;
+            LogDebug("Cerrando tienda...");
+
             shopUIPanel.SetActive(false);
 
-            // Reactivar controles del barco
-            controls.BoatControls.Enable();
+            if (boatRigidbody != null)
+            {
+                // CRÃTICO: Limpiamos fuerzas rotacionales acumuladas antes de "despertar" el Rigidbody
+                boatRigidbody.angularVelocity = Vector3.zero;
+                boatRigidbody.isKinematic = false;
+            }
 
-            // Iniciar cooldown de salida
-            StartExitCooldown();
-
-            // Reactivar control manual
             if (boatMovement != null)
             {
                 boatMovement.SetMovementActive(true);
             }
 
-            if (boatRb != null)
+            if (GameController.Instance != null)
             {
-                boatRb.isKinematic = false;
+                GameController.Instance.SetGameState(GameController.GameState.Sailing);
             }
 
-            if (showDebug)
-            {
-                Debug.Log("[PortArea] Tienda cerrada - Cooldown de salida activo");
-            }
+            StartCooldown();
+
+            LogDebug("Tienda cerrada - Controles reactivados - Cooldown iniciado");
         }
 
         #endregion
 
-        #region Exit Cooldown
+        #region Cooldown System
 
-        private void StartExitCooldown()
+        private void StartCooldown()
         {
-            isExiting = true;
-            exitTimer = exitCooldown;
-            boatInOuterZone = false; // Evitar que el jugador pueda reactivar la zona inmediatamente
+            ChangeState(PortState.Cooldown);
+            cooldownTimer = redockCooldown;
         }
 
-        private void UpdateCooldown()
+        private void UpdateCooldownTimer()
         {
-            if (isExiting)
-            {
-                exitTimer = exitTimer - Time.deltaTime;
+            if (currentState != PortState.Cooldown) return;
 
-                if (exitTimer <= 0f)
+            cooldownTimer -= Time.deltaTime;
+
+            if (cooldownTimer <= 0f)
+            {
+                cooldownTimer = 0f;
+
+                if (boatInDetectionZone)
                 {
-                    isExiting = false;
-                    exitTimer = 0f;
-
-                    
-                    Debug.Log("[PortArea] Cooldown terminado - Zona activa de nuevo");
-                    
-                    CheckBoatInZones();// Re-evaluar si el barco está en la zona al terminar el cooldown
+                    ChangeState(PortState.BoatDetected);
                 }
+                else
+                {
+                    ChangeState(PortState.Idle);
+                }
+
+                LogDebug("Cooldown terminado");
             }
         }
 
         #endregion
 
-        #region Debug (Gizmos)
+        #region Utilities
 
+        private void ValidateReferences()
+        {
+            if (dockingPoint == null)
+                Debug.LogWarning("[PortArea] Docking Point no asignado");
+
+            if (shopUIPanel == null)
+                Debug.LogWarning("[PortArea] Shop UI Panel no asignado");
+        }
+
+        private void LogDebug(string message)
+        {
+            if (showDebugLogs)
+            {
+                Debug.Log($"[PortArea] {message}");
+            }
+        }
+
+        #endregion
+
+        #region Debug Visualization
+
+        // Movido a OnDrawGizmos para que SIEMPRE sea visible, no solo al seleccionarlo.
         private void OnDrawGizmos()
         {
-            // Zona exterior (detección)
-            Gizmos.color = outerGizmoColor;
-            DrawWireCircle(transform.position, outerRadius, 32);
+            // Dibujamos el cÃ­rculo del radio de detecciÃ³n
+            Gizmos.color = detectionGizmoColor;
+            DrawWireCircle(transform.position, detectionRadius, 32);
 
-            // Zona interior (tienda)
-            Gizmos.color = innerGizmoColor;
-            DrawWireCircle(transform.position, innerRadius, 32);
-
-            // Punto de atraque
             if (dockingPoint != null)
             {
-                Gizmos.color = Color.yellow;
-                Gizmos.DrawSphere(dockingPoint.position, 0.5f);
+                Gizmos.color = dockingGizmoColor;
+                Gizmos.DrawSphere(dockingPoint.position, 0.8f);
                 Gizmos.DrawLine(transform.position, dockingPoint.position);
             }
         }
 
         private void OnDrawGizmosSelected()
         {
-            Gizmos.color = Color.green;
-            DrawWireCircle(transform.position, outerRadius, 64);
-
-            Gizmos.color = Color.red;
-            DrawWireCircle(transform.position, innerRadius, 64);
-
+            // Resaltamos el punto de atraque al seleccionar
             if (dockingPoint != null)
             {
-                UnityEditor.Handles.Label(dockingPoint.position + Vector3.up,"Punto de amarre");
+                Gizmos.color = Color.yellow;
+                Gizmos.DrawWireSphere(dockingPoint.position, arrivalThreshold);
+
+#if UNITY_EDITOR
+                UnityEditor.Handles.Label(
+                    dockingPoint.position + Vector3.up * 2f,
+                    "Docking Point",
+                    new GUIStyle()
+                    {
+                        normal = { textColor = Color.yellow },
+                        fontSize = 14,
+                        fontStyle = FontStyle.Bold
+                    }
+                );
+#endif
             }
         }
 
@@ -439,53 +505,91 @@ namespace AbyssalReach.Gameplay
             for (int i = 1; i <= segments; i++)
             {
                 float angle = angleStep * i * Mathf.Deg2Rad;
-                Vector3 currentPoint = center + new Vector3(Mathf.Cos(angle) * radius,Mathf.Sin(angle) * radius,0);
+                Vector3 currentPoint = center + new Vector3(
+                    Mathf.Cos(angle) * radius,
+                    0,
+                    Mathf.Sin(angle) * radius
+                );
 
+                // Dibujar lÃ­nea gruesa (simulada pintando dos lÃ­neas muy juntas)
                 Gizmos.DrawLine(previousPoint, currentPoint);
+                Gizmos.DrawLine(previousPoint + Vector3.up * 0.01f, currentPoint + Vector3.up * 0.01f);
+
                 previousPoint = currentPoint;
             }
         }
 
         private void OnGUI()
         {
-            if (!showDebug)
-            {
-                return;
-            }
+            if (!showDebugUI) return;
 
             GUIStyle style = new GUIStyle();
-            style.fontSize = 20;
-            style.normal.textColor = Color.yellow;
+            style.fontSize = 24;
+            style.normal.textColor = Color.white;
             style.fontStyle = FontStyle.Bold;
             style.alignment = TextAnchor.MiddleCenter;
 
-            float width = 500;
-            float height = 40;
-            Rect rect = new Rect((Screen.width - width) / 2,Screen.height - 100,width,height);
+            float width = 600;
+            float height = 50;
+            Rect rect = new Rect(
+                (Screen.width - width) / 2,
+                Screen.height - 120,
+                width,
+                height
+            );
 
-            // Fondo semitransparente
             GUI.color = new Color(0, 0, 0, 0.7f);
             GUI.Box(rect, "");
             GUI.color = Color.white;
 
-            // Mostrar mensaje según estado
             string message = "";
 
-            if (isAutoPiloting)
+            switch (currentState)
             {
-                message = autoPilotMessage;
-            }
-            else if (boatInOuterZone && !isInShop && !isExiting)
-            {
-                message = dockingMessage;
+                case PortState.BoatDetected:
+                    message = dockPrompt;
+                    style.normal.textColor = Color.green;
+                    break;
+
+                case PortState.AutoPiloting:
+                    message = autoPilotMessage;
+                    style.normal.textColor = Color.yellow;
+                    break;
+
+                case PortState.ShopOpen:
+                    message = shopOpenMessage;
+                    style.normal.textColor = Color.cyan;
+                    break;
+
+                case PortState.Cooldown:
+                    message = $"Cooldown: {cooldownTimer:F1}s";
+                    style.normal.textColor = Color.red;
+                    break;
             }
 
-            if (message != "")
+            if (!string.IsNullOrEmpty(message))
             {
                 GUI.Label(rect, message, style);
+            }
+
+            if (showDebugLogs)
+            {
+                GUIStyle debugStyle = new GUIStyle();
+                debugStyle.fontSize = 16;
+                debugStyle.normal.textColor = Color.yellow;
+
+                string debugText = $"PortState: {currentState}\n";
+                debugText += $"Barco en zona: {boatInDetectionZone}\n";
+
+                if (GameController.Instance != null)
+                {
+                    debugText += $"GameState: {GameController.Instance.GetCurrentState()}";
+                }
+
+                GUI.Label(new Rect(10, 120, 400, 80), debugText, debugStyle);
             }
         }
 
         #endregion
     }
-}
+}   

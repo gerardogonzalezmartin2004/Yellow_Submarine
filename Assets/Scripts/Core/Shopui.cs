@@ -3,15 +3,16 @@ using UnityEngine.UI;
 using TMPro;
 using AbyssalReach.Core;
 using AbyssalReach.Gameplay;
-using UnityEngine.Rendering;
 
 namespace AbyssalReach.UI
 {
+    /// <summary>
+    /// Controla la UI de la tienda del puerto.
+    /// Permite vender items y comprar upgrades.
+    /// ACTUALIZADO: Maneja el cierre completo sin script adicional.
+    /// </summary>
     public class ShopUI : MonoBehaviour
     {
-        // Controla la UI de la tienda del puerto
-        // Permite vender items y comprar upgrades
-
         [Header("UI References")]
         [SerializeField] private Button sellAllButton;
         [SerializeField] private TextMeshProUGUI goldText;
@@ -26,15 +27,18 @@ namespace AbyssalReach.UI
 
         [Header("Port Reference")]
         [Tooltip("Referencia al PortArea para notificar cierre")]
-        [SerializeField] private Gameplay.PortArea portArea;
+        [SerializeField] private PortArea portArea;
 
         [Header("External References")]
         [SerializeField] private TetherSystem tetherSystem;
         [SerializeField] private DiverMovement diverMovement;
-        [SerializeField] private float mejoraLongitudCable;
-        [SerializeField] private float mejoraVelocidad;
+        [SerializeField] private float mejoraLongitudCable = 5f;
+        [SerializeField] private float mejoraVelocidad = 0.5f;
 
-        #region Unity ciclo de vida
+        [Header("Debug")]
+        [SerializeField] private bool showDebugLogs = true;
+
+        #region Unity Lifecycle
 
         private void OnEnable()
         {
@@ -71,11 +75,13 @@ namespace AbyssalReach.UI
 
             // Actualizar toda la información al abrir la tienda
             UpdateAllDisplays();
+
+            LogDebug("Tienda abierta - UI inicializada");
         }
 
         private void OnDisable()
         {
-            // Desuscribirse de eventos y asi evitamos errores de memoria
+            // Desuscribirse de eventos y así evitamos errores de memoria
             InventoryManager.OnInventoryChanged -= UpdateInventoryDisplay;
             CurrencyManager.OnGoldChanged -= UpdateGoldDisplay;
 
@@ -85,6 +91,18 @@ namespace AbyssalReach.UI
             if (upgradeCableLengthButton != null) upgradeCableLengthButton.onClick.RemoveAllListeners();
             if (upgradeCableStrengthButton != null) upgradeCableStrengthButton.onClick.RemoveAllListeners();
             if (upgradeSwimSpeedButton != null) upgradeSwimSpeedButton.onClick.RemoveAllListeners();
+
+            LogDebug("Tienda cerrada - UI limpiada");
+        }
+
+        private void Update()
+        {
+            // Permitir cerrar con ESC también
+            if (UnityEngine.InputSystem.Keyboard.current != null &&
+                UnityEngine.InputSystem.Keyboard.current.escapeKey.wasPressedThisFrame)
+            {
+                CloseShop();
+            }
         }
 
         #endregion
@@ -100,11 +118,12 @@ namespace AbyssalReach.UI
                 return;
             }
 
-            //  Calcular cuánto valen todos los objetos
+            // Calcular cuánto valen todos los objetos
             int totalValue = InventoryManager.Instance.CalculateTotalValue();
 
             if (totalValue <= 0)
             {
+                LogDebug("No hay items para vender");
                 return; // No hay nada que vender
             }
 
@@ -113,6 +132,8 @@ namespace AbyssalReach.UI
 
             // Añadir el oro ganado al jugador
             CurrencyManager.Instance.AddGold(earnedGold);
+
+            LogDebug($"Vendidos todos los items por {earnedGold}G");
         }
 
         // Los botones de compra
@@ -137,47 +158,70 @@ namespace AbyssalReach.UI
         {
             if (CurrencyManager.Instance == null)
             {
+                Debug.LogError("[ShopUI] CurrencyManager no encontrado");
                 return;
             }
 
             // Intentar gastar el oro. Si devuelve true, la compra fue exitosa.
             if (CurrencyManager.Instance.SpendGold(cost))
             {
-                Debug.Log("[ShopUI] Purchased: " + upgradeName + " for " + cost + "G");
-                // Aquí tendriamos q introducir la lógica real de aplicar la mejora
+                LogDebug($"Comprado: {upgradeName} por {cost}G");
 
-                if(upgradeName == "Cable Length")
+                // Aplicar la mejora
+                if (upgradeName == "Cable Length")
                 {
-                    tetherSystem.maxLength += mejoraLongitudCable;
-                    Debug.Log(tetherSystem.maxLength);
+                    if (tetherSystem != null)
+                    {
+                        tetherSystem.maxLength += mejoraLongitudCable;
+                        LogDebug($"Longitud de cable mejorada: {tetherSystem.maxLength}");
+                    }
                 }
-                else if(upgradeName == "Cable Strength")
+                else if (upgradeName == "Cable Strength")
                 {
-                    
+                    // TODO: Implementar mejora de resistencia
+                    LogDebug("Mejora de resistencia comprada (TODO: implementar)");
                 }
-                else if(upgradeName == "Swim Speed")
+                else if (upgradeName == "Swim Speed")
                 {
-                    diverMovement.swimSpeed += mejoraVelocidad;
-                    Debug.Log(diverMovement.swimSpeed);
+                    if (diverMovement != null)
+                    {
+                        diverMovement.swimSpeed += mejoraVelocidad;
+                        LogDebug($"Velocidad de nado mejorada: {diverMovement.swimSpeed}");
+                    }
                 }
             }
             else
             {
-                Debug.Log("[ShopUI] No tienes suficiente oro para " + upgradeName);
+                LogDebug($"Oro insuficiente para {upgradeName} (cuesta {cost}G)");
             }
         }
 
+        /// <summary>
+        /// NUEVO: Cierra la tienda y notifica al PortArea.
+        /// Maneja TODA la lógica de cierre sin necesidad de script adicional.
+        /// </summary>
         private void CloseShop()
         {
-            // Notificar al PortArea para que maneje el cierre y el cooldown
+            LogDebug("Cerrando tienda...");
+
+            // Notificar al PortArea para que maneje el cooldown y estados
             if (portArea != null)
             {
                 portArea.CloseShop();
             }
             else
             {
-                // Si no hay referencia al PortArea, simplemente cerramos la UI
+                // FALLBACK: Si no hay referencia al PortArea, cerrar manualmente
+                Debug.LogWarning("[ShopUI] No hay referencia a PortArea - cerrando manualmente");
+
+                // Desactivar el panel
                 gameObject.SetActive(false);
+
+                // Reactivar controles del barco
+                if (GameController.Instance != null)
+                {
+                    GameController.Instance.SetGameState(GameController.GameState.Sailing);
+                }
             }
         }
 
@@ -210,28 +254,50 @@ namespace AbyssalReach.UI
                 return;
             }
 
-            //  Mostrar valor total del inventario
+            // Mostrar valor total del inventario
             if (inventoryValueText != null)
             {
                 int totalValue = InventoryManager.Instance.CalculateTotalValue();
                 inventoryValueText.text = "Inventory Value: " + totalValue + "G";
             }
 
-           
-            //  Mostrar número de items
+            // Mostrar número de items
             if (itemCountText != null)
             {
                 int itemCount = InventoryManager.Instance.GetItemCount();
                 itemCountText.text = "Items: " + itemCount;
             }
 
-           
-            //  Activar/desactivar botón de vender
+            // Activar/desactivar botón de vender
             if (sellAllButton != null)
             {
                 bool hasItems = !InventoryManager.Instance.IsEmpty();
                 sellAllButton.interactable = hasItems;
             }
+        }
+
+        #endregion
+
+        #region Utilities
+
+        private void LogDebug(string message)
+        {
+            if (showDebugLogs)
+            {
+                Debug.Log($"[ShopUI] {message}");
+            }
+        }
+
+        #endregion
+
+        #region Public API (Para PortArea)
+
+        /// <summary>
+        /// Método público para que PortArea pueda cerrar la tienda externamente.
+        /// </summary>
+        public void ForceClose()
+        {
+            gameObject.SetActive(false);
         }
 
         #endregion

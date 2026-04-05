@@ -1615,7 +1615,8 @@ MonoBehaviour:
   canvasTransform: {fileID: 2033992998}
   enablePositionMemory: 1
   returnStrategy: 1
-  showDebugLogs: 0
+  showDebugLogs: 1
+  verboseDebug: 1
 --- !u!114 &385737323
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3401,19 +3402,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3b5f34762192c454d885f15ed5e67e59, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Portarea
-  outerRadius: 5.2
-  innerRadius: 3
+  detectionRadius: 11.7
+  arrivalThreshold: 0.5
   dockingPoint: {fileID: 603160692}
   dockingSpeed: 10
-  arrivalThreshold: 0.5
-  exitCooldown: 2
-  targetTag: Boat
+  brakingDistance: 5
+  boatTag: Boat
   shopUIPanel: {fileID: 2118195371}
-  dockingMessage: Pulsar 'E' para entrar
+  redockCooldown: 3
+  dockPrompt: Press 'E' to Dock
   autoPilotMessage: Auto-Pilot Active...
-  showDebug: 1
-  outerGizmoColor: {r: 0, g: 1, b: 0.5, a: 0.2}
-  innerGizmoColor: {r: 1, g: 0.5, b: 0, a: 0.3}
+  shopOpenMessage: Press 'ESC' to Exit Shop
+  showDebugLogs: 1
+  showDebugUI: 1
+  detectionGizmoColor: {r: 0, g: 1, b: 0.5, a: 0.2}
+  dockingGizmoColor: {r: 1, g: 0.5, b: 0, a: 0.5}
 --- !u!4 &901970974
 Transform:
   m_ObjectHideFlags: 0
@@ -5586,6 +5589,11 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1520880544 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3456200497316151208, guid: f3fb0083660ae334da4e2247137d0814, type: 3}
+  m_PrefabInstance: {fileID: 2033992997}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1531844965
 GameObject:
   m_ObjectHideFlags: 0
@@ -5687,12 +5695,32 @@ MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 7098699630147794078, guid: f3fb0083660ae334da4e2247137d0814, type: 3}
   m_PrefabInstance: {fileID: 2033992997}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+  m_GameObject: {fileID: 1520880544}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b18c89f61205cfa46847dbebbbd1062b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ItemGrid
+--- !u!114 &1571876822
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1520880544}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 17143e6b2d0a425479e28432b60bacdf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ItemGridDebugger
+  enableDebug: 1
+  showCellInfo: 1
+  showOccupiedCells: 1
+  showItemBounds: 1
+  logPickupAttempts: 1
+  occupiedCellColor: {r: 1, g: 0, b: 0, a: 0.3}
+  emptyCellColor: {r: 0, g: 1, b: 0, a: 0.1}
+  itemBoundsColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
 --- !u!1 &1582099840
 GameObject:
   m_ObjectHideFlags: 0
@@ -6420,7 +6448,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0.25669837}
+  m_Offset: {x: 0.074501276, y: 0.107696176}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0, y: 0}
@@ -6430,7 +6458,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 4.12, y: 1.5133967}
+  m_Size: {x: 4.2690024, y: 1.8114011}
   m_EdgeRadius: 0
 --- !u!1 &1868921709
 GameObject:
@@ -7372,7 +7400,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 3456200497316151208, guid: f3fb0083660ae334da4e2247137d0814, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1571876822}
   m_SourcePrefab: {fileID: 100100000, guid: f3fb0083660ae334da4e2247137d0814, type: 3}
 --- !u!224 &2033992998 stripped
 RectTransform:
@@ -7574,11 +7605,12 @@ MonoBehaviour:
   upgradeCableLengthButton: {fileID: 6295533}
   upgradeCableStrengthButton: {fileID: 1406400595}
   upgradeSwimSpeedButton: {fileID: 722155035}
-  portArea: {fileID: 0}
-  tetherSystem: {fileID: 0}
-  diverMovement: {fileID: 0}
+  portArea: {fileID: 901970973}
+  tetherSystem: {fileID: 930908958}
+  diverMovement: {fileID: 1735820692}
   mejoraLongitudCable: 0
   mejoraVelocidad: 0
+  showDebugLogs: 1
 --- !u!114 &2118195374
 MonoBehaviour:
   m_ObjectHideFlags: 0

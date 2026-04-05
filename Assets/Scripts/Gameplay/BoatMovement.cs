@@ -41,8 +41,7 @@ namespace AbyssalReach.Gameplay
             // Configuración del Rigidbody
             rb.useGravity = false;
             rb.linearDamping = waterDrag;
-            rb.constraints = RigidbodyConstraints.FreezePositionZ | RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationY;
-
+            rb.constraints = RigidbodyConstraints.FreezePositionZ | RigidbodyConstraints.FreezeRotation;
             // Inicializar controles
             controls = new AbyssalReachControls();
         }

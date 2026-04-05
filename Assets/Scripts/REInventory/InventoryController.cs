@@ -29,7 +29,10 @@ public class InventoryController : MonoBehaviour
 
     [Header("Debug")]
     [Tooltip("Mostrar logs de debugging")]
-    [SerializeField] private bool showDebugLogs = false;
+    [SerializeField] private bool showDebugLogs = true;
+
+    [Tooltip("Modo ultra-verbose para debugging profundo")]
+    [SerializeField] private bool verboseDebug = false;
 
     #endregion
 
@@ -48,6 +51,9 @@ public class InventoryController : MonoBehaviour
 
     // Sistema de memoria de posición
     private ItemPositionMemory currentItemMemory;
+
+    // Debugging
+    private ItemGridDebugger gridDebugger;
 
     #endregion
 
@@ -77,6 +83,12 @@ public class InventoryController : MonoBehaviour
 
         if (inventoryCanvas != null)
             inventoryCanvas.SetActive(false);
+
+        // Obtener debugger si existe
+        if (boatItemGrid != null)
+        {
+            gridDebugger = boatItemGrid.GetComponent<ItemGridDebugger>();
+        }
 
         ValidateReferences();
     }
@@ -156,6 +168,8 @@ public class InventoryController : MonoBehaviour
         if (selectedItem == null) return;
         selectedItem.Rotate();
         lastRotationIdx = -1;
+
+        LogDebug($"Item rotado a {selectedItem.RotationIndex * 90}°");
     }
 
     private void OnToggleInventoryPerformed(InputAction.CallbackContext ctx)
@@ -183,16 +197,12 @@ public class InventoryController : MonoBehaviour
         {
             if (selectedItem != null)
             {
-                // NUEVO: Si cerramos con item en mano, intentar retornar a última posición
-                if (enablePositionMemory && currentItemMemory != null &&
-                    currentItemMemory.HasValidReturnPosition)
+                // NUEVO: Mejorado - siempre intenta retornar antes de destruir
+                bool returned = TryReturnItemToLastPosition();
+
+                if (!returned)
                 {
-                    LogDebug("Inventario cerrado con item en mano - retornando a última posición");
-                    currentItemMemory.ReturnToLastPosition();
-                }
-                else
-                {
-                    // Sin memoria, destruir el item
+                    LogDebug("⚠️ No se pudo retornar item al cerrar - destruyendo");
                     Destroy(selectedItem.gameObject);
                 }
 
@@ -255,16 +265,72 @@ public class InventoryController : MonoBehaviour
             diverInv.GetItems().Remove(loot);
 
         Debug.Log($"[InventoryController] Transferencia: {transferidos.Count}/{diverItems.Count}");
+
+        // Validar integridad después de transferencia
+        if (gridDebugger != null && verboseDebug)
+        {
+            gridDebugger.ValidateGridIntegrity();
+        }
     }
 
     #endregion
 
-    #region Drag & Drop (CON MEMORIA)
+    #region Drag & Drop (MEJORADO)
 
+    /// <summary>
+    /// Recoge un item del grid.
+    /// MEJORADO: Ahora funciona en CUALQUIER celda del item, no solo en la celda de origen.
+    /// </summary>
     private void PickUpItem(Vector2Int tile)
     {
-        selectedItem = selectedItemGrid.PickUpItem(tile.x, tile.y);
-        if (selectedItem == null) return;
+        if (selectedItemGrid == null)
+        {
+            LogDebug("⚠️ PickUpItem: selectedItemGrid es null");
+            return;
+        }
+
+        LogVerbose($"PickUpItem en tile ({tile.x}, {tile.y})");
+
+        // CRÍTICO: Obtener el item en esa celda
+        InventoryItem itemAtTile = selectedItemGrid.GetItem(tile.x, tile.y);
+
+        if (itemAtTile == null)
+        {
+            LogVerbose("Celda vacía - no hay nada que recoger");
+            return;
+        }
+
+        // NUEVO: Debug - inspeccionar celda si hay problemas
+        if (verboseDebug && gridDebugger != null)
+        {
+            gridDebugger.InspectCell(tile.x, tile.y);
+        }
+
+        // MEJORADO: Recoger desde la posición de ORIGEN del item, no desde donde hicimos click
+        // Esto es crucial para items grandes que ocupan múltiples celdas
+        int originX = itemAtTile.onGridPositionX;
+        int originY = itemAtTile.onGridPositionY;
+
+        LogVerbose($"Item encontrado: {itemAtTile.itemData.name} @ origen ({originX}, {originY})");
+
+        // Recoger desde el origen
+        selectedItem = selectedItemGrid.PickUpItem(originX, originY);
+
+        if (selectedItem == null)
+        {
+            Debug.LogError($"[InventoryController] ❌ FALLO al recoger item desde origen ({originX}, {originY})");
+
+            // Debug profundo
+            if (gridDebugger != null)
+            {
+                gridDebugger.DumpGridState();
+                gridDebugger.ValidateGridIntegrity();
+            }
+
+            return;
+        }
+
+        LogDebug($"✅ Item recogido: {selectedItem.itemData.name}");
 
         heldItemRect = selectedItem.GetComponent<RectTransform>();
         heldItemRect?.SetAsLastSibling();
@@ -277,26 +343,48 @@ public class InventoryController : MonoBehaviour
             if (currentItemMemory != null)
             {
                 currentItemMemory.MarkAsPickedUp();
-                LogDebug($"Item recogido - memoria activa: {currentItemMemory.HasValidReturnPosition}");
+                LogDebug($"Memoria activa: {currentItemMemory.HasValidReturnPosition}");
+            }
+            else
+            {
+                LogDebug("⚠️ Item no tiene ItemPositionMemory");
             }
         }
     }
 
+    /// <summary>
+    /// Intenta colocar el item en el grid.
+    /// MEJORADO: Retorno robusto cuando falla.
+    /// </summary>
     private void PlaceItem(Vector2Int tile)
     {
         if (selectedItem == null || selectedItemGrid == null) return;
+
+        LogVerbose($"PlaceItem en tile ({tile.x}, {tile.y})");
+
+        // VALIDACIÓN PREVIA: Verificar que la posición está dentro del grid
+        if (!selectedItemGrid.BoundaryCheck(tile.x, tile.y, selectedItem.WIDTH, selectedItem.HEIGHT))
+        {
+            LogDebug($"⚠️ Posición fuera de límites: ({tile.x}, {tile.y}) con tamaño {selectedItem.WIDTH}x{selectedItem.HEIGHT}");
+
+            // NUEVO: Retorno inmediato cuando está fuera
+            TryReturnItemToLastPosition();
+            return;
+        }
 
         bool placed = selectedItemGrid.PlaceItem(selectedItem, tile.x, tile.y, ref overlapItem);
 
         if (placed)
         {
-            // COLOCACIÓN EXITOSA
+            // ✅ COLOCACIÓN EXITOSA
+
+            LogDebug($"✅ Item colocado exitosamente en ({tile.x}, {tile.y})");
 
             // NUEVO: Guardar nueva posición en memoria
             if (enablePositionMemory && currentItemMemory != null)
             {
                 currentItemMemory.SaveCurrentPosition(selectedItemGrid);
-                LogDebug($"Nueva posición guardada: ({tile.x}, {tile.y})");
+                LogVerbose($"Nueva posición guardada en memoria");
             }
 
             selectedItem = null;
@@ -306,6 +394,8 @@ public class InventoryController : MonoBehaviour
             // Swap estilo RE4
             if (overlapItem != null)
             {
+                LogDebug($"Swap detectado - recogiendo: {overlapItem.itemData.name}");
+
                 selectedItem = overlapItem;
                 overlapItem = null;
                 heldItemRect = selectedItem.GetComponent<RectTransform>();
@@ -318,42 +408,80 @@ public class InventoryController : MonoBehaviour
                     currentItemMemory?.MarkAsPickedUp();
                 }
             }
+
+            // Validar integridad después de colocar
+            if (gridDebugger != null && verboseDebug)
+            {
+                gridDebugger.ValidateGridIntegrity();
+            }
         }
         else
         {
-            // COLOCACIÓN FALLIDA - ACTIVAR RETORNO A ÚLTIMA POSICIÓN
+            // ❌ COLOCACIÓN FALLIDA - ACTIVAR RETORNO
 
-            LogDebug("⚠️ Colocación fallida - intentando retorno automático");
+            LogDebug($"❌ Colocación fallida en ({tile.x}, {tile.y})");
 
-            if (enablePositionMemory && currentItemMemory != null &&
-                currentItemMemory.HasValidReturnPosition)
+            // NUEVO: Retorno robusto
+            bool returned = TryReturnItemToLastPosition();
+
+            if (!returned)
             {
-                // Ejecutar retorno automático
-                bool returned = currentItemMemory.ReturnToLastPosition();
-
-                if (returned)
-                {
-                    LogDebug("✅ Item retornado automáticamente a última posición");
-
-                    // Limpiar selección
-                    selectedItem = null;
-                    heldItemRect = null;
-                    currentItemMemory = null;
-                }
-                else
-                {
-                    Debug.LogError("❌ Fallo al retornar item - destruyendo");
-                    Destroy(selectedItem.gameObject);
-                    selectedItem = null;
-                    heldItemRect = null;
-                    currentItemMemory = null;
-                }
+                // Fallback: Item permanece en la mano
+                LogDebug("Item permanece en la mano (sin posición válida de retorno)");
             }
-            else
+        }
+    }
+
+    /// <summary>
+    /// Intenta retornar el item a su última posición válida.
+    /// Retorna true si el retorno fue exitoso.
+    /// </summary>
+    private bool TryReturnItemToLastPosition()
+    {
+        if (!enablePositionMemory)
+        {
+            LogDebug("Sistema de memoria desactivado");
+            return false;
+        }
+
+        if (currentItemMemory == null)
+        {
+            LogDebug("Item no tiene ItemPositionMemory");
+            return false;
+        }
+
+        if (!currentItemMemory.HasValidReturnPosition)
+        {
+            LogDebug("Item no tiene posición válida de retorno");
+            return false;
+        }
+
+        LogDebug("🔄 Iniciando retorno a última posición...");
+
+        bool returned = currentItemMemory.ReturnToLastPosition();
+
+        if (returned)
+        {
+            LogDebug("✅ Item retornado exitosamente");
+
+            // Limpiar selección
+            selectedItem = null;
+            heldItemRect = null;
+            currentItemMemory = null;
+
+            return true;
+        }
+        else
+        {
+            Debug.LogError("❌ FALLO al retornar item");
+
+            // Debug profundo
+            if (gridDebugger != null)
             {
-                // Sin memoria o sin posición válida: el item sigue en la mano
-                LogDebug("Item sigue en la mano (sin memoria de posición)");
+                gridDebugger.DumpGridState();
             }
+
+            return false;
         }
     }
 
@@ -439,6 +567,48 @@ public class InventoryController : MonoBehaviour
             Debug.Log($"[InventoryController] {message}");
         }
     }
+
+    private void LogVerbose(string message)
+    {
+        if (verboseDebug)
+        {
+            Debug.Log($"[InventoryController|VERBOSE] {message}");
+        }
+    }
+
+    #endregion
+
+    #region Context Menu (Editor Only)
+
+#if UNITY_EDITOR
+    [ContextMenu("Dump Current State")]
+    private void ContextDumpState()
+    {
+        Debug.Log("=== INVENTORY CONTROLLER STATE ===");
+        Debug.Log($"Selected Item: {(selectedItem != null ? selectedItem.itemData.name : "None")}");
+        Debug.Log($"Selected Grid: {(selectedItemGrid != null ? selectedItemGrid.name : "None")}");
+        Debug.Log($"Memory Enabled: {enablePositionMemory}");
+        Debug.Log($"Current Memory: {(currentItemMemory != null ? currentItemMemory.GetDebugInfo() : "None")}");
+
+        if (gridDebugger != null)
+        {
+            gridDebugger.DumpGridState();
+        }
+    }
+
+    [ContextMenu("Validate Grid Integrity")]
+    private void ContextValidateGrid()
+    {
+        if (gridDebugger != null)
+        {
+            gridDebugger.ValidateGridIntegrity();
+        }
+        else
+        {
+            Debug.LogWarning("No ItemGridDebugger found");
+        }
+    }
+#endif
 
     #endregion
 }
