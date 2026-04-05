@@ -48,12 +48,11 @@ public class InventoryItem : MonoBehaviour
         {
             if (itemData == null)
             {
-                Debug.LogError("[InventoryItem] itemData es null. Asegúrate de llamar Set() antes de acceder a HEIGHT.");
                 return 1;
             }
 
-            // Si rotationIndex es par (0, 2) → altura original
-            // Si rotationIndex es impar (1, 3) → ancho original (porque está girado)
+            // Si rotationIndex es par (0, 2) - altura original
+            // Si rotationIndex es impar (1, 3) - ancho original (porque está girado)
             return IsRotationIndexOdd() ? itemData.width : itemData.height;
         }
     }
@@ -72,8 +71,8 @@ public class InventoryItem : MonoBehaviour
                 return 1;
             }
 
-            // Si rotationIndex es par (0, 2) → ancho original
-            // Si rotationIndex es impar (1, 3) → altura original (porque está girado)
+            // Si rotationIndex es par (0, 2) - ancho original
+            // Si rotationIndex es impar (1, 3) - altura original (porque está girado)
             return IsRotationIndexOdd() ? itemData.height : itemData.width;
         }
     }
@@ -199,7 +198,6 @@ public class InventoryItem : MonoBehaviour
         }
 
         // Calcular tamaño en píxeles basándose en las propiedades WIDTH y HEIGHT
-        // (que ya tienen en cuenta la rotación)
         Vector2 size = new Vector2
         {
             x = WIDTH * ItemGrid.tileSizeWidht,

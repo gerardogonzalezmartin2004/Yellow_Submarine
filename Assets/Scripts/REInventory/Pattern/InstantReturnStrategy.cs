@@ -1,29 +1,20 @@
 using UnityEngine;
 
-/// <summary>
-/// Strategy Pattern: Interfaz para diferentes estrategias de retorno del item.
-/// Permite cambiar el comportamiento de "cómo vuelve el item" sin modificar el código principal.
-/// </summary>
+// Strategy Pattern: Interfaz para diferentes estrategias de retorno del item.
+// Permite cambiar el comportamiento de "cómo vuelve el item" sin modificar el código principal.
 public interface IReturnStrategy
 {
-    /// <summary>
-    /// Ejecuta el retorno del item a su última posición.
-    /// </summary>
-    /// <param name="item">Item a retornar</param>
-    /// <param name="memento">Memento con la posición de destino</param>
-    /// <returns>True si el retorno fue exitoso</returns>
+    // Ejecuta el retorno del item a su última posición.
+    
+ 
     bool ExecuteReturn(InventoryItem item, ItemMemento memento);
 
-    /// <summary>
-    /// Nombre de la estrategia (para debugging).
-    /// </summary>
+   
     string StrategyName { get; }
 }
 
-/// <summary>
-/// Estrategia: Retorno instantáneo (sin animación).
-/// El item aparece inmediatamente en su posición original.
-/// </summary>
+// Retorno instantáneo 
+// El item aparece inmediatamente en su posición original.
 public class InstantReturnStrategy : IReturnStrategy
 {
     public string StrategyName => "Instant Return";
@@ -39,19 +30,14 @@ public class InstantReturnStrategy : IReturnStrategy
         // Restaurar directamente usando el memento
         bool restored = memento.RestoreItem(item);
 
-        if (restored)
-        {
-            Debug.Log($"[InstantReturnStrategy] Item retornado instantáneamente a ({memento.GridX}, {memento.GridY})");
-        }
+       
 
         return restored;
     }
 }
 
-/// <summary>
-/// Estrategia: Retorno animado con Lerp.
-/// El item se mueve suavemente a su posición original.
-/// </summary>
+//  Retorno animado con Lerp.
+// El item se mueve suavemente a su posición original.
 public class LerpReturnStrategy : IReturnStrategy
 {
     public string StrategyName => "Lerp Return";
@@ -71,8 +57,8 @@ public class LerpReturnStrategy : IReturnStrategy
             return false;
         }
 
-        // Iniciar corrutina de animación en el ItemPositionMemory
-        // (lo haremos más adelante en ItemPositionMemory.cs)
+        // Iniciar corrutina de animación en el ItemPositionMemory, pero ya luego
+       
 
         Debug.Log($"[LerpReturnStrategy] Iniciando lerp a ({memento.GridX}, {memento.GridY}) en {duration}s");
 
@@ -84,10 +70,8 @@ public class LerpReturnStrategy : IReturnStrategy
     public float GetDuration() => duration;
 }
 
-/// <summary>
-/// Estrategia: Retorno con efecto de "rebote" (bounce).
-/// El item vuelve con un efecto elástico.
-/// </summary>
+//  Retorno con efecto de rebote
+// El item vuelve con un efecto elástico.
 public class BounceReturnStrategy : IReturnStrategy
 {
     public string StrategyName => "Bounce Return";
@@ -119,9 +103,7 @@ public class BounceReturnStrategy : IReturnStrategy
     public float GetBounceAmount() => bounceAmount;
 }
 
-/// <summary>
-/// Factory para crear estrategias de retorno.
-/// </summary>
+//Factory para crear estrategias de retorno
 public static class ReturnStrategyFactory
 {
     public enum StrategyType
@@ -131,9 +113,7 @@ public static class ReturnStrategyFactory
         Bounce
     }
 
-    /// <summary>
-    /// Crea una estrategia según el tipo especificado.
-    /// </summary>
+    // Crea una estrategia según el tipo especificado.
     public static IReturnStrategy CreateStrategy(StrategyType type)
     {
         switch (type)
@@ -148,7 +128,6 @@ public static class ReturnStrategyFactory
                 return new BounceReturnStrategy(0.5f, 1.2f);
 
             default:
-                Debug.LogWarning($"[ReturnStrategyFactory] Tipo desconocido: {type}, usando Instant");
                 return new InstantReturnStrategy();
         }
     }

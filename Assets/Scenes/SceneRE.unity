@@ -7608,8 +7608,8 @@ MonoBehaviour:
   portArea: {fileID: 901970973}
   tetherSystem: {fileID: 930908958}
   diverMovement: {fileID: 1735820692}
-  mejoraLongitudCable: 0
-  mejoraVelocidad: 0
+  mejoraLongitudCable: 10
+  mejoraVelocidad: 5
   showDebugLogs: 1
 --- !u!114 &2118195374
 MonoBehaviour:

@@ -312,7 +312,7 @@ namespace AbyssalReach.Core
             if (showDebug) Debug.Log("[GameController] Modo Buceo Activado");
         }
 
-        // LÓGICA REFACTORIZADA: Entrar al puerto ya NO detiene el barco.
+       
         // Solo cambia el estado para que la UI muestre el mensaje.
         public void EnterPort()
         {
@@ -348,13 +348,13 @@ namespace AbyssalReach.Core
 
         public enum GameState
         {
-            Sailing,      // Navegando libremente
-            Diving,       // Buceando
-            InPort,       // En zona de puerto (detectado, navegación libre)
-            Docking,      // Auto-pilot activo navegando al dock
-            InShop,       // Tienda abierta
-            Inventory,    // Inventario abierto (en barco)
-            Paused        // Juego pausado
+            Sailing,      
+            Diving,       
+            InPort,       
+            Docking,      
+            InShop,      
+            Inventory,    
+            Paused        
         }
 
         #endregion

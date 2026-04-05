@@ -3,10 +3,8 @@ using UnityEngine.UI;
 using System.Collections.Generic;
 
 
-/// <summary>
-/// Sistema de debugging visual para ItemGrid.
-/// Muestra overlays, información de celdas, y estado del grid en tiempo real.
-/// </summary>
+// Sistema de debugging visual para ItemGrid.
+// Muestra overlays, información de celdas, y estado del grid en tiempo real.
 [RequireComponent(typeof(ItemGrid))]
 public class ItemGridDebugger : MonoBehaviour
 {
@@ -197,9 +195,7 @@ public class ItemGridDebugger : MonoBehaviour
 
     #region Public Debug Methods
 
-    /// <summary>
-    /// Imprime el estado completo del grid en la consola.
-    /// </summary>
+    // Imprime el estado completo del grid en la consola.
     public void DumpGridState()
     {
         if (grid == null)
@@ -228,49 +224,32 @@ public class ItemGridDebugger : MonoBehaviour
             }
         }
 
-        Debug.Log($"Items únicos en grid: {itemOrigins.Count}");
 
         foreach (var kvp in itemOrigins)
         {
             InventoryItem item = kvp.Key;
             Vector2Int origin = kvp.Value;
 
-            Debug.Log($"  - {item.itemData.name} @ ({origin.x},{origin.y}) [{item.WIDTH}x{item.HEIGHT}] Rot:{item.RotationIndex}");
         }
 
-        Debug.Log("======================");
     }
 
-    /// <summary>
-    /// Muestra información de una celda específica.
-    /// </summary>
+    // Muestra información de una celda específica.
     public void InspectCell(int x, int y)
     {
         if (grid == null) return;
 
         InventoryItem item = grid.GetItem(x, y);
 
-        Debug.Log($"=== CELL INSPECTION ({x},{y}) ===");
 
         if (item == null)
         {
-            Debug.Log("Celda VACÍA");
+            Debug.Log("Celda vacia");
         }
-        else
-        {
-            Debug.Log($"Celda OCUPADA por: {item.itemData.name}");
-            Debug.Log($"  Origen del item: ({item.onGridPositionX},{item.onGridPositionY})");
-            Debug.Log($"  Tamaño: {item.WIDTH}x{item.HEIGHT}");
-            Debug.Log($"  Rotación: {item.RotationIndex}");
-            Debug.Log($"  GameObject: {item.gameObject.name}");
-        }
-
-        Debug.Log("================================");
+        
     }
 
-    /// <summary>
-    /// Valida la integridad del grid (detecta items corruptos).
-    /// </summary>
+    // Valida la integridad del grid (detecta items corruptos).
     public bool ValidateGridIntegrity()
     {
         if (grid == null) return false;
@@ -308,7 +287,6 @@ public class ItemGridDebugger : MonoBehaviour
 
             if (cells.Count != expectedCells)
             {
-                Debug.LogError($"[GridDebugger] Item {item.itemData.name} tiene {cells.Count} celdas, esperadas {expectedCells}");
                 isValid = false;
             }
 
@@ -329,18 +307,17 @@ public class ItemGridDebugger : MonoBehaviour
 
             if (width != item.WIDTH || height != item.HEIGHT)
             {
-                Debug.LogError($"[GridDebugger] Item {item.itemData.name} tiene forma incorrecta: {width}x{height} vs {item.WIDTH}x{item.HEIGHT}");
                 isValid = false;
             }
         }
 
         if (isValid)
         {
-            Debug.Log("[GridDebugger] ✅ Grid integrity OK");
+            Debug.Log("[GridDebugger]  Grid essta bien");
         }
         else
         {
-            Debug.LogError("[GridDebugger] ❌ Grid integrity FAILED");
+            Debug.LogError("[GridDebugger]  Grid esta mal");
         }
 
         return isValid;
@@ -348,10 +325,10 @@ public class ItemGridDebugger : MonoBehaviour
 
     #endregion
 
-    #region Context Menu (Editor Only)
+    #region Context Menu (Editor Only) 
 
 #if UNITY_EDITOR
-    [ContextMenu("Dump Grid State")]
+    [ContextMenu("Dump Grid State")] // esto es para testing 
     private void ContextDumpGridState()
     {
         DumpGridState();

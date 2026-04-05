@@ -100,41 +100,41 @@ namespace AbyssalReach.Gameplay
 
         #region Public API
 
-        /// <summary>
-        /// Verifica si el cable está estirado al máximo
-        /// </summary>
+       
+        // Verifica si el cable está estirado al máximo
+      
         public bool IsAtMaxLength()
         {
             return currentLength >= maxLength * 0.99f;
         }
 
-        /// <summary>
-        /// Obtiene la longitud actual del cable
-        /// </summary>
+      
+        // Obtiene la longitud actual del cable
+        
         public float GetCurrentLength()
         {
             return currentLength;
         }
 
-        /// <summary>
-        /// Obtiene la longitud máxima del cable
-        /// </summary>
+        
+        // Obtiene la longitud máxima del cable
+        
         public float GetMaxLength()
         {
             return maxLength;
         }
 
-        /// <summary>
-        /// Obtiene el factor de tensión (0-1)
-        /// </summary>
+       
+        // Obtiene el factor de tensión (0-1)
+       
         public float GetTension()
         {
             return tension;
         }
 
-        /// <summary>
-        /// Mejora la longitud del cable
-        /// </summary>
+       
+        // Mejora la longitud del cable
+       
         public void UpgradeLength(float newLength)
         {
             if (newLength > maxLength)
@@ -169,26 +169,26 @@ namespace AbyssalReach.Gameplay
             }
         }
 
-        /// <summary>
-        /// Configura los anclajes
-        /// </summary>
+        
+        // Configura los anclajes
+       
         public void SetAnchors(Transform boat, Transform diver)
         {
             boatAnchor = boat;
             diverAnchor = diver;
         }
 
-        /// <summary>
-        /// Obtiene el transform del buceador
-        /// </summary>
+        
+        // Obtiene el transform del buceador
+      
         public Transform GetDiverAnchor()
         {
             return diverAnchor;
         }
 
-        /// <summary>
-        /// Obtiene el transform del barco
-        /// </summary>
+       
+        // Obtiene el transform del barco
+       
         public Transform GetBoatAnchor()
         {
             return boatAnchor;

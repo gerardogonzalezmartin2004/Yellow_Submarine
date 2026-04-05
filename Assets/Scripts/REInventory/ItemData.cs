@@ -17,9 +17,7 @@ public class ItemData : ScriptableObject
     public ItemRarity rarity = ItemRarity.Common;
 
     [Header("Propiedades")]
-    // El valor se sugiere automáticamente según rareza pero puedes cambiarlo
     [Min(0)] public int value = 5;
-    // El peso afecta el límite de la bolsa del buzo
     [Min(0)] public float weight = 1f;
 
     [Header("Descripción")]
@@ -29,10 +27,10 @@ public class ItemData : ScriptableObject
     // Rareza con sus implicaciones de color y valor sugerido
     public enum ItemRarity
     {
-        Common,    // Gris   - Valor base: 5
-        Rare,      // Azul   - Valor base: 10  
-        Epic,      // Morado - Valor base: 20
-        Legendary  // Dorado - Valor base: 50
+        Common,    
+        Rare,     
+        Epic,      
+        Legendary  
     }
 
     // Devuelve el color del aura según la rareza.

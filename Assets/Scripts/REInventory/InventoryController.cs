@@ -36,6 +36,24 @@ public class InventoryController : MonoBehaviour
 
     #endregion
 
+    #region Singleton
+
+    private static InventoryController instance;
+    public static InventoryController Instance => instance;
+
+    private void OnAwake_Singleton()
+    {
+        if (instance != null && instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        instance = this;
+    }
+
+    #endregion
+
     #region Private Fields
 
     private ItemGrid selectedItemGrid;
@@ -75,6 +93,7 @@ public class InventoryController : MonoBehaviour
 
     private void Awake()
     {
+        OnAwake_Singleton();
         inventoryHighlight = GetComponent<InventotyHighlight>();
         if (inventoryHighlight == null)
             Debug.LogError("[InventoryController] InventotyHighlight no encontrado");
@@ -84,7 +103,6 @@ public class InventoryController : MonoBehaviour
         if (inventoryCanvas != null)
             inventoryCanvas.SetActive(false);
 
-        // Obtener debugger si existe
         if (boatItemGrid != null)
         {
             gridDebugger = boatItemGrid.GetComponent<ItemGridDebugger>();
@@ -169,8 +187,49 @@ public class InventoryController : MonoBehaviour
         selectedItem.Rotate();
         lastRotationIdx = -1;
 
-        LogDebug($"Item rotado a {selectedItem.RotationIndex * 90}°");
     }
+
+    // Transfiere los items del grid del barco de vuelta al inventario del buzo.
+
+    private void TransferBoatItemsToDiver()
+    {
+        if (InventoryManager.Instance == null || boatItemGrid == null)
+            return;
+
+        DiverInventory diverInv = InventoryManager.Instance.GetDiverInventory();
+        List<InventoryItem> itemsToRemove = new List<InventoryItem>();
+
+        // Recopilar todos los items únicos del grid
+        for (int x = 0; x < boatItemGrid.GetWidth(); x++)
+        {
+            for (int y = 0; y < boatItemGrid.GetHeight(); y++)
+            {
+                InventoryItem item = boatItemGrid.GetItem(x, y);
+
+                // Evitar procesar el mismo item dos veces
+                if (item != null && !itemsToRemove.Contains(item))
+                {
+                    itemsToRemove.Add(item);
+                }
+            }
+        }
+        // Transferir cada item al inventario del buzo
+        foreach (InventoryItem item in itemsToRemove)
+        {
+            if (item.itemData != null)
+            {
+                diverInv.GetItems().Add(item.itemData);
+            }
+            // Destruir la instancia visual del grid
+            Destroy(item.gameObject);
+        }
+
+        if (showDebugLogs && itemsToRemove.Count > 0)
+            Debug.Log("[InventoryController] " + itemsToRemove.Count + " items transferidos de barco a buzo");
+
+        InventoryManager.Instance.NotifyInventoryUpdate();
+    }
+
 
     private void OnToggleInventoryPerformed(InputAction.CallbackContext ctx)
     {
@@ -181,7 +240,45 @@ public class InventoryController : MonoBehaviour
     #endregion
 
     #region Public API
+    
+    // Vende todos los items del grid del barco y los destruye.
+    // Retorna el valor total vendido.
+ 
+    public int SellAllBoatItems()
+    {
+        if (boatItemGrid == null)
+            return 0;
 
+        int totalValue = 0;
+        List<InventoryItem> itemsToRemove = new List<InventoryItem>();
+
+        // Recorrer todas las celdas del grid y recopilar items únicos
+        for (int x = 0; x < boatItemGrid.GetWidth(); x++)
+        {
+            for (int y = 0; y < boatItemGrid.GetHeight(); y++)
+            {
+                InventoryItem item = boatItemGrid.GetItem(x, y);
+
+                // Evitar contar el mismo item dos veces (ocupa múltiples celdas)
+                if (item != null && !itemsToRemove.Contains(item))
+                {
+                    totalValue += item.itemData.value;
+                    itemsToRemove.Add(item);
+                }
+            }
+        }
+
+        // Destruir todos los items
+        foreach (InventoryItem item in itemsToRemove)
+        {
+            Destroy(item.gameObject);
+        }
+
+        if (showDebugLogs && totalValue > 0)
+            Debug.Log("[InventoryController] Vendidos items del barco por " + totalValue + "G");
+
+        return totalValue;
+    }
     public void SetInventoryVisible(bool visible)
     {
         if (inventoryCanvas == null) return;
@@ -195,14 +292,13 @@ public class InventoryController : MonoBehaviour
         }
         else
         {
+            TransferBoatItemsToDiver();
             if (selectedItem != null)
             {
-                // NUEVO: Mejorado - siempre intenta retornar antes de destruir
                 bool returned = TryReturnItemToLastPosition();
 
                 if (!returned)
                 {
-                    LogDebug("⚠️ No se pudo retornar item al cerrar - destruyendo");
                     Destroy(selectedItem.gameObject);
                 }
 
@@ -231,26 +327,22 @@ public class InventoryController : MonoBehaviour
 
             newItem.Set(loot);
 
-            // NUEVO: Añadir componente de memoria si está habilitado
             if (enablePositionMemory)
             {
                 ItemPositionMemory memory = newItem.gameObject.AddComponent<ItemPositionMemory>();
                 memory.SetReturnStrategy(returnStrategy);
-                LogDebug($"ItemPositionMemory añadido a {loot.name}");
             }
 
             Vector2Int? slot = boatItemGrid.FindSpaceForObject(newItem);
 
             if (slot == null)
             {
-                Debug.LogWarning($"[InventoryController] Sin espacio para: {loot.name}");
                 Destroy(newItem.gameObject);
                 continue;
             }
 
             boatItemGrid.PlaceItem(newItem, slot.Value.x, slot.Value.y);
 
-            // NUEVO: Guardar posición inicial en memoria
             if (enablePositionMemory)
             {
                 ItemPositionMemory memory = newItem.GetComponent<ItemPositionMemory>();
@@ -258,15 +350,12 @@ public class InventoryController : MonoBehaviour
             }
 
             transferidos.Add(loot);
-            LogDebug($"Transferido al barco: {loot.name}");
         }
 
         foreach (ItemData loot in transferidos)
             diverInv.GetItems().Remove(loot);
 
-        Debug.Log($"[InventoryController] Transferencia: {transferidos.Count}/{diverItems.Count}");
 
-        // Validar integridad después de transferencia
         if (gridDebugger != null && verboseDebug)
         {
             gridDebugger.ValidateGridIntegrity();
@@ -275,52 +364,40 @@ public class InventoryController : MonoBehaviour
 
     #endregion
 
-    #region Drag & Drop (MEJORADO)
+    #region Drag & Drop
 
-    /// <summary>
-    /// Recoge un item del grid.
-    /// MEJORADO: Ahora funciona en CUALQUIER celda del item, no solo en la celda de origen.
-    /// </summary>
+    // Recoge un item del grid.
     private void PickUpItem(Vector2Int tile)
     {
         if (selectedItemGrid == null)
         {
-            LogDebug("⚠️ PickUpItem: selectedItemGrid es null");
             return;
         }
 
-        LogVerbose($"PickUpItem en tile ({tile.x}, {tile.y})");
 
-        // CRÍTICO: Obtener el item en esa celda
         InventoryItem itemAtTile = selectedItemGrid.GetItem(tile.x, tile.y);
 
         if (itemAtTile == null)
         {
-            LogVerbose("Celda vacía - no hay nada que recoger");
             return;
         }
 
-        // NUEVO: Debug - inspeccionar celda si hay problemas
         if (verboseDebug && gridDebugger != null)
         {
             gridDebugger.InspectCell(tile.x, tile.y);
         }
 
-        // MEJORADO: Recoger desde la posición de ORIGEN del item, no desde donde hicimos click
         // Esto es crucial para items grandes que ocupan múltiples celdas
         int originX = itemAtTile.onGridPositionX;
         int originY = itemAtTile.onGridPositionY;
 
-        LogVerbose($"Item encontrado: {itemAtTile.itemData.name} @ origen ({originX}, {originY})");
 
         // Recoger desde el origen
         selectedItem = selectedItemGrid.PickUpItem(originX, originY);
 
         if (selectedItem == null)
         {
-            Debug.LogError($"[InventoryController] ❌ FALLO al recoger item desde origen ({originX}, {originY})");
 
-            // Debug profundo
             if (gridDebugger != null)
             {
                 gridDebugger.DumpGridState();
@@ -330,12 +407,11 @@ public class InventoryController : MonoBehaviour
             return;
         }
 
-        LogDebug($"✅ Item recogido: {selectedItem.itemData.name}");
 
         heldItemRect = selectedItem.GetComponent<RectTransform>();
         heldItemRect?.SetAsLastSibling();
 
-        // NUEVO: Obtener componente de memoria
+        //  Obtener componente de memoria
         if (enablePositionMemory)
         {
             currentItemMemory = selectedItem.GetComponent<ItemPositionMemory>();
@@ -343,31 +419,22 @@ public class InventoryController : MonoBehaviour
             if (currentItemMemory != null)
             {
                 currentItemMemory.MarkAsPickedUp();
-                LogDebug($"Memoria activa: {currentItemMemory.HasValidReturnPosition}");
             }
-            else
-            {
-                LogDebug("⚠️ Item no tiene ItemPositionMemory");
-            }
+           
         }
     }
 
-    /// <summary>
-    /// Intenta colocar el item en el grid.
-    /// MEJORADO: Retorno robusto cuando falla.
-    /// </summary>
+    // Intenta colocar el item en el grid.
+    //  Retorno robusto cuando falla.
     private void PlaceItem(Vector2Int tile)
     {
         if (selectedItem == null || selectedItemGrid == null) return;
 
-        LogVerbose($"PlaceItem en tile ({tile.x}, {tile.y})");
 
-        // VALIDACIÓN PREVIA: Verificar que la posición está dentro del grid
+        //   Verificar que la posición está dentro del grid
         if (!selectedItemGrid.BoundaryCheck(tile.x, tile.y, selectedItem.WIDTH, selectedItem.HEIGHT))
         {
-            LogDebug($"⚠️ Posición fuera de límites: ({tile.x}, {tile.y}) con tamaño {selectedItem.WIDTH}x{selectedItem.HEIGHT}");
 
-            // NUEVO: Retorno inmediato cuando está fuera
             TryReturnItemToLastPosition();
             return;
         }
@@ -376,15 +443,12 @@ public class InventoryController : MonoBehaviour
 
         if (placed)
         {
-            // ✅ COLOCACIÓN EXITOSA
 
-            LogDebug($"✅ Item colocado exitosamente en ({tile.x}, {tile.y})");
 
-            // NUEVO: Guardar nueva posición en memoria
+            //  Guardar nueva posición en memoria
             if (enablePositionMemory && currentItemMemory != null)
             {
                 currentItemMemory.SaveCurrentPosition(selectedItemGrid);
-                LogVerbose($"Nueva posición guardada en memoria");
             }
 
             selectedItem = null;
@@ -394,14 +458,13 @@ public class InventoryController : MonoBehaviour
             // Swap estilo RE4
             if (overlapItem != null)
             {
-                LogDebug($"Swap detectado - recogiendo: {overlapItem.itemData.name}");
 
                 selectedItem = overlapItem;
                 overlapItem = null;
                 heldItemRect = selectedItem.GetComponent<RectTransform>();
                 heldItemRect?.SetAsLastSibling();
 
-                // NUEVO: Actualizar memoria del item swapeado
+                // Actualizar memoria del item swapeado
                 if (enablePositionMemory)
                 {
                     currentItemMemory = selectedItem.GetComponent<ItemPositionMemory>();
@@ -417,52 +480,34 @@ public class InventoryController : MonoBehaviour
         }
         else
         {
-            // ❌ COLOCACIÓN FALLIDA - ACTIVAR RETORNO
+         bool returned = TryReturnItemToLastPosition();
 
-            LogDebug($"❌ Colocación fallida en ({tile.x}, {tile.y})");
-
-            // NUEVO: Retorno robusto
-            bool returned = TryReturnItemToLastPosition();
-
-            if (!returned)
-            {
-                // Fallback: Item permanece en la mano
-                LogDebug("Item permanece en la mano (sin posición válida de retorno)");
-            }
+            
         }
     }
 
-    /// <summary>
-    /// Intenta retornar el item a su última posición válida.
-    /// Retorna true si el retorno fue exitoso.
-    /// </summary>
     private bool TryReturnItemToLastPosition()
     {
         if (!enablePositionMemory)
         {
-            LogDebug("Sistema de memoria desactivado");
             return false;
         }
 
         if (currentItemMemory == null)
         {
-            LogDebug("Item no tiene ItemPositionMemory");
             return false;
         }
 
         if (!currentItemMemory.HasValidReturnPosition)
         {
-            LogDebug("Item no tiene posición válida de retorno");
             return false;
         }
 
-        LogDebug("🔄 Iniciando retorno a última posición...");
 
         bool returned = currentItemMemory.ReturnToLastPosition();
 
         if (returned)
         {
-            LogDebug("✅ Item retornado exitosamente");
 
             // Limpiar selección
             selectedItem = null;
@@ -473,7 +518,7 @@ public class InventoryController : MonoBehaviour
         }
         else
         {
-            Debug.LogError("❌ FALLO al retornar item");
+            Debug.LogError(" Faloo al retornar item");
 
             // Debug profundo
             if (gridDebugger != null)
@@ -560,43 +605,7 @@ public class InventoryController : MonoBehaviour
         if (boatItemGrid == null) Debug.LogWarning("[InventoryController] boatItemGrid no asignado");
     }
 
-    private void LogDebug(string message)
-    {
-        if (showDebugLogs)
-        {
-            Debug.Log($"[InventoryController] {message}");
-        }
-    }
 
-    private void LogVerbose(string message)
-    {
-        if (verboseDebug)
-        {
-            Debug.Log($"[InventoryController|VERBOSE] {message}");
-        }
-    }
-
-    #endregion
-
-    #region Context Menu (Editor Only)
-
-#if UNITY_EDITOR
-    [ContextMenu("Dump Current State")]
-    private void ContextDumpState()
-    {
-        Debug.Log("=== INVENTORY CONTROLLER STATE ===");
-        Debug.Log($"Selected Item: {(selectedItem != null ? selectedItem.itemData.name : "None")}");
-        Debug.Log($"Selected Grid: {(selectedItemGrid != null ? selectedItemGrid.name : "None")}");
-        Debug.Log($"Memory Enabled: {enablePositionMemory}");
-        Debug.Log($"Current Memory: {(currentItemMemory != null ? currentItemMemory.GetDebugInfo() : "None")}");
-
-        if (gridDebugger != null)
-        {
-            gridDebugger.DumpGridState();
-        }
-    }
-
-    [ContextMenu("Validate Grid Integrity")]
     private void ContextValidateGrid()
     {
         if (gridDebugger != null)
@@ -608,7 +617,8 @@ public class InventoryController : MonoBehaviour
             Debug.LogWarning("No ItemGridDebugger found");
         }
     }
-#endif
+
 
     #endregion
+    
 }

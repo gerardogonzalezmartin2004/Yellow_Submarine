@@ -79,7 +79,7 @@ namespace AbyssalReach.Gameplay
             Vector2 inputVector = context.ReadValue<Vector2>();
             float rawInput = inputVector.x; // Solo usar eje X
 
-            // Aplicar deadzone: Si el valor absoluto es menor que el umbral, ignorar
+            // Aplicar deadzone, si el valor absoluto es menor que el umbral, ignorar
             if (Mathf.Abs(rawInput) < inputDeadzone)
             {
                 moveInput = 0f;

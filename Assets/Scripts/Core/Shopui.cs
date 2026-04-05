@@ -6,11 +6,10 @@ using AbyssalReach.Gameplay;
 
 namespace AbyssalReach.UI
 {
-    /// <summary>
+   
     /// Controla la UI de la tienda del puerto.
     /// Permite vender items y comprar upgrades.
-    /// ACTUALIZADO: Maneja el cierre completo sin script adicional.
-    /// </summary>
+  
     public class ShopUI : MonoBehaviour
     {
         [Header("UI References")]
@@ -118,22 +117,29 @@ namespace AbyssalReach.UI
                 return;
             }
 
-            // Calcular cuánto valen todos los objetos
-            int totalValue = InventoryManager.Instance.CalculateTotalValue();
+            // Obtener valor total del inventario del buzo
+            int diverValue = InventoryManager.Instance.CalculateTotalValue();
+
+            // Obtener valor total del grid del barco
+            int boatValue = 0;
+            if (InventoryController.Instance != null)
+            {
+                boatValue = InventoryController.Instance.SellAllBoatItems();
+            }
+
+            int totalValue = diverValue + boatValue;
 
             if (totalValue <= 0)
             {
-                LogDebug("No hay items para vender");
-                return; // No hay nada que vender
+                return;
             }
 
-            // Vender items 
+            // Vender items del inventario del buzo
             int earnedGold = InventoryManager.Instance.SellAllItems();
 
-            // Añadir el oro ganado al jugador
-            CurrencyManager.Instance.AddGold(earnedGold);
+            // Sumar el oro total (buzo + barco)
+            CurrencyManager.Instance.AddGold(totalValue);
 
-            LogDebug($"Vendidos todos los items por {earnedGold}G");
         }
 
         // Los botones de compra
@@ -165,7 +171,6 @@ namespace AbyssalReach.UI
             // Intentar gastar el oro. Si devuelve true, la compra fue exitosa.
             if (CurrencyManager.Instance.SpendGold(cost))
             {
-                LogDebug($"Comprado: {upgradeName} por {cost}G");
 
                 // Aplicar la mejora
                 if (upgradeName == "Cable Length")
@@ -178,28 +183,26 @@ namespace AbyssalReach.UI
                 }
                 else if (upgradeName == "Cable Strength")
                 {
-                    // TODO: Implementar mejora de resistencia
-                    LogDebug("Mejora de resistencia comprada (TODO: implementar)");
+                    // inplementar mejora de resistencia
+                    LogDebug("Mejora de resistencia comprada");
                 }
                 else if (upgradeName == "Swim Speed")
                 {
                     if (diverMovement != null)
                     {
                         diverMovement.swimSpeed += mejoraVelocidad;
-                        LogDebug($"Velocidad de nado mejorada: {diverMovement.swimSpeed}");
+                        Debug.Log("Velocidad de nado mejorada:"+ diverMovement.swimSpeed);
                     }
                 }
             }
             else
             {
-                LogDebug($"Oro insuficiente para {upgradeName} (cuesta {cost}G)");
+                Debug.Log("No tienes suficiente oro para comprar " + upgradeName);
             }
         }
 
-        /// <summary>
-        /// NUEVO: Cierra la tienda y notifica al PortArea.
-        /// Maneja TODA la lógica de cierre sin necesidad de script adicional.
-        /// </summary>
+       // Cierra la tienda y notifica al PortArea.
+       
         private void CloseShop()
         {
             LogDebug("Cerrando tienda...");
@@ -211,7 +214,7 @@ namespace AbyssalReach.UI
             }
             else
             {
-                // FALLBACK: Si no hay referencia al PortArea, cerrar manualmente
+                //  Si no hay referencia al PortArea, cerrar manualmente
                 Debug.LogWarning("[ShopUI] No hay referencia a PortArea - cerrando manualmente");
 
                 // Desactivar el panel
@@ -284,7 +287,7 @@ namespace AbyssalReach.UI
         {
             if (showDebugLogs)
             {
-                Debug.Log($"[ShopUI] {message}");
+                Debug.Log("[ShopUI]"+ message);
             }
         }
 
@@ -292,9 +295,7 @@ namespace AbyssalReach.UI
 
         #region Public API (Para PortArea)
 
-        /// <summary>
-        /// Método público para que PortArea pueda cerrar la tienda externamente.
-        /// </summary>
+        
         public void ForceClose()
         {
             gameObject.SetActive(false);

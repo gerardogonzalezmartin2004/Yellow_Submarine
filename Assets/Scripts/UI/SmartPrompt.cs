@@ -2,10 +2,7 @@ using UnityEngine;
 
 namespace AbyssalReach.UI
 {
-    /// <summary>
-    /// SCRIPT 4: TODO EN UNO - Combina todo lo anterior
-    /// Dos sprites (far/near) + Enum (Diver/Boat/Both) + Simple
-    /// </summary>
+   
     public class SmartPrompt : MonoBehaviour
     {
         public enum TargetType
@@ -19,15 +16,15 @@ namespace AbyssalReach.UI
         [SerializeField] private TargetType targetType = TargetType.DiverOnly;
 
         [Header("SPRITES")]
-        [SerializeField] private Sprite farSprite;  // Lejos
-        [SerializeField] private Sprite nearSprite; // Cerca
+        [SerializeField] private Sprite farSprite;  
+        [SerializeField] private Sprite nearSprite; 
 
         [Header("RANGOS")]
         [SerializeField] private float farRadius = 5f;
         [SerializeField] private float nearRadius = 2f;
 
         [Header("VISUALES")]
-        [SerializeField] private Vector3 iconScale = new Vector3(3, 3, 1); // GRANDE
+        [SerializeField] private Vector3 iconScale = new Vector3(3, 3, 1); 
         [SerializeField] private int sortingOrder = 100;
 
         private SpriteRenderer spriteRenderer;
@@ -80,18 +77,17 @@ namespace AbyssalReach.UI
             // Actualizar estado visual
             if (!hasValidTarget || closestDistance > farRadius)
             {
-                // FUERA DE RANGO
+              
                 spriteRenderer.enabled = false;
             }
             else if (closestDistance > nearRadius)
             {
-                // LEJOS
+                
                 spriteRenderer.enabled = true;
                 spriteRenderer.sprite = farSprite;
             }
             else
             {
-                // CERCA
                 spriteRenderer.enabled = true;
                 spriteRenderer.sprite = nearSprite;
             }

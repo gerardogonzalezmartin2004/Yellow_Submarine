@@ -2,11 +2,9 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
-/// <summary>
-/// Sistema de memoria de posición para InventoryItem.
-/// Guarda el historial de posiciones y permite retorno automático a la última posición válida.
-/// Integra los patrones: Memento, State, Strategy y Object Pool.
-/// </summary>
+// Sistema de memoria de posición para InventoryItem.
+// Guarda el historial de posiciones y permite retorno automático a la última posición válida.
+// Integra los patrones: Memento, State, Strategy y Object Pool.
 [RequireComponent(typeof(InventoryItem))]
 public class ItemPositionMemory : MonoBehaviour
 {
@@ -30,58 +28,38 @@ public class ItemPositionMemory : MonoBehaviour
 
     #region Private Fields
 
-    /// <summary>
-    /// Referencia al InventoryItem dueño.
-    /// </summary>
+    // Referencia al InventoryItem dueño.
     private InventoryItem item;
 
-    /// <summary>
-    /// Máquina de estados del item.
-    /// </summary>
+    // Máquina de estados del item.
     private ItemStateMachine stateMachine;
 
-    /// <summary>
-    /// Última posición válida (memento más reciente).
-    /// </summary>
+    // Última posición válida 
     private ItemMemento lastValidPosition;
 
-    /// <summary>
-    /// Historial completo de posiciones (para undo múltiple).
-    /// </summary>
+    // Historial completo de posiciones
     private Stack<ItemMemento> positionHistory;
 
-    /// <summary>
-    /// Estrategia actual de retorno.
-    /// </summary>
+    // Estrategia actual de retorno.
     private IReturnStrategy currentStrategy;
 
-    /// <summary>
-    /// Grid donde está actualmente el item (puede ser null si está en la mano).
-    /// </summary>
+    // Grid donde está actualmente el item 
     private ItemGrid currentGrid;
 
-    /// <summary>
-    /// Corrutina de animación activa (si hay una).
-    /// </summary>
+    /// Corrutina de animación activa 
     private Coroutine activeReturnCoroutine;
 
     #endregion
 
     #region Properties
 
-    /// <summary>
     /// Indica si el item tiene una posición válida a la que puede volver.
-    /// </summary>
     public bool HasValidReturnPosition => lastValidPosition != null && lastValidPosition.IsValid;
 
-    /// <summary>
-    /// Estado actual del item.
-    /// </summary>
+    // Estado actual del item.
     public ItemState CurrentState => stateMachine.CurrentState;
 
-    /// <summary>
-    /// Número de posiciones guardadas en el historial.
-    /// </summary>
+    // Número de posiciones guardadas en el historial.
     public int HistoryCount => positionHistory?.Count ?? 0;
 
     #endregion
@@ -111,17 +89,14 @@ public class ItemPositionMemory : MonoBehaviour
         // Crear estrategia de retorno
         currentStrategy = ReturnStrategyFactory.CreateStrategy(returnStrategy);
 
-        LogDebug($"ItemPositionMemory inicializado con estrategia: {currentStrategy.StrategyName}");
     }
 
     #endregion
 
-    #region Public API - Memento Management
+    #region Public API 
 
-    /// <summary>
-    /// Guarda la posición actual del item como un memento.
-    /// Se llama cuando el item se coloca exitosamente en un grid.
-    /// </summary>
+    // Guarda la posición actual del item como un memento.
+    // Se llama cuando el item se coloca exitosamente en un grid.
     public void SaveCurrentPosition(ItemGrid grid)
     {
         if (item == null || grid == null)
@@ -161,9 +136,7 @@ public class ItemPositionMemory : MonoBehaviour
         LogDebug($"Posición guardada: {memento}");
     }
 
-    /// <summary>
-    /// Marca el item como "recogido" (empieza a ser arrastrado).
-    /// </summary>
+    /// Marca el item como recogido
     public void MarkAsPickedUp()
     {
         stateMachine.TransitionTo(ItemState.BeingDragged);
@@ -172,10 +145,8 @@ public class ItemPositionMemory : MonoBehaviour
         LogDebug("Item recogido - estado: BeingDragged");
     }
 
-    /// <summary>
-    /// Intenta volver el item a su última posición válida.
-    /// Retorna true si el retorno fue exitoso.
-    /// </summary>
+    // Intenta volver el item a su última posición válida.
+    // Retorna true si el retorno fue exitoso.
     public bool ReturnToLastPosition()
     {
         if (!HasValidReturnPosition)
@@ -184,7 +155,6 @@ public class ItemPositionMemory : MonoBehaviour
             return false;
         }
 
-        LogDebug($"Intentando retornar a última posición: {lastValidPosition}");
 
         // Cambiar estado a Returning
         stateMachine.TransitionTo(ItemState.ReturningToLastPosition);
@@ -200,7 +170,6 @@ public class ItemPositionMemory : MonoBehaviour
             // Cambiar estado a Placed
             stateMachine.TransitionTo(ItemState.Placed);
 
-            LogDebug("Retorno exitoso");
         }
         else
         {
@@ -213,10 +182,8 @@ public class ItemPositionMemory : MonoBehaviour
         return success;
     }
 
-    /// <summary>
-    /// Intenta volver al penúltimo memento (undo).
-    /// Solo funciona si enableFullHistory está activo.
-    /// </summary>
+    // Intenta volver al penúltimo memento.
+    // Solo funciona si enableFullHistory está activo.
     public bool UndoToPreviousPosition()
     {
         if (!enableFullHistory || positionHistory == null || positionHistory.Count < 2)
@@ -225,10 +192,10 @@ public class ItemPositionMemory : MonoBehaviour
             return false;
         }
 
-        // Remover el memento actual (último)
+        // Remover el memento actual 
         positionHistory.Pop();
 
-        // El nuevo "último" es el anterior
+        // El nuevo último es el anterior
         ItemMemento previousMemento = positionHistory.Peek();
 
         if (!previousMemento.IsValid)
@@ -248,20 +215,16 @@ public class ItemPositionMemory : MonoBehaviour
 
     #region Public API - State Management
 
-    /// <summary>
-    /// Cambia la estrategia de retorno en runtime.
-    /// </summary>
+    // Cambia la estrategia de retorno en runtime.
     public void SetReturnStrategy(ReturnStrategyFactory.StrategyType newStrategy)
     {
         returnStrategy = newStrategy;
         currentStrategy = ReturnStrategyFactory.CreateStrategy(newStrategy);
 
-        LogDebug($"Estrategia cambiada a: {currentStrategy.StrategyName}");
     }
 
-    /// <summary>
-    /// Limpia todo el historial de posiciones.
-    /// </summary>
+    // Limpia todo el historial de posiciones.
+    
     public void ClearHistory()
     {
         lastValidPosition = null;
@@ -274,17 +237,14 @@ public class ItemPositionMemory : MonoBehaviour
 
         stateMachine.TransitionTo(ItemState.Floating);
 
-        LogDebug("Historial limpiado");
     }
 
     #endregion
 
     #region Animation Coroutines (para LerpReturnStrategy)
 
-    /// <summary>
-    /// Corrutina de animación Lerp (movimiento suave).
-    /// Se usa con LerpReturnStrategy.
-    /// </summary>
+    // Corrutina de animación Lerp 
+    // Se usa con LerpReturnStrategy.
     public IEnumerator AnimateLerpReturn(ItemMemento targetMemento, float duration)
     {
         if (item == null || targetMemento == null || !targetMemento.IsValid)
@@ -326,10 +286,8 @@ public class ItemPositionMemory : MonoBehaviour
         activeReturnCoroutine = null;
     }
 
-    /// <summary>
-    /// Corrutina de animación Bounce (con rebote).
-    /// Se usa con BounceReturnStrategy.
-    /// </summary>
+    // Corrutina de animación Bounce 
+    // Se usa con BounceReturnStrategy.
     public IEnumerator AnimateBounceReturn(ItemMemento targetMemento, float duration, float bounceAmount)
     {
         if (item == null || targetMemento == null || !targetMemento.IsValid)
@@ -380,27 +338,10 @@ public class ItemPositionMemory : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Retorna información de debug del estado actual.
-    /// </summary>
-    public string GetDebugInfo()
-    {
-        string info = $"=== ItemPositionMemory Debug ===\n";
-        info += $"Estado: {stateMachine.CurrentState}\n";
-        info += $"Tiene posición válida: {HasValidReturnPosition}\n";
-        info += $"Estrategia: {currentStrategy.StrategyName}\n";
-        info += $"Historial habilitado: {enableFullHistory}\n";
-        info += $"Items en historial: {HistoryCount}\n";
+  
+   
 
-        if (HasValidReturnPosition)
-        {
-            info += $"Última posición: {lastValidPosition}\n";
-        }
 
-        return info;
-    }
-
-#if UNITY_EDITOR
     private void OnValidate()
     {
         if (maxHistorySize < 1)
@@ -408,7 +349,7 @@ public class ItemPositionMemory : MonoBehaviour
             maxHistorySize = 1;
         }
     }
-#endif
+
 
     #endregion
 }

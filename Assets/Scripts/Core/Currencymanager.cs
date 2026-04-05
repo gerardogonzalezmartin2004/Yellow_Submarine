@@ -2,7 +2,7 @@
 
 namespace AbyssalReach.Core
 {
-    // Este script gestiona el dinero (Oro) del jugador.
+    // Este script gestiona el dinero  del jugador.
     // Es un Singleton, lo que significa que solo hay uno en todo el juego y es accesible desde cualquier lado.
     public class CurrencyManager : MonoBehaviour
     {

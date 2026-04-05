@@ -114,8 +114,7 @@ public class ItemGrid : MonoBehaviour
 
    
     // Convierte una posición del ratón en pantalla a coordenadas de grid.
-    // Utiliza caches para evitar crear nuevos objetos (optimización).
-   
+    // Utiliza caches para evitar crear nuevos objetos
     public Vector2Int GetTileGridPosition(Vector2 mousePosition)
     {
         if (rectTransform == null)
@@ -136,7 +135,6 @@ public class ItemGrid : MonoBehaviour
     }
 
    
-    // Nombre alternativo para compatibilidad con código antiguo.
    
   
     [Obsolete("Usar GetTileGridPosition en su lugar (typo corregido)")]
@@ -399,7 +397,7 @@ public class ItemGrid : MonoBehaviour
                 int x = posX + i;
                 int y = posY + j;
 
-                // Validar límites (extra safety)
+                // Validar límites 
                 if (x < 0 || x >= gridWidth || y < 0 || y >= gridHeight)
                 {
                     continue;
@@ -428,7 +426,7 @@ public class ItemGrid : MonoBehaviour
 
    
     // Verifica si un área está completamente vacía (sin items).
-    // </summary>
+
     
     private bool CheckAvailableSpace(int posX, int posY, int width, int height)
     {

@@ -3,7 +3,6 @@ using AbyssalReach.Core;
 
 namespace AbyssalReach.Gameplay
 {
-    // CAMBIO A 2D: Requerimos Rigidbody2D en lugar de Rigidbody
     [RequireComponent(typeof(Rigidbody2D))]
     public class DiverMovement : MonoBehaviour
     {
@@ -35,7 +34,7 @@ namespace AbyssalReach.Gameplay
 
         [Header("References")]
         [SerializeField] private Transform boatTransform;
-        [SerializeField] private ropeVerlet rope; // Corregido a mayúscula según tu arreglo anterior
+        [SerializeField] private ropeVerlet rope; 
         public bool emergencyAscent = false;
 
         // CAMBIO A 2D: rb ahora es Rigidbody2D
@@ -49,14 +48,14 @@ namespace AbyssalReach.Gameplay
 
         private void Awake()
         {
-            // CAMBIO A 2D: GetComponent<Rigidbody2D>
+           
             rb = GetComponent<Rigidbody2D>();
 
             // Configurar Rigidbody2D
-            rb.gravityScale = 0f; // CAMBIO A 2D: En 2D no hay useGravity, se pone scale a 0
-            rb.linearDamping = rbDrag; // linearDamping es el equivalente a drag en 2D moderno
+            rb.gravityScale = 0f; 
+            rb.linearDamping = rbDrag;
 
-            // CAMBIO A 2D: Congelar rotación en el eje Z (único eje de rotación en 2D)
+            
             rb.constraints = RigidbodyConstraints2D.FreezeRotation;
 
             controls = new AbyssalReachControls();
@@ -92,10 +91,10 @@ namespace AbyssalReach.Gameplay
             }
             else
             {
-                // Debug usando Vector3 pero basado en datos 2D
+                
                 Debug.DrawRay(transform.position, new Vector3(rb.linearVelocity.x, rb.linearVelocity.y, 0f).normalized * 6f, Color.green, 0.15f);
             }
-            // En emergencia → NO control del jugador
+           
 
             EnforceSurfaceLimit();
         }
@@ -124,12 +123,10 @@ namespace AbyssalReach.Gameplay
         {
             if (!emergencyAscent)
             {
-                // CAMBIO A 2D: Usamos Vector2.down y ForceMode2D.Force
                 rb.AddForce(Vector2.down * underwaterGravity, ForceMode2D.Force);
             }
             else
             {
-                // CAMBIO A 2D: Usamos ForceMode2D.Force
                 rb.AddForce(rope.GetTensionDirection() * underwaterGravity, ForceMode2D.Force);
             }
         }
@@ -153,7 +150,7 @@ namespace AbyssalReach.Gameplay
             //  Suavizar el cambio de velocidad con MoveTowards
             currentVelocity = Vector2.MoveTowards(currentVelocity, targetVelocity, rate * Time.fixedDeltaTime);
 
-            // Aplicar restricciones especiales (Barco)
+            // Aplicar restricciones especiales 
             currentVelocity = ApplyHemisphereConstraint(currentVelocity);
 
             //  Mover el Rigidbody2D
@@ -187,19 +184,19 @@ namespace AbyssalReach.Gameplay
 
         private void EnforceSurfaceLimit()
         {
-            // Lógica: Si salimos del agua
+            //  Si salimos del agua
             if (transform.position.y > waterSurfaceY)
             {
                 //  Teletransportar de vuelta a la superficie
-                Vector2 pos = transform.position; // Usamos Vector2
+                Vector2 pos = transform.position; 
                 pos.y = waterSurfaceY;
-                transform.position = pos; // Unity convierte implícitamente Vector2 a Vector3 para transform.position
+                transform.position = pos; 
                 rb.position = pos;
 
                 if (moveInput.y > 0f)
                 {
                     currentVelocity.y = 0f;// Cancelamos cualquier intento de seguir subiendo si el jugador sigue pulsando hacia arriba, para evitar que se quede atascado intentando subir sin poder porque ya está en la superficie.
-                    Vector2 vel = rb.linearVelocity; // Usamos Vector2
+                    Vector2 vel = rb.linearVelocity; 
                     vel.y = 0f;
                     rb.linearVelocity = vel;
                 }
@@ -211,7 +208,7 @@ namespace AbyssalReach.Gameplay
                 else
                 {
                     // Solo cancelar velocidad hacia arriba si la hay
-                    Vector2 vel = rb.linearVelocity; // Usamos Vector2
+                    Vector2 vel = rb.linearVelocity;
                     if (vel.y > 0)
                     {
                         vel.y = 0f;
@@ -254,7 +251,7 @@ namespace AbyssalReach.Gameplay
         }
 
         // Posiciona el buceador y asegura que esté bajo el agua
-        // Acepta Vector2 (2D)
+       
         public void SetPosition(Vector2 position)
         {
             // Mathf.Min asegura que nunca spawnee por encima de la superficie

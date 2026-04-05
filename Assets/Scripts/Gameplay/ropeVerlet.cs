@@ -4,10 +4,10 @@ using System.Collections.Generic;
 
 namespace AbyssalReach.Gameplay
 {
-    /// <summary>
-    /// Sistema de cuerda con límite de distancia ESCALABLE
-    /// Puede upgradearse en runtime
-    /// </summary>
+    
+    // Sistema de cuerda con límite de distancia ESCALABLE
+    
+    
     [RequireComponent(typeof(LineRenderer))]
     public class ropeVerlet : MonoBehaviour
     {
@@ -83,7 +83,7 @@ namespace AbyssalReach.Gameplay
         private Rigidbody2D diverRb2D;
 
         
-        private float activeRopeLength = 30f; // Para Verlet visual
+        private float activeRopeLength = 30f; 
         private Vector2 tensionDirection = Vector2.up;
 
         #endregion
@@ -101,7 +101,7 @@ namespace AbyssalReach.Gameplay
 
                 if (diverRb2D == null)
                 {
-                    Debug.LogError("[RopeVerlet] ⚠️ Diver NO tiene Rigidbody2D!");
+                    Debug.LogError("[RopeVerlet]  Diver NO tiene Rigidbody2D!");
                 }
             }
 
@@ -278,20 +278,20 @@ namespace AbyssalReach.Gameplay
 
         #endregion
 
-        // ═══════════════ LÍMITE DE DISTANCIA ═══════════════
+        
         #region Distance Limit
 
-        /// <summary>
-        /// Aplica el límite de distancia máxima
-        /// Frena al diver si intenta alejarse más de maxDistance
-        /// </summary>
+       
+        // Aplica el límite de distancia máxima
+        // Frena al diver si intenta alejarse más de maxDistance
+     
         private void EnforceDistanceLimit()
         {
             if (!enableDistanceLimit) return;
             if (diverRb2D == null) return;
             if (ropeStartTransform == null || ropeEndTransform == null) return;
 
-            // Medir distancia directa barco → diver
+            // Medir distancia directa barco - diver
             Vector2 boatPos = ropeStartTransform.position;
             Vector2 diverPos = ropeEndTransform.position;
             float currentDistance = Vector2.Distance(boatPos, diverPos);
@@ -324,7 +324,7 @@ namespace AbyssalReach.Gameplay
         }
 
         #endregion
-        // ═══════════════════════════════════════════════════════════
+        
 
         #region Tension Force
 
@@ -417,13 +417,11 @@ namespace AbyssalReach.Gameplay
 
         #endregion
 
-        // ═══════════════ API PÚBLICA PARA UPGRADES ═══════════════
         #region Public API
 
-        /// <summary>
-        /// Establece la longitud máxima del cable (para upgrades)
-        /// ESTA ES LA VARIABLE MAESTRA
-        /// </summary>
+     
+        // Establece la longitud máxima del cable (para upgrades)
+        
         public void SetMaxLength(float length)
         {
             maxDistance = length;
@@ -436,25 +434,19 @@ namespace AbyssalReach.Gameplay
             }
         }
 
-        /// <summary>
-        /// Obtiene la longitud máxima actual
-        /// </summary>
+        // Obtiene la longitud máxima actual
         public float GetMaxLength()
         {
             return maxDistance;
         }
 
-        /// <summary>
-        /// Obtiene la longitud actual de la cuerda (visual)
-        /// </summary>
+        // Obtiene la longitud actual de la cuerda
         public float GetCurrentLength()
         {
             return GetCurrentRopeLength();
         }
 
-        /// <summary>
-        /// Obtiene la distancia directa barco → diver
-        /// </summary>
+        // Obtiene la distancia directa barco - diver
         public float GetDirectDistance()
         {
             if (ropeStartTransform == null || ropeEndTransform == null)
@@ -463,9 +455,7 @@ namespace AbyssalReach.Gameplay
             return Vector2.Distance(ropeStartTransform.position, ropeEndTransform.position);
         }
 
-        /// <summary>
-        /// Verifica si está al límite
-        /// </summary>
+        // Verifica si está al límite
         public bool IsAtDistanceLimit()
         {
             return GetDirectDistance() >= maxDistance * 0.95f;
@@ -482,7 +472,6 @@ namespace AbyssalReach.Gameplay
         }
 
         #endregion
-        // ═══════════════════════════════════════════════════════════
 
         #region Debug
 

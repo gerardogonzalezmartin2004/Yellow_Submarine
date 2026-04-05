@@ -4,8 +4,7 @@ using AbyssalReach.Core;
 namespace AbyssalReach.Gameplay
 {
     // Sistema de puerto con zona de detección y auto-pilot.
-    // REFACTORIZADO: El barco ya no se bloquea al entrar al radio.
-    // La rotación ha sido eliminada del auto-pilot para evitar deformaciones en 2D.
+
     public class PortArea : MonoBehaviour
     {
         #region Serialized Fields
@@ -67,11 +66,11 @@ namespace AbyssalReach.Gameplay
 
         private enum PortState
         {
-            Idle,              // Sin barco detectado
-            BoatDetected,      // Barco en zona, navegando libremente
-            AutoPiloting,      // Navegando automáticamente al dock
-            ShopOpen,          // Tienda abierta
-            Cooldown           // Post-salida, evita re-atraque inmediato
+            Idle,              
+            BoatDetected,      
+            AutoPiloting,      
+            ShopOpen,         
+            Cooldown         
         }
 
         #endregion
@@ -171,7 +170,7 @@ namespace AbyssalReach.Gameplay
                 ChangeState(PortState.BoatDetected);
             }
 
-            // Notificamos al GameController, pero el barco SIGUE MOVIÉNDOSE.
+            // Notificamos al GameController, pero el barco sigue moviendose
             if (GameController.Instance != null)
             {
                 GameController.Instance.EnterPort();
@@ -245,7 +244,7 @@ namespace AbyssalReach.Gameplay
 
             ChangeState(PortState.AutoPiloting);
 
-            // AHORA detenemos el control del jugador porque asume el auto-pilot
+            //  detenemos el control del jugador porque asume el auto-pilot
             if (boatMovement != null)
             {
                 boatMovement.SetMovementActive(false);
@@ -291,7 +290,7 @@ namespace AbyssalReach.Gameplay
 
             if (boatRigidbody != null)
             {
-                // TRASLACIÓN PURA. Sin lógicas de Quaternion para evitar rotaciones erráticas en Z.
+              
                 Vector3 movement = direction * currentSpeed * Time.deltaTime;
                 boatRigidbody.MovePosition(boatRigidbody.position + movement);
 
@@ -381,7 +380,7 @@ namespace AbyssalReach.Gameplay
 
             if (boatRigidbody != null)
             {
-                // CRÍTICO: Limpiamos fuerzas rotacionales acumuladas antes de "despertar" el Rigidbody
+                //  Limpiamos fuerzas rotacionales acumuladas antes de "despertar" el Rigidbody
                 boatRigidbody.angularVelocity = Vector3.zero;
                 boatRigidbody.isKinematic = false;
             }
@@ -438,6 +437,14 @@ namespace AbyssalReach.Gameplay
 
         #region Utilities
 
+        private bool IsInBoatMode()
+        {
+            if (GameController.Instance == null)
+                return false;
+
+            return GameController.Instance.GetCurrentState() == GameController.GameState.Sailing;
+        }
+
         private void ValidateReferences()
         {
             if (dockingPoint == null)
@@ -455,141 +462,274 @@ namespace AbyssalReach.Gameplay
             }
         }
 
-        #endregion
-
         #region Debug Visualization
 
+
+
         // Movido a OnDrawGizmos para que SIEMPRE sea visible, no solo al seleccionarlo.
+
         private void OnDrawGizmos()
+
         {
+
             // Dibujamos el círculo del radio de detección
+
             Gizmos.color = detectionGizmoColor;
+
             DrawWireCircle(transform.position, detectionRadius, 32);
 
+
+
             if (dockingPoint != null)
+
             {
+
                 Gizmos.color = dockingGizmoColor;
+
                 Gizmos.DrawSphere(dockingPoint.position, 0.8f);
+
                 Gizmos.DrawLine(transform.position, dockingPoint.position);
+
             }
+
         }
+
+
 
         private void OnDrawGizmosSelected()
+
         {
+
             // Resaltamos el punto de atraque al seleccionar
+
             if (dockingPoint != null)
+
             {
+
                 Gizmos.color = Color.yellow;
+
                 Gizmos.DrawWireSphere(dockingPoint.position, arrivalThreshold);
 
+
+
 #if UNITY_EDITOR
+
                 UnityEditor.Handles.Label(
+
                     dockingPoint.position + Vector3.up * 2f,
+
                     "Docking Point",
+
                     new GUIStyle()
+
                     {
+
                         normal = { textColor = Color.yellow },
+
                         fontSize = 14,
+
                         fontStyle = FontStyle.Bold
+
                     }
+
                 );
+
 #endif
+
             }
+
         }
+
+
 
         private void DrawWireCircle(Vector3 center, float radius, int segments)
+
         {
+
             float angleStep = 360f / segments;
+
             Vector3 previousPoint = center + new Vector3(radius, 0, 0);
 
+
+
             for (int i = 1; i <= segments; i++)
+
             {
+
                 float angle = angleStep * i * Mathf.Deg2Rad;
+
                 Vector3 currentPoint = center + new Vector3(
+
                     Mathf.Cos(angle) * radius,
+
                     0,
+
                     Mathf.Sin(angle) * radius
+
                 );
 
-                // Dibujar línea gruesa (simulada pintando dos líneas muy juntas)
+
+
+
+
                 Gizmos.DrawLine(previousPoint, currentPoint);
+
                 Gizmos.DrawLine(previousPoint + Vector3.up * 0.01f, currentPoint + Vector3.up * 0.01f);
 
+
+
                 previousPoint = currentPoint;
+
             }
+
         }
+
+
+
 
         private void OnGUI()
         {
+
             if (!showDebugUI) return;
 
+
+
             GUIStyle style = new GUIStyle();
+
             style.fontSize = 24;
+
             style.normal.textColor = Color.white;
+
             style.fontStyle = FontStyle.Bold;
+
             style.alignment = TextAnchor.MiddleCenter;
 
+
+
             float width = 600;
+
             float height = 50;
+
             Rect rect = new Rect(
+
                 (Screen.width - width) / 2,
+
                 Screen.height - 120,
+
                 width,
+
                 height
+
             );
 
+
+
             GUI.color = new Color(0, 0, 0, 0.7f);
+
             GUI.Box(rect, "");
+
             GUI.color = Color.white;
+
+
 
             string message = "";
 
+
+
             switch (currentState)
+
             {
+
                 case PortState.BoatDetected:
+
                     message = dockPrompt;
+
                     style.normal.textColor = Color.green;
+
                     break;
+
+
 
                 case PortState.AutoPiloting:
+
                     message = autoPilotMessage;
+
                     style.normal.textColor = Color.yellow;
+
                     break;
+
+
 
                 case PortState.ShopOpen:
+
                     message = shopOpenMessage;
+
                     style.normal.textColor = Color.cyan;
+
                     break;
+
+
 
                 case PortState.Cooldown:
+
                     message = $"Cooldown: {cooldownTimer:F1}s";
+
                     style.normal.textColor = Color.red;
+
                     break;
+
             }
+
+
 
             if (!string.IsNullOrEmpty(message))
+
             {
+
                 GUI.Label(rect, message, style);
+
             }
+
+
 
             if (showDebugLogs)
+
             {
+
                 GUIStyle debugStyle = new GUIStyle();
+
                 debugStyle.fontSize = 16;
+
                 debugStyle.normal.textColor = Color.yellow;
 
+
+
                 string debugText = $"PortState: {currentState}\n";
+
                 debugText += $"Barco en zona: {boatInDetectionZone}\n";
 
+
+
                 if (GameController.Instance != null)
+
                 {
+
                     debugText += $"GameState: {GameController.Instance.GetCurrentState()}";
+
                 }
 
+
+
                 GUI.Label(new Rect(10, 120, 400, 80), debugText, debugStyle);
+
             }
+
         }
 
         #endregion
+
+
+
     }
-}   
+    #endregion
+} 

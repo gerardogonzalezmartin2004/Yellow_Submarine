@@ -1,56 +1,38 @@
 using UnityEngine;
 
-/// <summary>
-/// Memento Pattern: Guarda un snapshot del estado de un InventoryItem.
-/// Permite restaurar la posición, rotación y grid padre del item.
-/// </summary>
+// Memento Pattern: Guarda un snapshot del estado de un InventoryItem.
+// Permite restaurar la posición, rotación y grid padre del item.
 public class ItemMemento
 {
     #region Memento Data
 
-    /// <summary>
-    /// Grid donde estaba colocado el item.
-    /// </summary>
+    // Grid donde estaba colocado el item.
     public ItemGrid SourceGrid { get; private set; }
 
-    /// <summary>
-    /// Posición X en el grid.
-    /// </summary>
+    // Posición X en el grid.
     public int GridX { get; private set; }
 
-    /// <summary>
-    /// Posición Y en el grid.
-    /// </summary>
+    // Posición Y en el grid.
     public int GridY { get; private set; }
 
-    /// <summary>
-    /// Índice de rotación (0-3).
-    /// </summary>
+    // Índice de rotación (0-3).
     public int RotationIndex { get; private set; }
 
-    /// <summary>
-    /// Timestamp de cuándo se creó este memento (para debugging).
-    /// </summary>
+    // Timestamp de cuándo se creó este memento
     public float Timestamp { get; private set; }
 
-    /// <summary>
-    /// Indica si este memento tiene datos válidos.
-    /// Un memento sin grid es inválido (item nunca estuvo colocado).
-    /// </summary>
+    // Indica si este memento tiene datos válidos.
+    // Un memento sin grid es inválido (item nunca estuvo colocado).
     public bool IsValid => SourceGrid != null;
 
     #endregion
 
     #region Constructors
 
-    /// <summary>
-    /// Constructor privado. Usar CreateMemento() para crear instancias.
-    /// </summary>
+    // Constructor privado. Usar CreateMemento() para crear instancias.
     private ItemMemento() { }
 
-    /// <summary>
-    /// Crea un memento capturando el estado actual del item.
-    /// </summary>
+    // Crea un memento capturando el estado actual del item.
     public static ItemMemento CreateMemento(InventoryItem item, ItemGrid grid)
     {
         if (item == null)
@@ -75,9 +57,7 @@ public class ItemMemento
         };
     }
 
-    /// <summary>
-    /// Crea un memento inválido (para items que nunca estuvieron colocados).
-    /// </summary>
+    // Crea un memento inválido (para items que nunca estuvieron colocados).
     public static ItemMemento CreateInvalidMemento()
     {
         return new ItemMemento
@@ -94,10 +74,8 @@ public class ItemMemento
 
     #region Public Methods
 
-    /// <summary>
-    /// Restaura el item a la posición guardada en este memento.
-    /// Retorna true si la restauración fue exitosa.
-    /// </summary>
+    // Restaura el item a la posición guardada en este memento.
+    // Retorna true si la restauración fue exitosa.
     public bool RestoreItem(InventoryItem item)
     {
         if (!IsValid)
@@ -130,19 +108,15 @@ public class ItemMemento
 
         if (placed)
         {
-            Debug.Log($"[ItemMemento] Item restaurado a ({GridX}, {GridY}) en {SourceGrid.name}");
             return true;
         }
         else
         {
-            Debug.LogWarning($"[ItemMemento] No se pudo restaurar item a ({GridX}, {GridY}) - espacio ocupado");
             return false;
         }
     }
 
-    /// <summary>
-    /// Comprueba si este memento apunta al mismo lugar que otro.
-    /// </summary>
+    // Comprueba si este memento apunta al mismo lugar que otro.
     public bool IsSameLocation(ItemMemento other)
     {
         if (other == null) return false;
@@ -153,14 +127,5 @@ public class ItemMemento
 
     #endregion
 
-    #region Debug
-
-    public override string ToString()
-    {
-        if (!IsValid) return "[ItemMemento: INVALID]";
-
-        return $"[ItemMemento: Grid={SourceGrid?.name}, Pos=({GridX},{GridY}), Rot={RotationIndex}, Time={Timestamp:F2}]";
-    }
-
-    #endregion
+    
 }

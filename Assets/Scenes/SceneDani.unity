@@ -3331,19 +3331,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3b5f34762192c454d885f15ed5e67e59, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Portarea
-  outerRadius: 5.2
-  innerRadius: 3
+  detectionRadius: 15
+  arrivalThreshold: 0.5
   dockingPoint: {fileID: 603160692}
   dockingSpeed: 10
-  arrivalThreshold: 0.5
-  exitCooldown: 2
-  targetTag: Boat
+  brakingDistance: 5
+  boatTag: Boat
   shopUIPanel: {fileID: 2118195371}
-  dockingMessage: Pulsar 'E' para entrar
+  redockCooldown: 3
+  dockPrompt: Press 'E' to Dock
   autoPilotMessage: Auto-Pilot Active...
-  showDebug: 1
-  outerGizmoColor: {r: 0, g: 1, b: 0.5, a: 0.2}
-  innerGizmoColor: {r: 1, g: 0.5, b: 0, a: 0.3}
+  shopOpenMessage: Press 'ESC' to Exit Shop
+  showDebugLogs: 1
+  showDebugUI: 1
+  detectionGizmoColor: {r: 0, g: 1, b: 0.5, a: 0.3}
+  dockingGizmoColor: {r: 1, g: 0.5, b: 0, a: 0.8}
 --- !u!4 &901970974
 Transform:
   m_ObjectHideFlags: 0
@@ -4775,21 +4777,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1dd0a3cac1620fe48923495dce1582ae, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AbyssalReach.Core.InventoryManager
-  diverInventory:
-    items: []
-    maxWeight: 20
-  boatInventory:
-    gridWidth: 0
-    gridHeight: 0
-    currentWeight: 0
-    maxWeightCapacity: 0
-    items: []
-  diverGridWidth: 3
-  diverGridHeight: 3
-  diverMaxWeight: 20
-  boatGridWidth: 5
-  boatGridHeight: 5
-  boatMaxWeight: 200
   showDebug: 1
 --- !u!1 &1336565031
 GameObject:
@@ -5766,6 +5753,7 @@ MonoBehaviour:
   ropeObject: {fileID: 1787755040}
   bagObject: {fileID: 1442341823}
   bagVisualizer: {fileID: 924442844}
+  inventoryController: {fileID: 0}
   oxygenTimer: 50
   maxTimer: 50
   oxygenSlider: {fileID: 670141711}
@@ -7287,6 +7275,7 @@ MonoBehaviour:
   diverMovement: {fileID: 1735820692}
   mejoraLongitudCable: 10
   mejoraVelocidad: 5
+  showDebugLogs: 1
 --- !u!114 &2118195374
 MonoBehaviour:
   m_ObjectHideFlags: 0

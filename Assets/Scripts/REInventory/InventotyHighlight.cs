@@ -85,7 +85,7 @@ public class InventotyHighlight : MonoBehaviour
 
    
     // Posiciona el highlight en una posición específica del grid.
-   /// Usado cuando el jugador está arrastrando un item (muestra dónde caería).
+   // Usado cuando el jugador está arrastrando un item (muestra dónde caería).
     
     public void SetPosition(ItemGrid targetGrid, InventoryItem targetItem, int posX, int posY)
     {

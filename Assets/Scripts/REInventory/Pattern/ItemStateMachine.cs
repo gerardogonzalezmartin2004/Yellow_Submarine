@@ -1,35 +1,23 @@
 ﻿using UnityEngine;
 
-/// <summary>
-/// State Pattern: Define los diferentes estados en los que puede estar un InventoryItem.
-/// </summary>
+// State Pattern: Define los diferentes estados en los que puede estar un InventoryItem.
 public enum ItemState
 {
-    /// <summary>
-    /// Item está colocado en un grid (posición estable).
-    /// </summary>
+    // Item está colocado en un grid (posición estable).
     Placed,
 
-    /// <summary>
-    /// Item está siendo arrastrado por el jugador.
-    /// </summary>
+    // Item está siendo arrastrado por el jugador.
     BeingDragged,
 
-    /// <summary>
-    /// Item está volviendo automáticamente a su última posición válida.
-    /// </summary>
+    // Item está volviendo automáticamente a su última posición válida.
     ReturningToLastPosition,
 
-    /// <summary>
-    /// Item está flotando (nunca ha sido colocado).
-    /// </summary>
+    // Item está flotando (nunca ha sido colocado).
     Floating
 }
 
-/// <summary>
-/// Máquina de estados para InventoryItem.
-/// Gestiona transiciones entre estados y comportamientos específicos.
-/// </summary>
+// Máquina de estados para InventoryItem.
+// Gestiona transiciones entre estados y comportamientos específicos.
 public class ItemStateMachine
 {
     #region Private Fields
@@ -62,10 +50,8 @@ public class ItemStateMachine
 
     #region State Transitions
 
-    /// <summary>
-    /// Cambia al estado especificado.
-    /// Ejecuta OnExit del estado actual y OnEnter del nuevo estado.
-    /// </summary>
+    // Cambia al estado especificado.
+    // Ejecuta OnExit del estado actual y OnEnter del nuevo estado.
     public void TransitionTo(ItemState newState)
     {
         if (currentState == newState)
@@ -95,9 +81,7 @@ public class ItemStateMachine
         Debug.Log($"[ItemStateMachine] Transición: {previousState} → {newState}");
     }
 
-    /// <summary>
-    /// Valida si una transición es permitida.
-    /// </summary>
+    // Valida si una transición es permitida.
     private bool IsValidTransition(ItemState from, ItemState to)
     {
         // Definir transiciones válidas
@@ -126,9 +110,7 @@ public class ItemStateMachine
 
     #region State Behaviors
 
-    /// <summary>
-    /// Se ejecuta al entrar en un nuevo estado.
-    /// </summary>
+    // Se ejecuta al entrar en un nuevo estado.
     private void OnEnterState(ItemState state)
     {
         switch (state)
@@ -151,9 +133,7 @@ public class ItemStateMachine
         }
     }
 
-    /// <summary>
-    /// Se ejecuta al salir de un estado.
-    /// </summary>
+    // Se ejecuta al salir de un estado.
     private void OnExitState(ItemState state)
     {
         switch (state)
@@ -176,12 +156,10 @@ public class ItemStateMachine
         }
     }
 
-    // --- Enter Behaviors ---
 
     private void OnEnterPlaced()
     {
-        // Item colocado: podría cambiar color, desactivar efectos, etc.
-        // TODO: Opcional - efecto visual de "colocado"
+        // podría cambiar color, desactivar efectos, etc.
     }
 
     private void OnEnterBeingDragged()
@@ -193,21 +171,21 @@ public class ItemStateMachine
             rt?.SetAsLastSibling();
         }
 
-        // TODO: Opcional - efecto visual de "arrastrando" (glow, scale up, etc.)
+        // se podria aplicar efecto visual de arrastrando 
     }
 
     private void OnEnterReturning()
     {
-        // Item volviendo: podría iniciar animación, sonido, etc.
-        // TODO: Opcional - sonido de "snap back"
+       
+        //  sonido de "snap back"
     }
 
     private void OnEnterFloating()
     {
-        // Item flotando: estado inicial cuando se crea
+        // cuando se crea
     }
 
-    // --- Exit Behaviors ---
+
 
     private void OnExitPlaced()
     {
@@ -233,10 +211,7 @@ public class ItemStateMachine
 
     #region Debug
 
-    public override string ToString()
-    {
-        return $"[ItemStateMachine: {currentState}]";
-    }
+   
 
     #endregion
 }
