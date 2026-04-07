@@ -177,7 +177,7 @@ namespace AbyssalReach.UI
                 {
                     if (tetherSystem != null)
                     {
-                        tetherSystem.maxLength += mejoraLongitudCable;
+                        tetherSystem.UpgradeLength(10f);
                         LogDebug($"Longitud de cable mejorada: {tetherSystem.maxLength}");
                     }
                 }

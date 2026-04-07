@@ -39,7 +39,7 @@ namespace AbyssalReach.Gameplay
             // Sincronizar longitud inicial con la cuerda
             if (ropeVerlet != null)
             {
-                ropeVerlet.SetMaxLength(maxLength);
+                ropeVerlet.SetMaxLength((int)maxLength);
             }
         }
 
@@ -137,20 +137,24 @@ namespace AbyssalReach.Gameplay
        
         public void UpgradeLength(float newLength)
         {
-            if (newLength > maxLength)
+            if (maxLength <= 100)
             {
-                maxLength = newLength;
+                maxLength += newLength;
 
                 // Sincronizar con la cuerda
                 if (ropeVerlet != null)
                 {
-                    ropeVerlet.SetMaxLength(maxLength);
+                    ropeVerlet.SetMaxLength((int) maxLength);
                 }
 
                 if (showDebug)
                 {
                     Debug.Log($"[TetherSystem] Cable upgraded to {newLength}m");
                 }
+            }
+            else
+            {
+                Debug.Log("Longitud Maxima alcanzada");
             }
         }
         public void ReelInRope(float amount)
@@ -164,7 +168,7 @@ namespace AbyssalReach.Gameplay
         {
             if (ropeVerlet != null)
             {
-                ropeVerlet.SetMaxLength(maxLength);
+                ropeVerlet.SetMaxLength((int)maxLength);
                 ropeVerlet.ResetRope();
             }
         }

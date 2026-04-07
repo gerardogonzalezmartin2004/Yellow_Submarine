@@ -395,7 +395,7 @@ namespace AbyssalReach.Gameplay
 
         public void ReelIn(float amount)
         {
-            activeRopeLength = Mathf.Max(1f, activeRopeLength - amount);
+            activeRopeLength = Mathf.Max(1f, activeRopeLength - amount * 10);
             CalculateSegmentLength();
         }
 
@@ -422,10 +422,11 @@ namespace AbyssalReach.Gameplay
      
         // Establece la longitud máxima del cable (para upgrades)
         
-        public void SetMaxLength(float length)
+        public void SetMaxLength(int length)
         {
-            maxDistance = length;
-            activeRopeLength = length;
+            //maxDistance = +length;
+            activeRopeLength = +length;
+            numOfRopeSegments = +length;
             CalculateSegmentLength();
 
             if (showDebug)

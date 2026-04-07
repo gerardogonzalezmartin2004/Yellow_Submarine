@@ -5518,7 +5518,7 @@
     "m_CustomColors": {
         "m_SerializableColors": []
     },
-    "m_ScreenSpaceType": 0
+    "m_ScreenSpaceType": 1
 }
 
 {
@@ -5746,7 +5746,7 @@
     "m_Title": "Flow Map",
     "m_Position": {
         "x": -2927.2001953125,
-        "y": -488.0000305175781
+        "y": -488.00006103515627
     }
 }
 
