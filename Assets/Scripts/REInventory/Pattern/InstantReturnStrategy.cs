@@ -5,11 +5,11 @@ using UnityEngine;
 public interface IReturnStrategy
 {
     // Ejecuta el retorno del item a su última posición.
-    
- 
+
+
     bool ExecuteReturn(InventoryItem item, ItemMemento memento);
 
-   
+
     string StrategyName { get; }
 }
 
@@ -30,7 +30,7 @@ public class InstantReturnStrategy : IReturnStrategy
         // Restaurar directamente usando el memento
         bool restored = memento.RestoreItem(item);
 
-       
+
 
         return restored;
     }
@@ -58,7 +58,7 @@ public class LerpReturnStrategy : IReturnStrategy
         }
 
         // Iniciar corrutina de animación en el ItemPositionMemory, pero ya luego
-       
+
 
         Debug.Log($"[LerpReturnStrategy] Iniciando lerp a ({memento.GridX}, {memento.GridY}) en {duration}s");
 

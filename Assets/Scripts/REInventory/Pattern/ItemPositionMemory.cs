@@ -224,7 +224,7 @@ public class ItemPositionMemory : MonoBehaviour
     }
 
     // Limpia todo el historial de posiciones.
-    
+
     public void ClearHistory()
     {
         lastValidPosition = null;
@@ -338,8 +338,8 @@ public class ItemPositionMemory : MonoBehaviour
         }
     }
 
-  
-   
+
+
 
 
     private void OnValidate()

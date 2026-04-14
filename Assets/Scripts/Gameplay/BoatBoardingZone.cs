@@ -1,5 +1,5 @@
 using UnityEngine;
-using AbyssalReach.Core; 
+using AbyssalReach.Core;
 
 namespace AbyssalReach.Gameplay
 {
@@ -21,7 +21,7 @@ namespace AbyssalReach.Gameplay
         [SerializeField] private bool showDebug = true;
         [SerializeField] private Color gizmoColor = new Color(1f, 1f, 0f, 0.3f); // Amarillo transparente
 
-        
+
         private bool diverInRange = false;
 
         // Referencia a los controles 
@@ -34,8 +34,8 @@ namespace AbyssalReach.Gameplay
             // Inicializamos los controles
             controls = new AbyssalReachControls();
 
-           // Aseguramos que el collider es un trigger, por si
-            
+            // Aseguramos que el collider es un trigger, por si
+
             BoxCollider2D boxCollider2D = GetComponent<BoxCollider2D>();
             if (boxCollider2D != null)
             {
@@ -50,7 +50,7 @@ namespace AbyssalReach.Gameplay
             // Habilitamos el mapa de controles del buceador, ya que es quien interactúa
             controls.DiverControls.Enable();
 
-            
+
             // Suscribimos la acción de "Ascender" (o saltar) para subir al barco
             controls.DiverControls.Ascend.performed += OnBoardPressed;
         }
@@ -91,7 +91,7 @@ namespace AbyssalReach.Gameplay
                 diverInRange = true;
                 if (GameController.Instance != null && GameController.Instance.IsEmergencyAscent())
                 {
-                  
+
                     BoardTheBoat();
                 }
 
@@ -114,7 +114,7 @@ namespace AbyssalReach.Gameplay
 
         private void BoardTheBoat()
         {
-            
+
             // Llamamos al GameController (Singleton) para cambiar el estado del juego
             if (GameController.Instance != null)
             {
@@ -180,7 +180,7 @@ namespace AbyssalReach.Gameplay
             // Calculamos la posición (centro inferior de la pantalla)
             float width = 500;
             float height = 40;
-            Rect rect = new Rect((Screen.width - width) / 2,Screen.height - 150,width,height);
+            Rect rect = new Rect((Screen.width - width) / 2, Screen.height - 150, width, height);
 
             // Caja negra semitransparente de fondo para que se lea mejor. Al fnal todos estos apartado es para ir mas rapido, ya que ya introduciremos nuestro sistema de UI propio, pero por ahora esto nos sirve para testear la zona de abordaje sin tener que crear nada mas.
             GUI.color = new Color(0, 0, 0, 0.7f);

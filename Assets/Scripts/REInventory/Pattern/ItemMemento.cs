@@ -127,5 +127,5 @@ public class ItemMemento
 
     #endregion
 
-    
+
 }

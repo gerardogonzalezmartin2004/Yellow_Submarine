@@ -10,14 +10,14 @@ public class GridInteract : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
 {
     #region Private Fields
 
-   
+
     // Referencia al controlador de inventario 
-    
+
     private InventoryController inventoryController;
 
-    
+
     // Referencia al ItemGrid de este GameObject.
-   
+
     private ItemGrid itemGrid;
 
     #endregion
@@ -50,7 +50,7 @@ public class GridInteract : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
 
     // Se llama cuando el cursor entra en el área de este grid.
     // Notifica al controller que este es el grid activo.
-    
+
     public void OnPointerEnter(PointerEventData eventData)
     {
         if (inventoryController != null && itemGrid != null)
@@ -59,10 +59,10 @@ public class GridInteract : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
         }
     }
 
-  
+
     // Se llama cuando el cursor sale del área de este grid.
     // Notifica al controller que ya no hay grid activo.
- 
+
     public void OnPointerExit(PointerEventData eventData)
     {
         if (inventoryController != null)

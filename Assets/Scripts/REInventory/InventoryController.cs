@@ -240,10 +240,10 @@ public class InventoryController : MonoBehaviour
     #endregion
 
     #region Public API
-    
+
     // Vende todos los items del grid del barco y los destruye.
     // Retorna el valor total vendido.
- 
+
     public int SellAllBoatItems()
     {
         if (boatItemGrid == null)
@@ -420,7 +420,7 @@ public class InventoryController : MonoBehaviour
             {
                 currentItemMemory.MarkAsPickedUp();
             }
-           
+
         }
     }
 
@@ -480,9 +480,9 @@ public class InventoryController : MonoBehaviour
         }
         else
         {
-         bool returned = TryReturnItemToLastPosition();
+            bool returned = TryReturnItemToLastPosition();
 
-            
+
         }
     }
 
@@ -620,5 +620,5 @@ public class InventoryController : MonoBehaviour
 
 
     #endregion
-    
+
 }

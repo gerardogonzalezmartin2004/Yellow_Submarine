@@ -101,7 +101,7 @@ namespace AbyssalReach.Gameplay
             moveInput = 0f;
 
         }
-      
+
         private void FixedUpdate()
         {
             // Evitar actualizar si el script está deshabilitado o inactivo
@@ -112,8 +112,8 @@ namespace AbyssalReach.Gameplay
             UpdateMovement();
         }
 
-        #endregion             
-       
+        #endregion
+
         #region Movement Logic
 
         private void UpdateMovement()

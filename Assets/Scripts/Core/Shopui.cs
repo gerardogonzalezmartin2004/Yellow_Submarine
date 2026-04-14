@@ -6,10 +6,10 @@ using AbyssalReach.Gameplay;
 
 namespace AbyssalReach.UI
 {
-   
+
     /// Controla la UI de la tienda del puerto.
     /// Permite vender items y comprar upgrades.
-  
+
     public class ShopUI : MonoBehaviour
     {
         [Header("UI References")]
@@ -177,7 +177,7 @@ namespace AbyssalReach.UI
                 {
                     if (tetherSystem != null)
                     {
-                        tetherSystem.UpgradeLength(10f);
+                        tetherSystem.maxLength += mejoraLongitudCable;
                         LogDebug($"Longitud de cable mejorada: {tetherSystem.maxLength}");
                     }
                 }
@@ -191,7 +191,7 @@ namespace AbyssalReach.UI
                     if (diverMovement != null)
                     {
                         diverMovement.swimSpeed += mejoraVelocidad;
-                        Debug.Log("Velocidad de nado mejorada:"+ diverMovement.swimSpeed);
+                        Debug.Log("Velocidad de nado mejorada:" + diverMovement.swimSpeed);
                     }
                 }
             }
@@ -201,8 +201,8 @@ namespace AbyssalReach.UI
             }
         }
 
-       // Cierra la tienda y notifica al PortArea.
-       
+        // Cierra la tienda y notifica al PortArea.
+
         private void CloseShop()
         {
             LogDebug("Cerrando tienda...");
@@ -287,7 +287,7 @@ namespace AbyssalReach.UI
         {
             if (showDebugLogs)
             {
-                Debug.Log("[ShopUI]"+ message);
+                Debug.Log("[ShopUI]" + message);
             }
         }
 
@@ -295,7 +295,7 @@ namespace AbyssalReach.UI
 
         #region Public API (Para PortArea)
 
-        
+
         public void ForceClose()
         {
             gameObject.SetActive(false);

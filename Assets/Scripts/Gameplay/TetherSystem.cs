@@ -39,7 +39,7 @@ namespace AbyssalReach.Gameplay
             // Sincronizar longitud inicial con la cuerda
             if (ropeVerlet != null)
             {
-                ropeVerlet.SetMaxLength((int)maxLength);
+                ropeVerlet.SetMaxLength(maxLength);
             }
         }
 
@@ -100,61 +100,57 @@ namespace AbyssalReach.Gameplay
 
         #region Public API
 
-       
+
         // Verifica si el cable está estirado al máximo
-      
+
         public bool IsAtMaxLength()
         {
             return currentLength >= maxLength * 0.99f;
         }
 
-      
+
         // Obtiene la longitud actual del cable
-        
+
         public float GetCurrentLength()
         {
             return currentLength;
         }
 
-        
+
         // Obtiene la longitud máxima del cable
-        
+
         public float GetMaxLength()
         {
             return maxLength;
         }
 
-       
+
         // Obtiene el factor de tensión (0-1)
-       
+
         public float GetTension()
         {
             return tension;
         }
 
-       
+
         // Mejora la longitud del cable
-       
+
         public void UpgradeLength(float newLength)
         {
-            if (maxLength <= 100)
+            if (newLength > maxLength)
             {
-                maxLength += newLength;
+                maxLength = newLength;
 
                 // Sincronizar con la cuerda
                 if (ropeVerlet != null)
                 {
-                    ropeVerlet.SetMaxLength((int) maxLength);
+                    ropeVerlet.SetMaxLength(maxLength);
                 }
 
                 if (showDebug)
                 {
                     Debug.Log($"[TetherSystem] Cable upgraded to {newLength}m");
                 }
-            }
-            else
-            {
-                Debug.Log("Longitud Maxima alcanzada");
             }
         }
         public void ReelInRope(float amount)
@@ -168,31 +164,31 @@ namespace AbyssalReach.Gameplay
         {
             if (ropeVerlet != null)
             {
-                ropeVerlet.SetMaxLength((int)maxLength);
+                ropeVerlet.SetMaxLength(maxLength);
                 ropeVerlet.ResetRope();
             }
         }
 
-        
+
         // Configura los anclajes
-       
+
         public void SetAnchors(Transform boat, Transform diver)
         {
             boatAnchor = boat;
             diverAnchor = diver;
         }
 
-        
+
         // Obtiene el transform del buceador
-      
+
         public Transform GetDiverAnchor()
         {
             return diverAnchor;
         }
 
-       
+
         // Obtiene el transform del barco
-       
+
         public Transform GetBoatAnchor()
         {
             return boatAnchor;
@@ -238,7 +234,7 @@ namespace AbyssalReach.Gameplay
                 Gizmos.DrawLine(previousPoint, currentPoint);
                 previousPoint = currentPoint;
             }
-        } 
+        }
 
         #endregion
     }

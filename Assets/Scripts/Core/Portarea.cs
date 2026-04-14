@@ -66,11 +66,11 @@ namespace AbyssalReach.Gameplay
 
         private enum PortState
         {
-            Idle,              
-            BoatDetected,      
-            AutoPiloting,      
-            ShopOpen,         
-            Cooldown         
+            Idle,
+            BoatDetected,
+            AutoPiloting,
+            ShopOpen,
+            Cooldown
         }
 
         #endregion
@@ -290,7 +290,7 @@ namespace AbyssalReach.Gameplay
 
             if (boatRigidbody != null)
             {
-              
+
                 Vector3 movement = direction * currentSpeed * Time.deltaTime;
                 boatRigidbody.MovePosition(boatRigidbody.position + movement);
 
@@ -732,4 +732,4 @@ namespace AbyssalReach.Gameplay
 
     }
     #endregion
-} 
+}

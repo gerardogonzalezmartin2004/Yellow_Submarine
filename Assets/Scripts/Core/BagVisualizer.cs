@@ -25,7 +25,7 @@ namespace AbyssalReach.Gameplay
             if (item == null) return;
             if (currentSlot >= itemSlots.Length) return;
 
-           
+
 
             currentSlot++;
         }

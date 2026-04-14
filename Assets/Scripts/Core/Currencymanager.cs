@@ -18,7 +18,7 @@ namespace AbyssalReach.Core
         [SerializeField] private bool showDebug = true;
 
         #region Events
-              
+
         public delegate void GoldChanged(int newAmount, int delta);// Definimos un "delegate" q es un tipo de función para el evento. Y funciona como una plantilla para las funciones que se suscriban a este evento. En este caso, cualquier función que quiera escuchar el evento de cambio de oro debe tener esta firma: recibir un int con la nueva cantidad de oro y un int con el cambio (positivo o negativo).
 
         // Evento al que otros scripts (como la UI) pueden suscribirse para saber cuándo cambia el oro
@@ -150,7 +150,7 @@ namespace AbyssalReach.Core
         #region Debug (Gizmos)
 
         private void OnGUI()
-        {            
+        {
             if (!showDebug)
             {
                 return;

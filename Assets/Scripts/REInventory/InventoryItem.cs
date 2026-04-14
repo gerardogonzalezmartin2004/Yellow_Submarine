@@ -18,30 +18,30 @@ public class InventoryItem : MonoBehaviour
 
     #region Private Fields
 
-  
+
     // Índice de rotación actual (0 = 0°, 1 = 90°, 2 = 180°, 3 = 270°).
     // Se usa módulo 4 para mantenerlo siempre en el rango válido.
-   
+
     private int rotationIndex = 0;
 
-   
+
     // Cache del RectTransform para evitar GetComponent en cada frame.
-   
+
     private RectTransform cachedRectTransform;
 
-   
+
     // Cache del Image component para setear el sprite solo una vez.
-   
+
     private Image cachedImage;
 
     #endregion
 
     #region Public Properties
 
-   
+
     // Altura efectiva del item considerando la rotación actual.
     // Si el índice de rotación es impar (1 o 3), se invierten width y height.
- 
+
     public int HEIGHT
     {
         get
@@ -57,10 +57,10 @@ public class InventoryItem : MonoBehaviour
         }
     }
 
-  
+
     // Anchura efectiva del item considerando la rotación actual.
     // Si el índice de rotación es impar (1 o 3), se invierten width y height.
-   
+
     public int WIDTH
     {
         get
@@ -77,20 +77,20 @@ public class InventoryItem : MonoBehaviour
         }
     }
 
-   
+
     // Posición X en el grid donde está colocado este item.
- 
+
     public int onGridPositionX;
 
-   
+
     // Posición Y en el grid donde está colocado este item.
-    
+
     public int onGridPositionY;
 
-   
+
     // Índice de rotación actual (0-3) para acceso externo.
     // Se expone para que otros sistemas puedan comprobar si ha cambiado.
-  
+
     public int RotationIndex => rotationIndex;
 
     #endregion
@@ -118,10 +118,10 @@ public class InventoryItem : MonoBehaviour
 
     #region Public Methods
 
-    
+
     // Rota el item 90° en sentido horario.
     // Incrementa el índice de rotación y actualiza la rotación visual del RectTransform.
-   
+
     public void Rotate()
     {
         // Incrementar rotación (0 → 1 → 2 → 3 → 0)
@@ -131,10 +131,10 @@ public class InventoryItem : MonoBehaviour
         UpdateVisualRotation();
     }
 
-  
+
     // Inicializa el item con los datos proporcionados.
     // Configura el sprite y ajusta el tamaño del RectTransform según las dimensiones del item.
-   
+
     public void Set(ItemData data)
     {
         // Validación
@@ -168,10 +168,10 @@ public class InventoryItem : MonoBehaviour
 
     #region Private Methods
 
-   
+
     // Actualiza la rotación visual del RectTransform.
     // Cada índice representa 90° adicionales (0° → 90° → 180° → 270°).
-   
+
     private void UpdateVisualRotation()
     {
         if (cachedRectTransform == null)
@@ -186,7 +186,7 @@ public class InventoryItem : MonoBehaviour
         cachedRectTransform.rotation = Quaternion.Euler(0, 0, angle);
     }
 
-    
+
     // Actualiza el tamaño del RectTransform según las dimensiones actuales del item.
     // Tiene en cuenta la rotación para calcular WIDTH y HEIGHT correctamente.
 
@@ -207,10 +207,10 @@ public class InventoryItem : MonoBehaviour
         cachedRectTransform.sizeDelta = size;
     }
 
- 
+
     // Comprueba si el índice de rotación actual es impar (1 o 3).
     // Se usa para determinar si width y height están intercambiados.
-   
+
     private bool IsRotationIndexOdd()
     {
         return rotationIndex % 2 != 0;
@@ -223,7 +223,7 @@ public class InventoryItem : MonoBehaviour
 
     // Dibuja un gizmo en el editor para visualizar el área del item.
     // Útil para debugging.
-   
+
     private void OnDrawGizmosSelected()
     {
         if (itemData == null) return;

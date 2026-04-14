@@ -34,7 +34,7 @@ namespace AbyssalReach.Gameplay
 
         [Header("References")]
         [SerializeField] private Transform boatTransform;
-        [SerializeField] private ropeVerlet rope; 
+        [SerializeField] private ropeVerlet rope;
         public bool emergencyAscent = false;
 
         // CAMBIO A 2D: rb ahora es Rigidbody2D
@@ -48,14 +48,14 @@ namespace AbyssalReach.Gameplay
 
         private void Awake()
         {
-           
+
             rb = GetComponent<Rigidbody2D>();
 
             // Configurar Rigidbody2D
-            rb.gravityScale = 0f; 
+            rb.gravityScale = 0f;
             rb.linearDamping = rbDrag;
 
-            
+
             rb.constraints = RigidbodyConstraints2D.FreezeRotation;
 
             controls = new AbyssalReachControls();
@@ -91,10 +91,10 @@ namespace AbyssalReach.Gameplay
             }
             else
             {
-                
+
                 Debug.DrawRay(transform.position, new Vector3(rb.linearVelocity.x, rb.linearVelocity.y, 0f).normalized * 6f, Color.green, 0.15f);
             }
-           
+
 
             EnforceSurfaceLimit();
         }
@@ -188,15 +188,15 @@ namespace AbyssalReach.Gameplay
             if (transform.position.y > waterSurfaceY)
             {
                 //  Teletransportar de vuelta a la superficie
-                Vector2 pos = transform.position; 
+                Vector2 pos = transform.position;
                 pos.y = waterSurfaceY;
-                transform.position = pos; 
+                transform.position = pos;
                 rb.position = pos;
 
                 if (moveInput.y > 0f)
                 {
                     currentVelocity.y = 0f;// Cancelamos cualquier intento de seguir subiendo si el jugador sigue pulsando hacia arriba, para evitar que se quede atascado intentando subir sin poder porque ya está en la superficie.
-                    Vector2 vel = rb.linearVelocity; 
+                    Vector2 vel = rb.linearVelocity;
                     vel.y = 0f;
                     rb.linearVelocity = vel;
                 }
@@ -251,7 +251,7 @@ namespace AbyssalReach.Gameplay
         }
 
         // Posiciona el buceador y asegura que esté bajo el agua
-       
+
         public void SetPosition(Vector2 position)
         {
             // Mathf.Min asegura que nunca spawnee por encima de la superficie

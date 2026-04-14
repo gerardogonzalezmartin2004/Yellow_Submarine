@@ -27,10 +27,10 @@ public class ItemData : ScriptableObject
     // Rareza con sus implicaciones de color y valor sugerido
     public enum ItemRarity
     {
-        Common,    
-        Rare,     
-        Epic,      
-        Legendary  
+        Common,
+        Rare,
+        Epic,
+        Legendary
     }
 
     // Devuelve el color del aura según la rareza.

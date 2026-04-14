@@ -8,14 +8,14 @@ public class ItemGrid : MonoBehaviour
 {
     #region Constants
 
-    
+
     // Ancho de cada celda del grid en píxeles.
-    
+
     public const float tileSizeWidht = 32f;
 
-    
+
     // Alto de cada celda del grid en píxeles.
-    
+
     public const float tileSizeHeight = 32f;
 
     #endregion
@@ -37,27 +37,27 @@ public class ItemGrid : MonoBehaviour
 
     #region Private Fields
 
-  
+
     // Array 2D que almacena las referencias a items.
     // Cada celda puede estar vacía (null) o contener una referencia al item que la ocupa.
-    
+
     private InventoryItem[,] inventoryItemSlots;
 
-   
+
     // RectTransform de este grid (cache para performance).
-  
+
     private RectTransform rectTransform;
 
-  
+
     // Cache de Vector2 para evitar crear nuevos objetos en GetTileGridPosition.
     // Optimización de garbage collection.
-   
+
     private Vector2 positionOnTheGrid = new Vector2();
 
-    
+
     // Cache de Vector2Int para evitar crear nuevos objetos en GetTileGridPosition.
     // Optimización de garbage collection.
-    
+
     private Vector2Int tileGridPosition = new Vector2Int();
 
     #endregion
@@ -112,7 +112,7 @@ public class ItemGrid : MonoBehaviour
 
     #region Position Conversion
 
-   
+
     // Convierte una posición del ratón en pantalla a coordenadas de grid.
     // Utiliza caches para evitar crear nuevos objetos
     public Vector2Int GetTileGridPosition(Vector2 mousePosition)
@@ -134,19 +134,19 @@ public class ItemGrid : MonoBehaviour
         return tileGridPosition;
     }
 
-   
-   
-  
+
+
+
     [Obsolete("Usar GetTileGridPosition en su lugar (typo corregido)")]
     public Vector2Int GetTitleGridPosiiton(Vector2 mousePosition)
     {
         return GetTileGridPosition(mousePosition);
     }
 
-   
+
     // Calcula la posición local (dentro del grid) donde debe dibujarse un item.
     // El item se centra en su área ocupada.
-    
+
     public Vector2 CalculatePositionOnGrid(InventoryItem inventoryItem, int posX, int posY)
     {
         if (inventoryItem == null)
@@ -213,10 +213,10 @@ public class ItemGrid : MonoBehaviour
         return true;
     }
 
-   
+
     // Coloca un item en el grid sin validaciones previas.
     //  Solo llamar después de validar con PlaceItem(item, x, y, ref overlap).
-   
+
     public void PlaceItem(InventoryItem inventoryItem, int posX, int posY)
     {
         if (inventoryItem == null)
@@ -272,9 +272,9 @@ public class ItemGrid : MonoBehaviour
 
     #region Item Removal
 
-   
+
     // Recoge un item de una posición específica del grid.
-   
+
     public InventoryItem PickUpItem(int x, int y)
     {
         // Validar límites
@@ -297,10 +297,10 @@ public class ItemGrid : MonoBehaviour
         return toReturn;
     }
 
-   
+
     // Limpia todas las referencias de un item del grid.
     // Recorre todas las celdas que ocupa y las pone a null.
-  
+
     private void CleanGridReference(InventoryItem item)
     {
         if (item == null)
@@ -333,9 +333,9 @@ public class ItemGrid : MonoBehaviour
 
     #region Validation & Queries
 
-   
+
     // Verifica si una posición está dentro de los límites del grid.
-    
+
     private bool PositionCheck(int posX, int posY)
     {
         if (posX < 0 || posY < 0)
@@ -351,10 +351,10 @@ public class ItemGrid : MonoBehaviour
         return true;
     }
 
-    
+
     // Verifica si un área rectangular cabe dentro de los límites del grid.
     // Valida tanto la esquina superior izquierda como la inferior derecha.
-    
+
     public bool BoundaryCheck(int posX, int posY, int width, int height)
     {
         // Validar esquina superior izquierda
@@ -375,19 +375,19 @@ public class ItemGrid : MonoBehaviour
         return true;
     }
 
- 
-    
-   
+
+
+
     [Obsolete("Usar BoundaryCheck en su lugar (typo corregido)")]
     public bool BoundyCheck(int posX, int posY, int width, int height)
     {
         return BoundaryCheck(posX, posY, width, height);
     }
 
-   
+
     // Verifica si hay solapamiento al intentar colocar un item.
     // Permite hacer swap si todas las celdas ocupadas pertenecen al mismo item.
-  
+
     private bool OverlapCheck(int posX, int posY, int width, int height, ref InventoryItem overlapItem)
     {
         for (int i = 0; i < width; i++)
@@ -424,10 +424,10 @@ public class ItemGrid : MonoBehaviour
         return true;
     }
 
-   
+
     // Verifica si un área está completamente vacía (sin items).
 
-    
+
     private bool CheckAvailableSpace(int posX, int posY, int width, int height)
     {
         for (int i = 0; i < width; i++)
@@ -453,9 +453,9 @@ public class ItemGrid : MonoBehaviour
         return true;
     }
 
-   
+
     // Obtiene el item en una posición específica del grid.
-   
+
     public InventoryItem GetItem(int x, int y)
     {
         // Validar límites
@@ -467,10 +467,10 @@ public class ItemGrid : MonoBehaviour
         return inventoryItemSlots[x, y];
     }
 
-   
+
     // Busca automáticamente un espacio libre en el grid para un item.
     // Recorre el grid de izquierda a derecha, arriba a abajo.
-  
+
     public Vector2Int? FindSpaceForObject(InventoryItem itemToInsert)
     {
         if (itemToInsert == null)
@@ -507,8 +507,8 @@ public class ItemGrid : MonoBehaviour
         return null;
     }
 
-   
-  
+
+
     [Obsolete("Usar FindSpaceForObject en su lugar (typo corregido)")]
     public Vector2Int? FindSpaceForObeject(InventoryItem itemToInsert)
     {
@@ -519,27 +519,27 @@ public class ItemGrid : MonoBehaviour
 
     #region Public Getters
 
-   
+
     // Obtiene las dimensiones del grid.
-   
+
     public Vector2Int GetGridSize()
     {
         return new Vector2Int(gridWidth, gridHeight);
     }
 
-   
+
     /// Obtiene el ancho del grid.
-   
+
     public int GetWidth() => gridWidth;
 
-   
+
     // Obtiene el alto del grid.
-    
+
     public int GetHeight() => gridHeight;
 
-   
+
     // Obtiene el número total de celdas en el grid.
-   
+
     public int GetTotalCells() => gridWidth * gridHeight;
 
     #endregion
@@ -547,9 +547,9 @@ public class ItemGrid : MonoBehaviour
     #region Debug Helpers
 
 
-    
+
     // Valida la configuración en el editor.
-   
+
     private void OnValidate()
     {
         if (gridWidth <= 0)
@@ -565,9 +565,9 @@ public class ItemGrid : MonoBehaviour
         }
     }
 
-  
+
     // Dibuja el grid en el editor para visualización.
-    
+
     private void OnDrawGizmosSelected()
     {
         if (rectTransform == null)

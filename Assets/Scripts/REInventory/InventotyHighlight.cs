@@ -29,9 +29,9 @@ public class InventotyHighlight : MonoBehaviour
 
     #region Public Methods
 
-   
+
     // Muestra u oculta el highlight.
-   
+
     public void Show(bool show)
     {
         if (highlighter == null)
@@ -42,9 +42,9 @@ public class InventotyHighlight : MonoBehaviour
         highlighter.gameObject.SetActive(show);
     }
 
-  
+
     // Ajusta el tamaño del highlight para que coincida con el item objetivo.
-   
+
     public void SetSize(InventoryItem targetItem)
     {
         if (highlighter == null || targetItem == null)
@@ -62,10 +62,10 @@ public class InventotyHighlight : MonoBehaviour
         highlighter.sizeDelta = size;
     }
 
- 
+
     // Posiciona el highlight en la posición del item en el grid.
     // Usado cuando el item ya está colocado (hover sobre un item existente).
-  
+
     public void SetPosition(ItemGrid targetGrid, InventoryItem targetItem)
     {
         if (highlighter == null || targetGrid == null || targetItem == null)
@@ -83,10 +83,10 @@ public class InventotyHighlight : MonoBehaviour
         highlighter.localPosition = pos;
     }
 
-   
+
     // Posiciona el highlight en una posición específica del grid.
-   // Usado cuando el jugador está arrastrando un item (muestra dónde caería).
-    
+    // Usado cuando el jugador está arrastrando un item (muestra dónde caería).
+
     public void SetPosition(ItemGrid targetGrid, InventoryItem targetItem, int posX, int posY)
     {
         if (highlighter == null || targetGrid == null || targetItem == null)
@@ -100,11 +100,11 @@ public class InventotyHighlight : MonoBehaviour
         highlighter.localPosition = pos;
     }
 
-   
+
     // Cambia el parent del highlight al grid especificado.
     //  Llama a SetAsLastSibling() para garantizar que se dibuje
     // por encima de las celdas pero por debajo del item arrastrado.
-   
+
     public void SetParent(ItemGrid targetGrid)
     {
         if (highlighter == null)
@@ -142,10 +142,10 @@ public class InventotyHighlight : MonoBehaviour
 
     #region Public Helpers
 
-    
+
     // Obtiene el color actual del highlight.
     // Útil para debugging o para cambiar el color según el estado.
-    
+
     public Color GetColor()
     {
         if (highlighter == null)
@@ -163,10 +163,10 @@ public class InventotyHighlight : MonoBehaviour
         return Color.white;
     }
 
-   
+
     // Cambia el color del highlight.
     // Útil para mostrar diferentes estados (válido = verde, inválido = rojo).
-   
+
     public void SetColor(Color color)
     {
         if (highlighter == null)
@@ -187,9 +187,9 @@ public class InventotyHighlight : MonoBehaviour
     #region Debug Helpers
 
 
-   
+
     // Valida la configuración en el editor.
-   
+
     private void OnValidate()
     {
         if (highlighter == null)

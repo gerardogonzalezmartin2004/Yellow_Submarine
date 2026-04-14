@@ -312,7 +312,7 @@ namespace AbyssalReach.Core
             if (showDebug) Debug.Log("[GameController] Modo Buceo Activado");
         }
 
-       
+
         // Solo cambia el estado para que la UI muestre el mensaje.
         public void EnterPort()
         {
@@ -348,13 +348,13 @@ namespace AbyssalReach.Core
 
         public enum GameState
         {
-            Sailing,      
-            Diving,       
-            InPort,       
-            Docking,      
-            InShop,      
-            Inventory,    
-            Paused        
+            Sailing,
+            Diving,
+            InPort,
+            Docking,
+            InShop,
+            Inventory,
+            Paused
         }
 
         #endregion

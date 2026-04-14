@@ -15,9 +15,9 @@ namespace AbyssalReach.UI
         // Define los tres estados visuales del icono
         private enum State
         {
-            Hidden, 
-            Far,    
-            Near    
+            Hidden,
+            Far,
+            Near
         }
 
         [Header(" Interactor Settings")]
@@ -46,13 +46,13 @@ namespace AbyssalReach.UI
 
         // --- Variables Internas ---
         private SpriteRenderer spriteRenderer;
-        private State currentState = State.Hidden; 
+        private State currentState = State.Hidden;
         private Transform boatTransform;           // Referencia cacheada del barco
         private Transform diverTransform;          // Referencia cacheada del buzo
         private AbyssalReachControls controls;     // Referencia al Input System autogenerado
         private InputAction interactAction;        // La acción específica que estamos escuchand
-        private bool isInRange = false;            
-        private bool usingGamepad = false;        
+        private bool isInRange = false;
+        private bool usingGamepad = false;
 
         #region Unity Lifecycle
 
@@ -236,7 +236,7 @@ namespace AbyssalReach.UI
 
         #region Input Handling
 
-        
+
         private void SubscribeInput()
         {
             if (controls == null) return;
@@ -272,7 +272,7 @@ namespace AbyssalReach.UI
             // Bloqueo de seguridad: Si has pulsado el botón, pero estás fuera del círculo interior, no hagas nada.
             if (!isInRange || GameController.Instance == null) return;
 
-           
+
 
             // ?.Invoke() ejecuta todos los métodos que hayas arrastrado al evento OnInteract en el Inspector de Unity.
             OnInteract?.Invoke();

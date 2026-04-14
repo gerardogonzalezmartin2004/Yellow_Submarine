@@ -4,10 +4,10 @@ using System.Collections.Generic;
 
 namespace AbyssalReach.Gameplay
 {
-    
+
     // Sistema de cuerda con límite de distancia ESCALABLE
-    
-    
+
+
     [RequireComponent(typeof(LineRenderer))]
     public class ropeVerlet : MonoBehaviour
     {
@@ -57,10 +57,10 @@ namespace AbyssalReach.Gameplay
         [SerializeField] private bool anchorStart = true;
         [SerializeField] private bool anchorEnd = true;
 
-        
-        
-        
-         
+
+
+
+
         [Header("Distance Limit (Upgradeable)")]
         [Tooltip("Distancia máxima inicial (se puede upgradear)")]
         [SerializeField] private float maxDistance = 30f;
@@ -82,8 +82,8 @@ namespace AbyssalReach.Gameplay
         private GameController gameController;
         private Rigidbody2D diverRb2D;
 
-        
-        private float activeRopeLength = 30f; 
+
+        private float activeRopeLength = 30f;
         private Vector2 tensionDirection = Vector2.up;
 
         #endregion
@@ -278,13 +278,13 @@ namespace AbyssalReach.Gameplay
 
         #endregion
 
-        
+
         #region Distance Limit
 
-       
+
         // Aplica el límite de distancia máxima
         // Frena al diver si intenta alejarse más de maxDistance
-     
+
         private void EnforceDistanceLimit()
         {
             if (!enableDistanceLimit) return;
@@ -324,7 +324,7 @@ namespace AbyssalReach.Gameplay
         }
 
         #endregion
-        
+
 
         #region Tension Force
 
@@ -395,7 +395,7 @@ namespace AbyssalReach.Gameplay
 
         public void ReelIn(float amount)
         {
-            activeRopeLength = Mathf.Max(1f, activeRopeLength - amount * 10);
+            activeRopeLength = Mathf.Max(1f, activeRopeLength - amount);
             CalculateSegmentLength();
         }
 
@@ -419,14 +419,13 @@ namespace AbyssalReach.Gameplay
 
         #region Public API
 
-     
+
         // Establece la longitud máxima del cable (para upgrades)
-        
-        public void SetMaxLength(int length)
+
+        public void SetMaxLength(float length)
         {
-            //maxDistance = +length;
-            activeRopeLength = +length;
-            numOfRopeSegments = +length;
+            maxDistance = length;
+            activeRopeLength = length;
             CalculateSegmentLength();
 
             if (showDebug)

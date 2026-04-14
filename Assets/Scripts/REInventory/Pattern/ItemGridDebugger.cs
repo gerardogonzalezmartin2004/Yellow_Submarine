@@ -246,7 +246,7 @@ public class ItemGridDebugger : MonoBehaviour
         {
             Debug.Log("Celda vacia");
         }
-        
+
     }
 
     // Valida la integridad del grid (detecta items corruptos).
