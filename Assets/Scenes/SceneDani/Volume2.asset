@@ -50,7 +50,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d7fd9488000d3734a9e00ee676215985, type: 3}
-  m_Name: Box Volume Profile
+  m_Name: Volume2
   m_EditorClassIdentifier: Unity.RenderPipelines.Core.Runtime::UnityEngine.Rendering.VolumeProfile
   components:
   - {fileID: 6187667950030276525}
@@ -78,13 +78,13 @@ MonoBehaviour:
     m_Value: 5.5
   colorFilter:
     m_OverrideState: 1
-    m_Value: {r: 0.6245283, g: 0.8236421, b: 1, a: 1}
+    m_Value: {r: 0.6245283, g: 0.8267054, b: 1, a: 1}
   hueShift:
     m_OverrideState: 0
     m_Value: 0
   saturation:
     m_OverrideState: 1
-    m_Value: 100
+    m_Value: 49
 --- !u!114 &6187667950030276525
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -97,7 +97,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 899c54efeace73346a0a16faa3afe726, type: 3}
   m_Name: Vignette
   m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.Vignette
-  active: 1
+  active: 0
   color:
     m_OverrideState: 1
     m_Value: {r: 0.048209336, g: 0.11334136, b: 0.13962269, a: 1}
