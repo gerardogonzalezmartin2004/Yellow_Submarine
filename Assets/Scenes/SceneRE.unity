@@ -3530,7 +3530,7 @@ MonoBehaviour:
   detectionRadius: 11.7
   arrivalThreshold: 0.5
   dockingPoint: {fileID: 603160692}
-  dockingSpeed: 12.22
+  dockingSpeed: 20.2
   brakingDistance: 5
   boatTag: Boat
   shopUIPanel: {fileID: 2118195371}
@@ -5600,7 +5600,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AbyssalReach.Core.CurrencyManager
   currentGold: 1000
-  showDebug: 1
+  showDebug: 0
 --- !u!1 &1457459691
 GameObject:
   m_ObjectHideFlags: 0
@@ -5999,7 +5999,7 @@ MonoBehaviour:
   lightCone: {fileID: 0}
   boatAnchor: {fileID: 1202090459}
   currentState: 0
-  showDebug: 1
+  showDebug: 0
 --- !u!1 &1657396697
 GameObject:
   m_ObjectHideFlags: 0
@@ -6232,6 +6232,8 @@ MonoBehaviour:
   swimSpeed: 5
   acceleration: 8
   waterDrag: 12
+  maxSwimForce: 60
+  softBrakeDistance: 2
   underwaterGravity: 2
   rbDrag: 3
   waterSurfaceY: 0

@@ -5,6 +5,7 @@ using AbyssalReach.Core;
 
 public class InventoryController : MonoBehaviour
 {
+    // este script es el cerebro del sistema de inventario. Maneja la lógica de arrastrar y soltar, la memoria de posición, la transferencia de items entre el buzo y el barco, y la interacción con el highlight visual.
     #region Serialized Fields
 
     [Header("Input Actions")]
@@ -283,28 +284,41 @@ public class InventoryController : MonoBehaviour
     {
         if (inventoryCanvas == null) return;
 
+        // Activamos o desactivamos el Canvas visualmente
         inventoryCanvas.SetActive(visible);
 
         if (visible)
         {
+            // Traemos SOLO el nuevo loot que el buzo haya recogido.
             if (InventoryManager.Instance != null)
+            {
                 TransferDiverLoot(InventoryManager.Instance.GetDiverInventory());
+            }
         }
         else
         {
-            TransferBoatItemsToDiver();
+            // AL CERRAR: 
+            // Ya NO llamamos a TransferBoatItemsToDiver(), así protegemos las posiciones.
+
+            // Prevención de errores: Si el jugador cierra el inventario mientras arrastraba algo.
             if (selectedItem != null)
             {
+                // Intentamos devolverlo a su última posición válida
                 bool returned = TryReturnItemToLastPosition();
 
                 if (!returned)
                 {
+                    // Si por algún motivo falla, lo destruimos para evitar items fantasma
                     Destroy(selectedItem.gameObject);
                 }
 
+                // Limpiamos las referencias del ratón
                 selectedItem = null;
                 heldItemRect = null;
                 currentItemMemory = null;
+
+                // Ocultamos el highlight visual por si se quedó encendido
+                if (inventoryHighlight != null) inventoryHighlight.Show(false);
             }
         }
     }

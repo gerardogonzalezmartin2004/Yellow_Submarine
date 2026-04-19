@@ -46,7 +46,7 @@ public class DiverInventory
     {
         return items;
     }
-
+    
     public int GetItemCount()
     {
         return items.Count;

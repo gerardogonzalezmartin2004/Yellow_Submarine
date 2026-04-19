@@ -122,6 +122,12 @@ namespace AbyssalReach.Gameplay
 
         private void OnInteractPressed(UnityEngine.InputSystem.InputAction.CallbackContext context)
         {
+            if (!IsInBoatMode())
+            {
+                LogDebug("Intento de atraque denegado: El jugador no está en el barco.");
+                return;
+            }
+
             if (currentState == PortState.BoatDetected)
             {
                 StartDocking();
@@ -442,7 +448,9 @@ namespace AbyssalReach.Gameplay
             if (GameController.Instance == null)
                 return false;
 
-            return GameController.Instance.GetCurrentState() == GameController.GameState.Sailing;
+            GameController.GameState currentState = GameController.Instance.GetCurrentState();
+
+            return currentState == GameController.GameState.Sailing || currentState == GameController.GameState.InPort;
         }
 
         private void ValidateReferences()
@@ -558,15 +566,7 @@ namespace AbyssalReach.Gameplay
 
                 float angle = angleStep * i * Mathf.Deg2Rad;
 
-                Vector3 currentPoint = center + new Vector3(
-
-                    Mathf.Cos(angle) * radius,
-
-                    0,
-
-                    Mathf.Sin(angle) * radius
-
-                );
+                Vector3 currentPoint = center + new Vector3(Mathf.Cos(angle) * radius,0,Mathf.Sin(angle) * radius);
 
 
 
@@ -610,17 +610,7 @@ namespace AbyssalReach.Gameplay
 
             float height = 50;
 
-            Rect rect = new Rect(
-
-                (Screen.width - width) / 2,
-
-                Screen.height - 120,
-
-                width,
-
-                height
-
-            );
+            Rect rect = new Rect((Screen.width - width) / 2, Screen.height - 120, width, height);
 
 
 
@@ -642,10 +632,11 @@ namespace AbyssalReach.Gameplay
 
                 case PortState.BoatDetected:
 
-                    message = dockPrompt;
-
-                    style.normal.textColor = Color.green;
-
+                    if (IsInBoatMode())
+                    {
+                        message = dockPrompt;
+                        style.normal.textColor = Color.green;
+                    }
                     break;
 
 
