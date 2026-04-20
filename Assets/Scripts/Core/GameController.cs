@@ -210,8 +210,9 @@ namespace AbyssalReach.Core
                 SetSailingMode();
                 stopTimer = false;
                 diverMovement.ExitEmergencyAscent();
-                tether.maxLength = 10f;
+                tether.UpgradeLength(10f); 
                 diverMovement.emergencyAscent = false;
+                tether.ResetTetherToMax();
             }
             else
             {

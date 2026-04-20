@@ -33,6 +33,9 @@ namespace AbyssalReach.Gameplay
         [SerializeField] private int numOfRopeSegments = 50;
         [SerializeField] private float ropeSegmentLength = 0.225f;
 
+        [Tooltip("Longitud fija de cada segmento (referencia para calcular cuántos segmentos necesita la cuerda al hacer upgrade)")]
+        [SerializeField] private float baseSegmentLength = 0.225f;
+
         [Header("Physics")]
         [SerializeField] private Vector2 gravityForce = new Vector2(0f, -1f);
         [SerializeField] private float dampingFactor = 0.98f;
@@ -136,6 +139,7 @@ namespace AbyssalReach.Gameplay
 
         #region Initialization
 
+        
         private void InitializeRope()
         {
             if (ropeStartTransform == null)
@@ -145,6 +149,9 @@ namespace AbyssalReach.Gameplay
             }
 
             activeRopeLength = maxDistance;
+
+            // Recalcular el número de segmentos para mantener densidad visual constante
+            numOfRopeSegments = Mathf.Max(2, Mathf.RoundToInt(activeRopeLength / baseSegmentLength) + 1);
             CalculateSegmentLength();
 
             Vector2 startPos = ropeStartTransform.position;
@@ -403,34 +410,43 @@ namespace AbyssalReach.Gameplay
 
         #region Visual
 
+        
         private void DrawRope()
         {
             if (lineRenderer == null || ropeSegments.Count == 0) return;
 
-            Vector3[] ropePositions = new Vector3[numOfRopeSegments];
-            for (int i = 0; i < ropeSegments.Count; i++)
+            int count = ropeSegments.Count;
+            lineRenderer.positionCount = count;
+            Vector3[] ropePositions = new Vector3[count];
+
+            for (int i = 0; i < count; i++)
             {
                 ropePositions[i] = ropeSegments[i].CurrentPosition;
             }
+
             lineRenderer.SetPositions(ropePositions);
         }
-
         #endregion
 
         #region Public API
 
 
-        // Establece la longitud máxima del cable (para upgrades)
-
+        // Establece la longitud máxima del cable    
         public void SetMaxLength(float length)
         {
             maxDistance = length;
             activeRopeLength = length;
+
+            // Recalcular segmentos para mantener la densidad visual (baseSegmentLength fijo)
+            numOfRopeSegments = Mathf.Max(2, Mathf.RoundToInt(activeRopeLength / baseSegmentLength) + 1);
             CalculateSegmentLength();
+
+            // Reinicializar la cuerda con el nuevo número de segmentos
+            InitializeRope();
 
             if (showDebug)
             {
-                Debug.Log($"[RopeVerlet] ⬆️ Límite actualizado a {length}m");
+                Debug.Log($"[RopeVerlet] ⬆️ Límite actualizado a {length}m | Segmentos: {numOfRopeSegments} | Seg. length: {ropeSegmentLength:F3}m");
             }
         }
 

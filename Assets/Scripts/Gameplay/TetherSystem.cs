@@ -19,7 +19,7 @@ namespace AbyssalReach.Gameplay
 
         [Header("Tether Properties")]
         [Tooltip("Longitud máxima del cable en metros")]
-        public float maxLength = 30f;
+        [SerializeField] private float maxLength = 30f;
 
         [Tooltip("A partir de qué porcentaje empieza la tensión (0-1)")]
         [SerializeField] private float tensionThreshold = 0.9f;
@@ -27,6 +27,7 @@ namespace AbyssalReach.Gameplay
         [Header("Debug")]
         [SerializeField] private bool showDebug = true;
 
+        public float MaxLength => maxLength;
         private float currentLength = 0f;
         private float tension = 0f;
 

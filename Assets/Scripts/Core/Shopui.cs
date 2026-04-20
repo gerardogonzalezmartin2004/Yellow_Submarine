@@ -177,8 +177,13 @@ namespace AbyssalReach.UI
                 {
                     if (tetherSystem != null)
                     {
-                        tetherSystem.maxLength += mejoraLongitudCable;
-                        LogDebug($"Longitud de cable mejorada: {tetherSystem.maxLength}");
+                        float newLength = tetherSystem.MaxLength + mejoraLongitudCable;
+                        tetherSystem.UpgradeLength(newLength);
+                        LogDebug($"Longitud de cable mejorada a: {tetherSystem.MaxLength}m");
+                    }
+                    else
+                    {
+                        Debug.LogError("[ShopUI] TetherSystem no asignado - no se puede mejorar el cable");
                     }
                 }
                 else if (upgradeName == "Cable Strength")
