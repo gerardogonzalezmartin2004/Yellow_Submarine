@@ -19,7 +19,6 @@ namespace AbyssalReach.Core
         [SerializeField] private GameObject ropeObject;
         [SerializeField] private GameObject bagObject;
         [SerializeField] private BagFillVisualizer bagVisualizer;
-        [SerializeField] private GameObject[] bubbleEfects;
 
         [Header("Inventory")]
         [SerializeField] private InventoryController inventoryController;
@@ -63,11 +62,8 @@ namespace AbyssalReach.Core
 
             instance = this;
             DontDestroyOnLoad(gameObject);
-            
-            controls = new AbyssalReachControls();
 
-            // Global nunca se apaga — contiene ToggleInventory que debe
-            // funcionar en cualquier estado del juego.
+            controls = new AbyssalReachControls();
             controls.Global.Enable();
 
             if (boat != null)
@@ -83,19 +79,11 @@ namespace AbyssalReach.Core
             oxygenSlider.value = oxygenTimer;
             oxygenTimer = maxTimer;
             tether = tetherSystem.GetComponent<TetherSystem>();
-
-            if(bubbleEfects != null)
-            {
-                foreach (var bubble in bubbleEfects)
-                    bubble.SetActive(false);
-            }
-              
         }
 
         private void OnEnable()
         {
             controls.Enable();
-            // Re-aseguramos Global tras Enable general.
             controls.Global.Enable();
             controls.BoatControls.StartDive.performed += OnStartDivePressed;
             SetInputToGameplay();
@@ -134,8 +122,6 @@ namespace AbyssalReach.Core
 
             if (diverMovement != null && diverMovement.emergencyAscent && tether != null)
                 tether.ReelInRope(Time.deltaTime * 5f);
-
-                BubblesEfect();
         }
 
         #endregion
@@ -168,6 +154,55 @@ namespace AbyssalReach.Core
 
         #region Game States
 
+        public void SetGameState(GameState newState)
+        {
+            if (currentState == newState) return;
+
+            if (showDebug)
+            {
+                Debug.Log($"[GameController] Estado cambiado: {currentState} → {newState}");
+            }
+
+            currentState = newState;
+
+            switch (newState)
+            {
+                case GameState.Sailing:
+                    controls.BoatControls.Enable();
+                    controls.UI.Disable();
+                    controls.DiverControls.Disable();
+                    break;
+
+                case GameState.Diving:
+                    controls.BoatControls.Disable();
+                    controls.UI.Disable();
+                    controls.DiverControls.Enable();
+                    break;
+
+                case GameState.InPort:
+                case GameState.Docking:
+                    break;
+
+                case GameState.InShop:
+                    controls.BoatControls.Disable();
+                    controls.DiverControls.Disable();
+                    controls.UI.Enable();
+                    break;
+
+                case GameState.Inventory:
+                    controls.BoatControls.Disable();
+                    controls.DiverControls.Disable();
+                    controls.UI.Enable();
+                    break;
+
+                case GameState.Paused:
+                    controls.BoatControls.Disable();
+                    controls.DiverControls.Disable();
+                    controls.UI.Enable();
+                    break;
+            }
+        }
+
         private void ToggleDiving()
         {
             if (isDiving)
@@ -175,8 +210,9 @@ namespace AbyssalReach.Core
                 SetSailingMode();
                 stopTimer = false;
                 diverMovement.ExitEmergencyAscent();
-                tether.maxLength = 10f;
+                tether.UpgradeLength(10f);
                 diverMovement.emergencyAscent = false;
+                tether.ResetTetherToMax();
             }
             else
             {
@@ -186,43 +222,22 @@ namespace AbyssalReach.Core
             }
         }
 
-        private void BubblesEfect()
-        {
-            if (currentState == GameState.Diving)
-            {
-                foreach (var bubble in bubbleEfects)
-                    bubble.SetActive(true);
-            }
-            else
-            {
-                foreach (var bubble in bubbleEfects)
-                    bubble.SetActive(false);
-            }
-        }
-        // Alterna entre Sailing e Inventory.
-        // Solo funciona si estamos en Sailing o ya en Inventory.
-        // El callback del Global/ToggleInventory llama a este método.
         public void ToggleInventory()
         {
             if (currentState == GameState.Sailing)
             {
-                currentState = GameState.Inventory;
+                SetGameState(GameState.Inventory);
 
-                // Paramos el barco mientras el jugador gestiona el inventario.
                 boatMovement?.SetMovementActive(false);
 
-                // Cambiamos a inputs de UI para que el ratón funcione en el Canvas.
                 controls.BoatControls.Disable();
                 controls.UI.Enable();
 
-                // SetInventoryVisible(true) también dispara TransferDiverLoot internamente.
                 inventoryController?.SetInventoryVisible(true);
-
-                if (showDebug) Debug.Log("[GameController] Estado → Inventory");
             }
             else if (currentState == GameState.Inventory)
             {
-                currentState = GameState.Sailing;
+                SetGameState(GameState.Sailing);
 
                 boatMovement?.SetMovementActive(true);
 
@@ -230,16 +245,14 @@ namespace AbyssalReach.Core
                 controls.BoatControls.Enable();
 
                 inventoryController?.SetInventoryVisible(false);
-
-                if (showDebug) Debug.Log("[GameController] Estado → Sailing");
             }
-            // Si estamos buceando, en puerto, o pausados, ToggleInventory no hace nada.
         }
 
         public void SetSailingMode()
         {
             isDiving = false;
-            currentState = GameState.Sailing;
+            SetGameState(GameState.Sailing);
+
             boatCamera.SetActive(true);
             diverCamera.SetActive(false);
             ropeObject.SetActive(false);
@@ -265,7 +278,8 @@ namespace AbyssalReach.Core
         {
             isDiving = true;
             stopTimer = false;
-            currentState = GameState.Diving;
+            SetGameState(GameState.Diving);
+
             boatCamera.SetActive(false);
             diverCamera.SetActive(true);
             ropeObject.SetActive(true);
@@ -299,21 +313,28 @@ namespace AbyssalReach.Core
             if (showDebug) Debug.Log("[GameController] Modo Buceo Activado");
         }
 
+
+        // Solo cambia el estado para que la UI muestre el mensaje.
         public void EnterPort()
         {
             if (currentState != GameState.Sailing) return;
-            currentState = GameState.InPort;
-            boatMovement?.Stop();
-            boatMovement?.SetMovementActive(false);
-            if (boatRb != null) { boatRb.linearVelocity = Vector3.zero; boatRb.isKinematic = true; }
+
+            SetGameState(GameState.InPort);
+
+            if (showDebug) Debug.Log("[GameController] Barco en zona de puerto - navegación libre");
         }
 
         public void ExitPort()
         {
-            if (currentState == GameState.InPort) SetSailingMode();
+            if (currentState == GameState.InPort)
+                SetSailingMode();
         }
 
-        public void StartDive() { if (currentState == GameState.Sailing) SetDivingMode(); }
+        public void StartDive()
+        {
+            if (currentState == GameState.Sailing)
+                SetDivingMode();
+        }
 
         public void EndDive()
         {
@@ -326,7 +347,16 @@ namespace AbyssalReach.Core
             tether?.ResetTetherToMax();
         }
 
-        public enum GameState { Sailing, Diving, InPort, Paused, Inventory }
+        public enum GameState
+        {
+            Sailing,
+            Diving,
+            InPort,
+            Docking,
+            InShop,
+            Inventory,
+            Paused
+        }
 
         #endregion
 
@@ -351,10 +381,17 @@ namespace AbyssalReach.Core
             GUIStyle normal = new GUIStyle { fontSize = 14 };
             normal.normal.textColor = Color.white;
             if (boatRb != null)
-                GUI.Label(new Rect(10, 55, 300, 20), "Boat Vel: " + boatRb.linearVelocity.magnitude.ToString("F2"), normal);
+                GUI.Label(new Rect(10, 35, 300, 20), "Boat Vel: " + boatRb.linearVelocity.magnitude.ToString("F2"), normal);
 
             normal.normal.textColor = Color.cyan;
-            GUI.Label(new Rect(10, 100, 400, 20), "F5: Toggle Sailing/Diving | I: Toggle Inventory", normal);
+            string controlsState = "";
+            if (controls.BoatControls.enabled) controlsState += "Boat ";
+            if (controls.DiverControls.enabled) controlsState += "Diver ";
+            if (controls.UI.enabled) controlsState += "UI ";
+            GUI.Label(new Rect(10, 55, 400, 20), "Controls: " + controlsState, normal);
+
+            normal.normal.textColor = Color.white;
+            GUI.Label(new Rect(10, 80, 400, 20), "F5: Toggle Sailing/Diving | I: Toggle Inventory", normal);
         }
 
         #endregion
