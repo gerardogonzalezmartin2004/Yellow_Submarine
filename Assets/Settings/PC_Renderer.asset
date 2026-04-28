@@ -21,6 +21,29 @@ MonoBehaviour:
       surfaceData: 2
     screenSpaceSettings:
       normalBlend: 0
+--- !u!114 &-4594626719157432187
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1da1f5b1f37e9b34da4c29c89838dc59, type: 3}
+  m_Name: Underwater Effects
+  m_EditorClassIdentifier: Assembly-CSharp::Underwater
+  m_Active: 1
+  settings:
+    material: {fileID: 2100000, guid: d14a6cb2afa833243993173b1b908c7e, type: 2}
+    renderPassEvent: 550
+    color: {r: 0.7000712, g: 0.74409825, b: 0.8679245, a: 1}
+    FogDensity: 0
+    alpha: 0
+    refraction: 0.5
+    normalmap: {fileID: 2800000, guid: 08ef20a01c156e1428ca81211ca1275d, type: 3}
+    UV: {x: 1, y: 1, z: 0.2, w: 0.1}
+    waterLevel: -0.03031
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -48,7 +71,8 @@ MonoBehaviour:
   m_RendererFeatures:
   - {fileID: 7833122117494664109}
   - {fileID: -5428971746795996009}
-  m_RendererFeatureMap: ad6b866f10d7b46c97bc97d0f56aa8b4
+  - {fileID: -4594626719157432187}
+  m_RendererFeatureMap: ad6b866f10d7b46c97bc97d0f56aa8b485501aa1579b3cc0
   m_UseNativeRenderPass: 1
   xrSystemData: {fileID: 0}
   postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
