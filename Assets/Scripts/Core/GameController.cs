@@ -19,6 +19,7 @@ namespace AbyssalReach.Core
         [SerializeField] private GameObject ropeObject;
         [SerializeField] private GameObject bagObject;
         [SerializeField] private BagFillVisualizer bagVisualizer;
+        [SerializeField] private GameObject[] bubbleEfects;
 
         [Header("Inventory")]
         [SerializeField] private InventoryController inventoryController;
@@ -62,7 +63,7 @@ namespace AbyssalReach.Core
 
             instance = this;
             DontDestroyOnLoad(gameObject);
-
+            
             controls = new AbyssalReachControls();
 
             // Global nunca se apaga — contiene ToggleInventory que debe
@@ -82,6 +83,13 @@ namespace AbyssalReach.Core
             oxygenSlider.value = oxygenTimer;
             oxygenTimer = maxTimer;
             tether = tetherSystem.GetComponent<TetherSystem>();
+
+            if(bubbleEfects != null)
+            {
+                foreach (var bubble in bubbleEfects)
+                    bubble.SetActive(false);
+            }
+              
         }
 
         private void OnEnable()
@@ -126,6 +134,8 @@ namespace AbyssalReach.Core
 
             if (diverMovement != null && diverMovement.emergencyAscent && tether != null)
                 tether.ReelInRope(Time.deltaTime * 5f);
+
+                BubblesEfect();
         }
 
         #endregion
@@ -176,6 +186,19 @@ namespace AbyssalReach.Core
             }
         }
 
+        private void BubblesEfect()
+        {
+            if (currentState == GameState.Diving)
+            {
+                foreach (var bubble in bubbleEfects)
+                    bubble.SetActive(true);
+            }
+            else
+            {
+                foreach (var bubble in bubbleEfects)
+                    bubble.SetActive(false);
+            }
+        }
         // Alterna entre Sailing e Inventory.
         // Solo funciona si estamos en Sailing o ya en Inventory.
         // El callback del Global/ToggleInventory llama a este método.
