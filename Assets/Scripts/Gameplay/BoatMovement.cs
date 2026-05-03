@@ -41,7 +41,8 @@ namespace AbyssalReach.Gameplay
             // Configuración del Rigidbody
             rb.useGravity = false;
             rb.linearDamping = waterDrag;
-            rb.constraints = RigidbodyConstraints.FreezePositionZ | RigidbodyConstraints.FreezeRotation;
+            rb.constraints = RigidbodyConstraints.FreezePositionZ | RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationY;
+
             // Inicializar controles
             controls = new AbyssalReachControls();
         }
@@ -79,7 +80,7 @@ namespace AbyssalReach.Gameplay
             Vector2 inputVector = context.ReadValue<Vector2>();
             float rawInput = inputVector.x; // Solo usar eje X
 
-            // Aplicar deadzone, si el valor absoluto es menor que el umbral, ignorar
+            // Aplicar deadzone: Si el valor absoluto es menor que el umbral, ignorar
             if (Mathf.Abs(rawInput) < inputDeadzone)
             {
                 moveInput = 0f;
@@ -101,7 +102,7 @@ namespace AbyssalReach.Gameplay
             moveInput = 0f;
 
         }
-
+      
         private void FixedUpdate()
         {
             // Evitar actualizar si el script está deshabilitado o inactivo
@@ -112,8 +113,8 @@ namespace AbyssalReach.Gameplay
             UpdateMovement();
         }
 
-        #endregion
-
+        #endregion             
+       
         #region Movement Logic
 
         private void UpdateMovement()

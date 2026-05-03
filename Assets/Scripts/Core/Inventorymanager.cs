@@ -69,40 +69,9 @@ namespace AbyssalReach.Core
             OnInventoryChanged?.Invoke();
         }
 
-        // Método público para que otros scripts puedan pedirle al Manager que actualice la UI
-        public void NotifyInventoryUpdate()
-        {
-            OnInventoryChanged?.Invoke();
-        }
-        public int CalculateTotalValue()
-        {
-            int totalValue = 0;
-
-            foreach (ItemData item in diverInventory.GetItems())
-            {
-                if (item != null)
-                    totalValue += item.value;
-            }
-
-            return totalValue;
-        }
-
-        public int SellAllItems()
-        {
-            int totalValue = CalculateTotalValue();
-
-            if (totalValue > 0)
-            {
-                diverInventory.Clear();
-                OnInventoryChanged?.Invoke();
-
-                if (showDebug)
-                    Debug.Log("[InventoryManager] Vendidos todos los items por " + totalValue + "G");
-            }
-
-            return totalValue;
-        }
-
+        // Stubs para ShopUI — se implementan en PASO 5
+        public int CalculateTotalValue() => 0;
+        public int SellAllItems() => 0;
         public int GetItemCount() => diverInventory.GetItemCount();
         public bool IsEmpty() => diverInventory.GetItemCount() == 0;
 

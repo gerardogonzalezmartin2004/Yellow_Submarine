@@ -5,12 +5,13 @@ using AbyssalReach.Core;
 
 public class InventoryController : MonoBehaviour
 {
-    // este script es el cerebro del sistema de inventario. Maneja la lógica de arrastrar y soltar, la memoria de posición, la transferencia de items entre el buzo y el barco, y la interacción con el highlight visual.
     #region Serialized Fields
 
     [Header("Input Actions")]
     [SerializeField] private InputActionReference rotateAction;
     [SerializeField] private InputActionReference pointerPositionAction;
+    // ToggleInventory vive en el Action Map Global que nunca se desactiva.
+    // Su callback delega en GameController.ToggleInventory() para gestión de estado.
     [SerializeField] private InputActionReference toggleInventoryAction;
 
     [Header("References")]
@@ -18,40 +19,6 @@ public class InventoryController : MonoBehaviour
     [SerializeField] private ItemGrid boatItemGrid;
     [SerializeField] private GameObject itemPrefab;
     [SerializeField] private Transform canvasTransform;
-
-    [Header("Memory System")]
-    [Tooltip("Si true, usa el sistema de memoria de posición")]
-    [SerializeField] private bool enablePositionMemory = true;
-
-    [Tooltip("Estrategia de retorno cuando falla colocación")]
-    [SerializeField]
-    private ReturnStrategyFactory.StrategyType returnStrategy =
-        ReturnStrategyFactory.StrategyType.Lerp;
-
-    [Header("Debug")]
-    [Tooltip("Mostrar logs de debugging")]
-    [SerializeField] private bool showDebugLogs = true;
-
-    [Tooltip("Modo ultra-verbose para debugging profundo")]
-    [SerializeField] private bool verboseDebug = false;
-
-    #endregion
-
-    #region Singleton
-
-    private static InventoryController instance;
-    public static InventoryController Instance => instance;
-
-    private void OnAwake_Singleton()
-    {
-        if (instance != null && instance != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
-
-        instance = this;
-    }
 
     #endregion
 
@@ -63,16 +30,10 @@ public class InventoryController : MonoBehaviour
     private RectTransform heldItemRect;
     private InventotyHighlight inventoryHighlight;
 
-    // Cache para optimización del highlight
+    // Cache para optimización del highlight — solo recalculamos si cambia la celda o la rotación.
     private Vector2Int lastHighlightPos = new Vector2Int(-1, -1);
     private int lastRotationIdx = -1;
     private InventoryItem itemUnderCursor;
-
-    // Sistema de memoria de posición
-    private ItemPositionMemory currentItemMemory;
-
-    // Debugging
-    private ItemGridDebugger gridDebugger;
 
     #endregion
 
@@ -94,20 +55,16 @@ public class InventoryController : MonoBehaviour
 
     private void Awake()
     {
-        OnAwake_Singleton();
         inventoryHighlight = GetComponent<InventotyHighlight>();
         if (inventoryHighlight == null)
             Debug.LogError("[InventoryController] InventotyHighlight no encontrado");
 
+        // ForceInit garantiza que inventoryItemSlots esté listo aunque el Canvas esté desactivado.
+        // Sin esto, TransferDiverLoot falla porque Start() nunca corre en objetos desactivados.
         boatItemGrid?.ForceInit();
 
         if (inventoryCanvas != null)
             inventoryCanvas.SetActive(false);
-
-        if (boatItemGrid != null)
-        {
-            gridDebugger = boatItemGrid.GetComponent<ItemGridDebugger>();
-        }
 
         ValidateReferences();
     }
@@ -117,9 +74,12 @@ public class InventoryController : MonoBehaviour
 
     private void Update()
     {
+        // El item en mano sigue al cursor cada frame.
         if (selectedItem != null && heldItemRect != null)
             heldItemRect.position = GetPointerPosition();
 
+        // Usamos Mouse.current en vez de InputAction para los clics en el Canvas.
+        // Esto evita conflictos entre el New Input System y el sistema de Raycast de la UI de Unity.
         if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
         {
             if (selectedItemGrid != null)
@@ -154,6 +114,7 @@ public class InventoryController : MonoBehaviour
         if (pointerPositionAction?.action != null)
             pointerPositionAction.action.Enable();
 
+        // Toggle siempre activo — GameController gestiona qué estados permiten abrirlo.
         if (toggleInventoryAction?.action != null)
         {
             toggleInventoryAction.action.Enable();
@@ -175,6 +136,8 @@ public class InventoryController : MonoBehaviour
         if (toggleInventoryAction?.action != null)
         {
             toggleInventoryAction.action.performed -= OnToggleInventoryPerformed;
+            // No desactivamos toggleInventoryAction — pertenece al mapa Global
+            // que GameController gestiona. Desactivarlo aquí causaría que no se pueda reabrir.
         }
     }
 
@@ -186,147 +149,57 @@ public class InventoryController : MonoBehaviour
     {
         if (selectedItem == null) return;
         selectedItem.Rotate();
+        // Invalidamos cache para que HandleHighlight recalcule aunque el cursor no se mueva.
         lastRotationIdx = -1;
-
     }
-
-    // Transfiere los items del grid del barco de vuelta al inventario del buzo.
-
-    private void TransferBoatItemsToDiver()
-    {
-        if (InventoryManager.Instance == null || boatItemGrid == null)
-            return;
-
-        DiverInventory diverInv = InventoryManager.Instance.GetDiverInventory();
-        List<InventoryItem> itemsToRemove = new List<InventoryItem>();
-
-        // Recopilar todos los items únicos del grid
-        for (int x = 0; x < boatItemGrid.GetWidth(); x++)
-        {
-            for (int y = 0; y < boatItemGrid.GetHeight(); y++)
-            {
-                InventoryItem item = boatItemGrid.GetItem(x, y);
-
-                // Evitar procesar el mismo item dos veces
-                if (item != null && !itemsToRemove.Contains(item))
-                {
-                    itemsToRemove.Add(item);
-                }
-            }
-        }
-        // Transferir cada item al inventario del buzo
-        foreach (InventoryItem item in itemsToRemove)
-        {
-            if (item.itemData != null)
-            {
-                diverInv.GetItems().Add(item.itemData);
-            }
-            // Destruir la instancia visual del grid
-            Destroy(item.gameObject);
-        }
-
-        if (showDebugLogs && itemsToRemove.Count > 0)
-            Debug.Log("[InventoryController] " + itemsToRemove.Count + " items transferidos de barco a buzo");
-
-        InventoryManager.Instance.NotifyInventoryUpdate();
-    }
-
 
     private void OnToggleInventoryPerformed(InputAction.CallbackContext ctx)
     {
+        // Delegamos en GameController para que gestione el estado global del juego.
         if (GameController.Instance != null)
             GameController.Instance.ToggleInventory();
+        else
+            Debug.LogWarning("[InventoryController] GameController.Instance es null");
     }
 
     #endregion
 
     #region Public API
 
-    // Vende todos los items del grid del barco y los destruye.
-    // Retorna el valor total vendido.
-
-    public int SellAllBoatItems()
-    {
-        if (boatItemGrid == null)
-            return 0;
-
-        int totalValue = 0;
-        List<InventoryItem> itemsToRemove = new List<InventoryItem>();
-
-        // Recorrer todas las celdas del grid y recopilar items únicos
-        for (int x = 0; x < boatItemGrid.GetWidth(); x++)
-        {
-            for (int y = 0; y < boatItemGrid.GetHeight(); y++)
-            {
-                InventoryItem item = boatItemGrid.GetItem(x, y);
-
-                // Evitar contar el mismo item dos veces (ocupa múltiples celdas)
-                if (item != null && !itemsToRemove.Contains(item))
-                {
-                    totalValue += item.itemData.value;
-                    itemsToRemove.Add(item);
-                }
-            }
-        }
-
-        // Destruir todos los items
-        foreach (InventoryItem item in itemsToRemove)
-        {
-            Destroy(item.gameObject);
-        }
-
-        if (showDebugLogs && totalValue > 0)
-            Debug.Log("[InventoryController] Vendidos items del barco por " + totalValue + "G");
-
-        return totalValue;
-    }
+    // GameController llama esto. visible=true también dispara la transferencia del botín.
     public void SetInventoryVisible(bool visible)
     {
         if (inventoryCanvas == null) return;
 
-        // Activamos o desactivamos el Canvas visualmente
         inventoryCanvas.SetActive(visible);
 
         if (visible)
         {
-            // Traemos SOLO el nuevo loot que el buzo haya recogido.
+            // Al abrir, transferimos automáticamente lo que el buzo haya recogido.
             if (InventoryManager.Instance != null)
-            {
                 TransferDiverLoot(InventoryManager.Instance.GetDiverInventory());
-            }
         }
         else
         {
-            // AL CERRAR: 
-            // Ya NO llamamos a TransferBoatItemsToDiver(), así protegemos las posiciones.
-
-            // Prevención de errores: Si el jugador cierra el inventario mientras arrastraba algo.
+            // Si cerramos con algo en la mano, lo destruimos para no dejar estado sucio.
             if (selectedItem != null)
             {
-                // Intentamos devolverlo a su última posición válida
-                bool returned = TryReturnItemToLastPosition();
-
-                if (!returned)
-                {
-                    // Si por algún motivo falla, lo destruimos para evitar items fantasma
-                    Destroy(selectedItem.gameObject);
-                }
-
-                // Limpiamos las referencias del ratón
+                Destroy(selectedItem.gameObject);
                 selectedItem = null;
                 heldItemRect = null;
-                currentItemMemory = null;
-
-                // Ocultamos el highlight visual por si se quedó encendido
-                if (inventoryHighlight != null) inventoryHighlight.Show(false);
             }
         }
     }
 
+    // Lee el DiverInventory e instancia un InventoryItem por cada ItemData,
+    // colocándolo automáticamente en el grid del barco.
+    // Los items que no quepan se quedan en el DiverInventory para la próxima vez.
     public void TransferDiverLoot(DiverInventory diverInv)
     {
-        if (diverInv == null || boatItemGrid == null || itemPrefab == null || canvasTransform == null)
-            return;
+        if (diverInv == null) { Debug.LogWarning("[InventoryController] DiverInventory null"); return; }
+        if (boatItemGrid == null) { Debug.LogError("[InventoryController] boatItemGrid no asignado"); return; }
+        if (itemPrefab == null) { Debug.LogError("[InventoryController] itemPrefab no asignado"); return; }
+        if (canvasTransform == null) { Debug.LogError("[InventoryController] canvasTransform no asignado"); return; }
 
         List<ItemData> diverItems = new List<ItemData>(diverInv.GetItems());
         List<ItemData> transferidos = new List<ItemData>();
@@ -337,210 +210,62 @@ public class InventoryController : MonoBehaviour
 
             InventoryItem newItem = Instantiate(itemPrefab, canvasTransform)
                                     .GetComponent<InventoryItem>();
-            if (newItem == null) continue;
+            if (newItem == null) { Debug.LogError("[InventoryController] prefab sin InventoryItem"); continue; }
 
             newItem.Set(loot);
 
-            if (enablePositionMemory)
-            {
-                ItemPositionMemory memory = newItem.gameObject.AddComponent<ItemPositionMemory>();
-                memory.SetReturnStrategy(returnStrategy);
-            }
-
+            // Buscamos hueco directamente en boatItemGrid sin depender de selectedItemGrid.
+            // La transferencia es una operación del sistema, no del jugador.
             Vector2Int? slot = boatItemGrid.FindSpaceForObject(newItem);
 
             if (slot == null)
             {
+                Debug.LogWarning("[InventoryController] Sin espacio para: " + loot.name);
                 Destroy(newItem.gameObject);
                 continue;
             }
 
             boatItemGrid.PlaceItem(newItem, slot.Value.x, slot.Value.y);
-
-            if (enablePositionMemory)
-            {
-                ItemPositionMemory memory = newItem.GetComponent<ItemPositionMemory>();
-                memory?.SaveCurrentPosition(boatItemGrid);
-            }
-
             transferidos.Add(loot);
+            Debug.Log("[InventoryController] Transferido al barco: " + loot.name);
         }
 
         foreach (ItemData loot in transferidos)
             diverInv.GetItems().Remove(loot);
 
-
-        if (gridDebugger != null && verboseDebug)
-        {
-            gridDebugger.ValidateGridIntegrity();
-        }
+        Debug.Log("[InventoryController] Transferencia: " + transferidos.Count + "/" + diverItems.Count);
     }
 
     #endregion
 
     #region Drag & Drop
 
-    // Recoge un item del grid.
     private void PickUpItem(Vector2Int tile)
     {
-        if (selectedItemGrid == null)
-        {
-            return;
-        }
-
-
-        InventoryItem itemAtTile = selectedItemGrid.GetItem(tile.x, tile.y);
-
-        if (itemAtTile == null)
-        {
-            return;
-        }
-
-        if (verboseDebug && gridDebugger != null)
-        {
-            gridDebugger.InspectCell(tile.x, tile.y);
-        }
-
-        // Esto es crucial para items grandes que ocupan múltiples celdas
-        int originX = itemAtTile.onGridPositionX;
-        int originY = itemAtTile.onGridPositionY;
-
-
-        // Recoger desde el origen
-        selectedItem = selectedItemGrid.PickUpItem(originX, originY);
-
-        if (selectedItem == null)
-        {
-
-            if (gridDebugger != null)
-            {
-                gridDebugger.DumpGridState();
-                gridDebugger.ValidateGridIntegrity();
-            }
-
-            return;
-        }
-
+        selectedItem = selectedItemGrid.PickUpItem(tile.x, tile.y);
+        if (selectedItem == null) return;
 
         heldItemRect = selectedItem.GetComponent<RectTransform>();
         heldItemRect?.SetAsLastSibling();
-
-        //  Obtener componente de memoria
-        if (enablePositionMemory)
-        {
-            currentItemMemory = selectedItem.GetComponent<ItemPositionMemory>();
-
-            if (currentItemMemory != null)
-            {
-                currentItemMemory.MarkAsPickedUp();
-            }
-
-        }
     }
 
-    // Intenta colocar el item en el grid.
-    //  Retorno robusto cuando falla.
     private void PlaceItem(Vector2Int tile)
     {
         if (selectedItem == null || selectedItemGrid == null) return;
 
-
-        //   Verificar que la posición está dentro del grid
-        if (!selectedItemGrid.BoundaryCheck(tile.x, tile.y, selectedItem.WIDTH, selectedItem.HEIGHT))
-        {
-
-            TryReturnItemToLastPosition();
-            return;
-        }
-
         bool placed = selectedItemGrid.PlaceItem(selectedItem, tile.x, tile.y, ref overlapItem);
+        if (!placed) return;
 
-        if (placed)
+        selectedItem = null;
+        heldItemRect = null;
+
+        // Swap estilo RE4: si había un item, lo recogemos automáticamente.
+        if (overlapItem != null)
         {
-
-
-            //  Guardar nueva posición en memoria
-            if (enablePositionMemory && currentItemMemory != null)
-            {
-                currentItemMemory.SaveCurrentPosition(selectedItemGrid);
-            }
-
-            selectedItem = null;
-            heldItemRect = null;
-            currentItemMemory = null;
-
-            // Swap estilo RE4
-            if (overlapItem != null)
-            {
-
-                selectedItem = overlapItem;
-                overlapItem = null;
-                heldItemRect = selectedItem.GetComponent<RectTransform>();
-                heldItemRect?.SetAsLastSibling();
-
-                // Actualizar memoria del item swapeado
-                if (enablePositionMemory)
-                {
-                    currentItemMemory = selectedItem.GetComponent<ItemPositionMemory>();
-                    currentItemMemory?.MarkAsPickedUp();
-                }
-            }
-
-            // Validar integridad después de colocar
-            if (gridDebugger != null && verboseDebug)
-            {
-                gridDebugger.ValidateGridIntegrity();
-            }
-        }
-        else
-        {
-            bool returned = TryReturnItemToLastPosition();
-
-
-        }
-    }
-
-    private bool TryReturnItemToLastPosition()
-    {
-        if (!enablePositionMemory)
-        {
-            return false;
-        }
-
-        if (currentItemMemory == null)
-        {
-            return false;
-        }
-
-        if (!currentItemMemory.HasValidReturnPosition)
-        {
-            return false;
-        }
-
-
-        bool returned = currentItemMemory.ReturnToLastPosition();
-
-        if (returned)
-        {
-
-            // Limpiar selección
-            selectedItem = null;
-            heldItemRect = null;
-            currentItemMemory = null;
-
-            return true;
-        }
-        else
-        {
-            Debug.LogError(" Faloo al retornar item");
-
-            // Debug profundo
-            if (gridDebugger != null)
-            {
-                gridDebugger.DumpGridState();
-            }
-
-            return false;
+            selectedItem = overlapItem;
+            overlapItem = null;
+            heldItemRect = selectedItem.GetComponent<RectTransform>();
+            heldItemRect?.SetAsLastSibling();
         }
     }
 
@@ -555,6 +280,8 @@ public class InventoryController : MonoBehaviour
         Vector2Int currentPos = GetTileGridPosition();
         int currentRot = selectedItem != null ? selectedItem.RotationIndex : -1;
 
+        // Solo recalculamos si la celda cambió o el item rotó.
+        // Esto evita trabajo innecesario 60 veces por segundo.
         if (currentPos == lastHighlightPos && currentRot == lastRotationIdx) return;
 
         lastHighlightPos = currentPos;
@@ -617,22 +344,9 @@ public class InventoryController : MonoBehaviour
         if (itemPrefab == null) Debug.LogWarning("[InventoryController] itemPrefab no asignado");
         if (canvasTransform == null) Debug.LogWarning("[InventoryController] canvasTransform no asignado");
         if (boatItemGrid == null) Debug.LogWarning("[InventoryController] boatItemGrid no asignado");
+        if (toggleInventoryAction == null) Debug.LogWarning("[InventoryController] toggleInventoryAction no asignado");
+        if (pointerPositionAction == null) Debug.LogWarning("[InventoryController] pointerPositionAction no asignado");
     }
-
-
-    private void ContextValidateGrid()
-    {
-        if (gridDebugger != null)
-        {
-            gridDebugger.ValidateGridIntegrity();
-        }
-        else
-        {
-            Debug.LogWarning("No ItemGridDebugger found");
-        }
-    }
-
 
     #endregion
-
 }

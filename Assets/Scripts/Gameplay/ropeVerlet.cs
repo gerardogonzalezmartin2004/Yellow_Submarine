@@ -4,10 +4,10 @@ using System.Collections.Generic;
 
 namespace AbyssalReach.Gameplay
 {
-
-    // Sistema de cuerda con límite de distancia ESCALABLE
-
-
+    /// <summary>
+    /// Sistema de cuerda con límite de distancia ESCALABLE
+    /// Puede upgradearse en runtime
+    /// </summary>
     [RequireComponent(typeof(LineRenderer))]
     public class ropeVerlet : MonoBehaviour
     {
@@ -33,9 +33,6 @@ namespace AbyssalReach.Gameplay
         [SerializeField] private int numOfRopeSegments = 50;
         [SerializeField] private float ropeSegmentLength = 0.225f;
 
-        [Tooltip("Longitud fija de cada segmento (referencia para calcular cuántos segmentos necesita la cuerda al hacer upgrade)")]
-        [SerializeField] private float baseSegmentLength = 0.225f;
-
         [Header("Physics")]
         [SerializeField] private Vector2 gravityForce = new Vector2(0f, -1f);
         [SerializeField] private float dampingFactor = 0.98f;
@@ -60,10 +57,10 @@ namespace AbyssalReach.Gameplay
         [SerializeField] private bool anchorStart = true;
         [SerializeField] private bool anchorEnd = true;
 
-
-
-
-
+        
+        
+        
+         
         [Header("Distance Limit (Upgradeable)")]
         [Tooltip("Distancia máxima inicial (se puede upgradear)")]
         [SerializeField] private float maxDistance = 30f;
@@ -85,8 +82,8 @@ namespace AbyssalReach.Gameplay
         private GameController gameController;
         private Rigidbody2D diverRb2D;
 
-
-        private float activeRopeLength = 30f;
+        
+        private float activeRopeLength = 30f; // Para Verlet visual
         private Vector2 tensionDirection = Vector2.up;
 
         #endregion
@@ -104,7 +101,7 @@ namespace AbyssalReach.Gameplay
 
                 if (diverRb2D == null)
                 {
-                    Debug.LogError("[RopeVerlet]  Diver NO tiene Rigidbody2D!");
+                    Debug.LogError("[RopeVerlet] ⚠️ Diver NO tiene Rigidbody2D!");
                 }
             }
 
@@ -139,7 +136,6 @@ namespace AbyssalReach.Gameplay
 
         #region Initialization
 
-        
         private void InitializeRope()
         {
             if (ropeStartTransform == null)
@@ -149,9 +145,6 @@ namespace AbyssalReach.Gameplay
             }
 
             activeRopeLength = maxDistance;
-
-            // Recalcular el número de segmentos para mantener densidad visual constante
-            numOfRopeSegments = Mathf.Max(2, Mathf.RoundToInt(activeRopeLength / baseSegmentLength) + 1);
             CalculateSegmentLength();
 
             Vector2 startPos = ropeStartTransform.position;
@@ -285,20 +278,20 @@ namespace AbyssalReach.Gameplay
 
         #endregion
 
-
+        // ═══════════════ LÍMITE DE DISTANCIA ═══════════════
         #region Distance Limit
 
-
-        // Aplica el límite de distancia máxima
-        // Frena al diver si intenta alejarse más de maxDistance
-
+        /// <summary>
+        /// Aplica el límite de distancia máxima
+        /// Frena al diver si intenta alejarse más de maxDistance
+        /// </summary>
         private void EnforceDistanceLimit()
         {
             if (!enableDistanceLimit) return;
             if (diverRb2D == null) return;
             if (ropeStartTransform == null || ropeEndTransform == null) return;
 
-            // Medir distancia directa barco - diver
+            // Medir distancia directa barco → diver
             Vector2 boatPos = ropeStartTransform.position;
             Vector2 diverPos = ropeEndTransform.position;
             float currentDistance = Vector2.Distance(boatPos, diverPos);
@@ -331,7 +324,7 @@ namespace AbyssalReach.Gameplay
         }
 
         #endregion
-
+        // ═══════════════════════════════════════════════════════════
 
         #region Tension Force
 
@@ -410,59 +403,58 @@ namespace AbyssalReach.Gameplay
 
         #region Visual
 
-        
         private void DrawRope()
         {
             if (lineRenderer == null || ropeSegments.Count == 0) return;
 
-            int count = ropeSegments.Count;
-            lineRenderer.positionCount = count;
-            Vector3[] ropePositions = new Vector3[count];
-
-            for (int i = 0; i < count; i++)
+            Vector3[] ropePositions = new Vector3[numOfRopeSegments];
+            for (int i = 0; i < ropeSegments.Count; i++)
             {
                 ropePositions[i] = ropeSegments[i].CurrentPosition;
             }
-
             lineRenderer.SetPositions(ropePositions);
         }
+
         #endregion
 
+        // ═══════════════ API PÚBLICA PARA UPGRADES ═══════════════
         #region Public API
 
-
-        // Establece la longitud máxima del cable    
+        /// <summary>
+        /// Establece la longitud máxima del cable (para upgrades)
+        /// ESTA ES LA VARIABLE MAESTRA
+        /// </summary>
         public void SetMaxLength(float length)
         {
             maxDistance = length;
             activeRopeLength = length;
-
-            // Recalcular segmentos para mantener la densidad visual (baseSegmentLength fijo)
-            numOfRopeSegments = Mathf.Max(2, Mathf.RoundToInt(activeRopeLength / baseSegmentLength) + 1);
             CalculateSegmentLength();
-
-            // Reinicializar la cuerda con el nuevo número de segmentos
-            InitializeRope();
 
             if (showDebug)
             {
-                Debug.Log($"[RopeVerlet] ⬆️ Límite actualizado a {length}m | Segmentos: {numOfRopeSegments} | Seg. length: {ropeSegmentLength:F3}m");
+                Debug.Log($"[RopeVerlet] ⬆️ Límite actualizado a {length}m");
             }
         }
 
-        // Obtiene la longitud máxima actual
+        /// <summary>
+        /// Obtiene la longitud máxima actual
+        /// </summary>
         public float GetMaxLength()
         {
             return maxDistance;
         }
 
-        // Obtiene la longitud actual de la cuerda
+        /// <summary>
+        /// Obtiene la longitud actual de la cuerda (visual)
+        /// </summary>
         public float GetCurrentLength()
         {
             return GetCurrentRopeLength();
         }
 
-        // Obtiene la distancia directa barco - diver
+        /// <summary>
+        /// Obtiene la distancia directa barco → diver
+        /// </summary>
         public float GetDirectDistance()
         {
             if (ropeStartTransform == null || ropeEndTransform == null)
@@ -471,7 +463,9 @@ namespace AbyssalReach.Gameplay
             return Vector2.Distance(ropeStartTransform.position, ropeEndTransform.position);
         }
 
-        // Verifica si está al límite
+        /// <summary>
+        /// Verifica si está al límite
+        /// </summary>
         public bool IsAtDistanceLimit()
         {
             return GetDirectDistance() >= maxDistance * 0.95f;
@@ -488,6 +482,7 @@ namespace AbyssalReach.Gameplay
         }
 
         #endregion
+        // ═══════════════════════════════════════════════════════════
 
         #region Debug
 

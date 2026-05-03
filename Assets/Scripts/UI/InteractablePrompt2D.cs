@@ -15,9 +15,9 @@ namespace AbyssalReach.UI
         // Define los tres estados visuales del icono
         private enum State
         {
-            Hidden,
-            Far,
-            Near
+            Hidden, // Fuera de rango (no se ve nada)
+            Far,    // Radio exterior (se ve el icono genérico)
+            Near    // Radio interior (se ve el botón de interacción)
         }
 
         [Header(" Interactor Settings")]
@@ -40,19 +40,19 @@ namespace AbyssalReach.UI
 
         [Header(" Interaction Event")]
         [Tooltip("Función que se ejecutará al pulsar el botón cuando estás cerca.")]
-        // UnityEvent permite arrastrar funciones desde el Inspector 
+        // UnityEvent permite arrastrar funciones desde el Inspector (ej: abrir cofre, hablar)
         // sin necesidad de "hardcodear" la lógica aquí.
         public UnityEvent OnInteract;
 
         // --- Variables Internas ---
         private SpriteRenderer spriteRenderer;
-        private State currentState = State.Hidden;
+        private State currentState = State.Hidden; // Estado actual de la máquina de estados
         private Transform boatTransform;           // Referencia cacheada del barco
         private Transform diverTransform;          // Referencia cacheada del buzo
         private AbyssalReachControls controls;     // Referencia al Input System autogenerado
-        private InputAction interactAction;        // La acción específica que estamos escuchand
-        private bool isInRange = false;
-        private bool usingGamepad = false;
+        private InputAction interactAction;        // La acción específica que estamos escuchando (ej. "Interact")
+        private bool isInRange = false;            // ¿Está el jugador en la zona 'Near'?
+        private bool usingGamepad = false;         // Rastrea si el último input fue de mando para no cambiar el sprite constantemente
 
         #region Unity Lifecycle
 
@@ -62,7 +62,7 @@ namespace AbyssalReach.UI
             spriteRenderer = GetComponent<SpriteRenderer>();
 
             // Forzamos el color a blanco puro (para que el Sprite original se vea tal cual)
-            // Y lo apagamos para que no sea visible al iniciar la escena.
+            // Y lo apagamos (enabled = false) para que no sea visible al iniciar la escena.
             spriteRenderer.color = Color.white;
             spriteRenderer.enabled = false;
         }
@@ -97,10 +97,10 @@ namespace AbyssalReach.UI
         private void Update()
         {
             // Buscamos a los jugadores. Lo hacemos en el Update por si el buzo 
-            // estaba desactivado en el Start
+            // estaba desactivado en el Start (ej. cuando empiezas navegando en el barco).
             FindPlayers();
 
-            // Averiguamos quién está jugando 
+            // Averiguamos quién está jugando AHORA MISMO (Barco o Buzo) y si tiene permiso
             Transform player = GetActivePlayer();
 
             // Si no hay jugador válido, ocultamos el icono y salimos del Update temprano
@@ -122,7 +122,7 @@ namespace AbyssalReach.UI
                 ChangeState(newState);
             }
 
-            //  Lógica continua mientras estemos en la zona 
+            //  Lógica continua mientras estemos en la zona "Cerca" (Near)
             if (currentState == State.Near)
             {
                 UpdateDeviceSprite(); // Vigila si el jugador coge el mando o el teclado
@@ -236,7 +236,7 @@ namespace AbyssalReach.UI
 
         #region Input Handling
 
-
+        
         private void SubscribeInput()
         {
             if (controls == null) return;
@@ -272,7 +272,7 @@ namespace AbyssalReach.UI
             // Bloqueo de seguridad: Si has pulsado el botón, pero estás fuera del círculo interior, no hagas nada.
             if (!isInRange || GameController.Instance == null) return;
 
-
+            Debug.Log("[InteractablePrompt2D] ¡BOTÓN PULSADO! Ejecutando OnInteract"); // ← Debug para verificar
 
             // ?.Invoke() ejecuta todos los métodos que hayas arrastrado al evento OnInteract en el Inspector de Unity.
             OnInteract?.Invoke();
@@ -282,7 +282,7 @@ namespace AbyssalReach.UI
 
         #region Editor Gizmos
 
-        // Esta función solo se ejecuta en el Editor de Unity cuando seleccionas el objeto.
+        // Esta función SOLO se ejecuta en el Editor de Unity cuando seleccionas el objeto.
         // Dibuja los círculos de colores para que puedas ajustar las distancias visualmente sin tener que probar el juego.
         private void OnDrawGizmosSelected()
         {

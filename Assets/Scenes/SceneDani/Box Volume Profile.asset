@@ -56,6 +56,7 @@ MonoBehaviour:
   - {fileID: 6187667950030276525}
   - {fileID: 4625396811406006587}
   - {fileID: -4545185732623205940}
+  - {fileID: 6323891518870532653}
 --- !u!114 &4625396811406006587
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -68,7 +69,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 66f335fb1ffd8684294ad653bf1c7564, type: 3}
   m_Name: ColorAdjustments
   m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.ColorAdjustments
-  active: 1
+  active: 0
   postExposure:
     m_OverrideState: 0
     m_Value: 0
@@ -112,3 +113,43 @@ MonoBehaviour:
   rounded:
     m_OverrideState: 1
     m_Value: 0
+--- !u!114 &6323891518870532653
+MonoBehaviour:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cdfbdbb87d3286943a057f7791b43141, type: 3}
+  m_Name: ChannelMixer
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.ChannelMixer
+  active: 0
+  redOutRedIn:
+    m_OverrideState: 0
+    m_Value: 100
+  redOutGreenIn:
+    m_OverrideState: 0
+    m_Value: 0
+  redOutBlueIn:
+    m_OverrideState: 0
+    m_Value: -200
+  greenOutRedIn:
+    m_OverrideState: 0
+    m_Value: 0
+  greenOutGreenIn:
+    m_OverrideState: 0
+    m_Value: 100
+  greenOutBlueIn:
+    m_OverrideState: 0
+    m_Value: 0
+  blueOutRedIn:
+    m_OverrideState: 0
+    m_Value: 0
+  blueOutGreenIn:
+    m_OverrideState: 0
+    m_Value: 0
+  blueOutBlueIn:
+    m_OverrideState: 0
+    m_Value: 100

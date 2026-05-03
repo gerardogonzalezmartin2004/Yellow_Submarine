@@ -19,7 +19,7 @@ namespace AbyssalReach.Gameplay
 
         [Header("Tether Properties")]
         [Tooltip("Longitud máxima del cable en metros")]
-        [SerializeField] private float maxLength = 30f;
+        public float maxLength = 30f;
 
         [Tooltip("A partir de qué porcentaje empieza la tensión (0-1)")]
         [SerializeField] private float tensionThreshold = 0.9f;
@@ -27,7 +27,6 @@ namespace AbyssalReach.Gameplay
         [Header("Debug")]
         [SerializeField] private bool showDebug = true;
 
-        public float MaxLength => maxLength;
         private float currentLength = 0f;
         private float tension = 0f;
 
@@ -101,41 +100,41 @@ namespace AbyssalReach.Gameplay
 
         #region Public API
 
-
-        // Verifica si el cable está estirado al máximo
-
+        /// <summary>
+        /// Verifica si el cable está estirado al máximo
+        /// </summary>
         public bool IsAtMaxLength()
         {
             return currentLength >= maxLength * 0.99f;
         }
 
-
-        // Obtiene la longitud actual del cable
-
+        /// <summary>
+        /// Obtiene la longitud actual del cable
+        /// </summary>
         public float GetCurrentLength()
         {
             return currentLength;
         }
 
-
-        // Obtiene la longitud máxima del cable
-
+        /// <summary>
+        /// Obtiene la longitud máxima del cable
+        /// </summary>
         public float GetMaxLength()
         {
             return maxLength;
         }
 
-
-        // Obtiene el factor de tensión (0-1)
-
+        /// <summary>
+        /// Obtiene el factor de tensión (0-1)
+        /// </summary>
         public float GetTension()
         {
             return tension;
         }
 
-
-        // Mejora la longitud del cable
-
+        /// <summary>
+        /// Mejora la longitud del cable
+        /// </summary>
         public void UpgradeLength(float newLength)
         {
             if (newLength > maxLength)
@@ -170,26 +169,26 @@ namespace AbyssalReach.Gameplay
             }
         }
 
-
-        // Configura los anclajes
-
+        /// <summary>
+        /// Configura los anclajes
+        /// </summary>
         public void SetAnchors(Transform boat, Transform diver)
         {
             boatAnchor = boat;
             diverAnchor = diver;
         }
 
-
-        // Obtiene el transform del buceador
-
+        /// <summary>
+        /// Obtiene el transform del buceador
+        /// </summary>
         public Transform GetDiverAnchor()
         {
             return diverAnchor;
         }
 
-
-        // Obtiene el transform del barco
-
+        /// <summary>
+        /// Obtiene el transform del barco
+        /// </summary>
         public Transform GetBoatAnchor()
         {
             return boatAnchor;
@@ -235,7 +234,7 @@ namespace AbyssalReach.Gameplay
                 Gizmos.DrawLine(previousPoint, currentPoint);
                 previousPoint = currentPoint;
             }
-        }
+        } 
 
         #endregion
     }
