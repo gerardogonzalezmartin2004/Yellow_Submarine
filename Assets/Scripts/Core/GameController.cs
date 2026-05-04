@@ -326,10 +326,9 @@ namespace AbyssalReach.Core
 
         public void ExitPort()
         {
-            if (currentState == GameState.InPort)
+            if (currentState == GameState.InPort || currentState == GameState.InShop)
                 SetSailingMode();
         }
-
         public void StartDive()
         {
             if (currentState == GameState.Sailing)

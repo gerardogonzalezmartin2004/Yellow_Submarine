@@ -72,11 +72,14 @@ namespace AbyssalReach.Gameplay
             // Asignar evento al botón de interacción (definido en Input System)
             // Asumiendo que has creado una acción (Interact) en el mapa BoatControls, de los input actions
             controls.BoatControls.Interact.performed += OnDockPressed;
+            controls.UI.Enable();
+            controls.UI.Cancel.performed += OnCancelPressed;
         }
 
         private void OnDisable()
         {
             controls.BoatControls.Interact.performed -= OnDockPressed;
+            controls.UI.Cancel.performed -= OnCancelPressed;
             controls.BoatControls.Disable();
             controls.Disable();
         }
@@ -88,6 +91,11 @@ namespace AbyssalReach.Gameplay
             {
                 StartAutoPilot();
             }
+        }
+        private void OnCancelPressed(UnityEngine.InputSystem.InputAction.CallbackContext context)
+        {
+            if (isInShop)
+                CloseShop();
         }
 
         private void Update()
@@ -323,45 +331,31 @@ namespace AbyssalReach.Gameplay
             isInShop = true;
             shopUIPanel.SetActive(true);
 
-            // Desactivar controles del barco, activar controles de UI
-            controls.BoatControls.Disable();
-            if (showDebug)
-            {
-                Debug.Log("[PortArea] Tienda abierta");
-            }
+            // Delegar al GameController para que gestione controles e inputs correctamente
+            if (GameController.Instance != null)
+                GameController.Instance.SetGameState(GameController.GameState.InShop);
+
+            if (showDebug) Debug.Log("[PortArea] Tienda abierta");
         }
 
         public void CloseShop()
         {
-            if (shopUIPanel == null)
-            {
-                return;
-            }
+            if (shopUIPanel == null) return;
 
             isInShop = false;
             shopUIPanel.SetActive(false);
 
-            // Reactivar controles del barco
-            controls.BoatControls.Enable();
+            // Reactivar física del barco
+            if (boatMovement != null) boatMovement.SetMovementActive(true);
+            if (boatRb != null) boatRb.isKinematic = false;
 
-            // Iniciar cooldown de salida
+            // Delegar al GameController: él activa BoatControls y pone estado Sailing
+            if (GameController.Instance != null)
+                GameController.Instance.ExitPort();
+
             StartExitCooldown();
 
-            // Reactivar control manual
-            if (boatMovement != null)
-            {
-                boatMovement.SetMovementActive(true);
-            }
-
-            if (boatRb != null)
-            {
-                boatRb.isKinematic = false;
-            }
-
-            if (showDebug)
-            {
-                Debug.Log("[PortArea] Tienda cerrada - Cooldown de salida activo");
-            }
+            if (showDebug) Debug.Log("[PortArea] Tienda cerrada - Cooldown activo");
         }
 
         #endregion

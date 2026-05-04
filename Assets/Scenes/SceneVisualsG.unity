@@ -603,11 +603,6 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
---- !u!1 &112838075 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 3273887480908494818, guid: cd09754af9e150f449e733e30fca34b9, type: 3}
-  m_PrefabInstance: {fileID: 1410009419}
-  m_PrefabAsset: {fileID: 0}
 --- !u!4 &112838076 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 6424289655133660040, guid: cd09754af9e150f449e733e30fca34b9, type: 3}
@@ -6474,10 +6469,6 @@ MonoBehaviour:
   ropeObject: {fileID: 1787755040}
   bagObject: {fileID: 1442341823}
   bagVisualizer: {fileID: 924442844}
-  bubbleEfects:
-  - {fileID: 112838075}
-  - {fileID: 2115400866}
-  - {fileID: 4268595744845251764}
   inventoryController: {fileID: 385737322}
   oxygenTimer: 50
   maxTimer: 50
@@ -8140,11 +8131,6 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
---- !u!1 &2115400866 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 3273887480908494818, guid: cd09754af9e150f449e733e30fca34b9, type: 3}
-  m_PrefabInstance: {fileID: 8870268157849554541}
-  m_PrefabAsset: {fileID: 0}
 --- !u!4 &2115400869 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 6424289655133660040, guid: cd09754af9e150f449e733e30fca34b9, type: 3}
@@ -8378,11 +8364,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 7f83387585dbecd4f888043bcfb81ac0, type: 3}
---- !u!1 &4268595744845251764 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 1547516075721568785, guid: f6ac3f6d5b412044cb0fb208a16f3637, type: 3}
-  m_PrefabInstance: {fileID: 462357947748392081}
-  m_PrefabAsset: {fileID: 0}
 --- !u!4 &5725657326966116574 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3075456385446563097, guid: f6ac3f6d5b412044cb0fb208a16f3637, type: 3}
