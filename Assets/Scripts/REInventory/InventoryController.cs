@@ -172,27 +172,16 @@ public class InventoryController : MonoBehaviour
 
         if (!visible)
         {
-            // 1. Item en mano al cerrar → devolver a última posición válida.
-            if (selectedItem != null)
+            Debug.Log("[InventoryController] Cerrando inventario...");
+            Debug.Log("[InventoryController] dropZoneGrid es null: " + (dropZoneGrid == null));
+
+            if (dropZoneGrid != null)
             {
-                ItemPositionMemory memory = selectedItem.GetComponent<ItemPositionMemory>();
-
-                if (memory != null && memory.HasValidReturnPosition)
-                {
-                    memory.ReturnToLastPosition();
-                    Debug.Log("[InventoryController] Item devuelto al cerrar inventario.");
-                }
-                else
-                {
-                    Destroy(selectedItem.gameObject);
-                    Debug.LogWarning("[InventoryController] Item sin posición previa destruido al cerrar.");
-                }
-
-                selectedItem = null;
-                heldItemRect = null;
+                Debug.Log("[InventoryController] dropZone IsEmpty: " + dropZoneGrid.IsEmpty);
             }
 
-            // 2. Descartar todo lo que esté en el drop zone al cerrar.
+            if (selectedItem != null) { /* ... resto igual */ }
+
             if (dropZoneGrid != null && !dropZoneGrid.IsEmpty)
             {
                 Debug.Log("[InventoryController] Descartando items del drop zone...");
@@ -444,6 +433,7 @@ public class InventoryController : MonoBehaviour
         if (toggleInventoryAction == null) Debug.LogWarning("[InventoryController] toggleInventoryAction no asignado");
         if (pointerPositionAction == null) Debug.LogWarning("[InventoryController] pointerPositionAction no asignado");
     }
+
 
     #endregion
 }
