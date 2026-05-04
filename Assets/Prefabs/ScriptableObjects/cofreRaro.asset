@@ -16,7 +16,7 @@ MonoBehaviour:
   width: 2
   height: 1
   itemIcon: {fileID: 21300000, guid: ecc67a32971bc5746a0fd0561a152052, type: 3}
-  worldPrefab: {fileID: 0}
+  worldPrefab: {fileID: 8778847778797646946, guid: 21974772b46b6634ca6194a9694a6a25, type: 3}
   rarity: 1
   value: 5
   weight: 5
