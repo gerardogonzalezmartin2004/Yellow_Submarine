@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 1033502771592492388}
   - component: {fileID: 9082785329431114842}
   - component: {fileID: 6399792707806290468}
+  - component: {fileID: 46435540174978438}
   m_Layer: 5
   m_Name: Item
   m_TagString: Untagged
@@ -88,5 +89,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 83a407b5d34d0b7408a02f71f650e271, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::InventoryItem
-  sizeWidth: 1
-  sizeHeight: 1
+  itemData: {fileID: 0}
+  onGridPositionX: 0
+  onGridPositionY: 0
+--- !u!114 &46435540174978438
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 584808322317816148}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8e7aedcb9197a1a44b350efe284b6e59, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ItemPositionMemory
+  returnStrategy: 0
+  enableFullHistory: 0
+  maxHistorySize: 10
+  showDebugLogs: 0

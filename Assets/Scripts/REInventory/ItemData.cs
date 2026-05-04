@@ -13,30 +13,31 @@ public class ItemData : ScriptableObject
     [Header("Visual")]
     public Sprite itemIcon;
 
+    [Header("World Object")]
+    [Tooltip("Prefab del objeto en el mundo (el que tiene SpriteRenderer, Rigidbody2D, " +
+             "CircleCollider2D y LootPickup). Se usa para re-instanciarlo cuando el jugador " +
+             "descarta el item desde el inventario — caerá desde el barco al agua.")]
+    public GameObject worldPrefab;
+
     [Header("Rareza")]
     public ItemRarity rarity = ItemRarity.Common;
 
     [Header("Propiedades")]
-    // El valor se sugiere automáticamente según rareza pero puedes cambiarlo
     [Min(0)] public int value = 5;
-    // El peso afecta el límite de la bolsa del buzo
     [Min(0)] public float weight = 1f;
 
     [Header("Descripción")]
     [TextArea(2, 4)]
     public string description;
 
-    // Rareza con sus implicaciones de color y valor sugerido
     public enum ItemRarity
     {
-        Common,    // Gris   - Valor base: 5
-        Rare,      // Azul   - Valor base: 10  
-        Epic,      // Morado - Valor base: 20
-        Legendary  // Dorado - Valor base: 50
+        Common,
+        Rare,
+        Epic,
+        Legendary
     }
 
-    // Devuelve el color del aura según la rareza.
-    // BagVisualizer, ShopUI o cualquier UI puede llamar esto para colorear el borde.
     public Color GetAuraColor()
     {
         switch (rarity)
@@ -49,13 +50,10 @@ public class ItemData : ScriptableObject
         }
     }
 
-    // Rellena value con el valor sugerido según rareza si está a 0.
-    // Se llama automáticamente al cambiar algo en el Inspector.
     private void OnValidate()
     {
         if (value == 0)
             value = GetSuggestedValue();
-
         if (string.IsNullOrEmpty(itemName))
             itemName = name;
     }
