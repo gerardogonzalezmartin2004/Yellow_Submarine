@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 
@@ -181,6 +182,30 @@ public class ItemGrid : MonoBehaviour
 
     // Intenta colocar un item en el grid en la posición especificada.
     // Valida límites, solapamientos y maneja el swap de items si es necesario.
+
+    // Devuelve todos los InventoryItem actualmente colocados en el grid
+    public List<InventoryItem> GetAllItems()
+    {
+        HashSet<InventoryItem> found = new HashSet<InventoryItem>();
+        foreach (InventoryItem item in inventoryItemSlots) // ajusta al nombre real de tu array
+            if (item != null) found.Add(item);
+        return new List<InventoryItem>(found);
+    }
+
+
+    // Elimina todos los items del grid (para cuando se venden)
+    public void ClearAllItems()
+    {
+        foreach (InventoryItem item in GetAllItems())
+        {
+            for (int x = 0; x < gridWidth; x++)
+                for (int y = 0; y < gridHeight; y++)
+                    if (inventoryItemSlots[x, y] == item)
+                        inventoryItemSlots[x, y] = null;
+
+            Destroy(item.gameObject);
+        }
+    }
 
     public bool PlaceItem(InventoryItem inventoryItem, int posX, int posY, ref InventoryItem overlapItem)
     {

@@ -1,17 +1,14 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using System.Collections.Generic;
 using AbyssalReach.Core;
 using AbyssalReach.Gameplay;
-using UnityEngine.Rendering;
 
 namespace AbyssalReach.UI
 {
     public class ShopUI : MonoBehaviour
     {
-        // Controla la UI de la tienda del puerto
-        // Permite vender items y comprar upgrades
-
         [Header("UI References")]
         [SerializeField] private Button sellAllButton;
         [SerializeField] private TextMeshProUGUI goldText;
@@ -25,7 +22,6 @@ namespace AbyssalReach.UI
         [SerializeField] private Button upgradeSwimSpeedButton;
 
         [Header("Port Reference")]
-        [Tooltip("Referencia al PortArea para notificar cierre")]
         [SerializeField] private Gameplay.PortArea portArea;
 
         [Header("External References")]
@@ -34,52 +30,38 @@ namespace AbyssalReach.UI
         [SerializeField] private float mejoraLongitudCable;
         [SerializeField] private float mejoraVelocidad;
 
-        #region Unity ciclo de vida
+        [Header("Boat Grid Reference")]
+        [SerializeField] private ItemGrid boatItemGrid;
+
+        #region Unity Lifecycle
 
         private void OnEnable()
         {
-            // Suscribirse a eventos para actualizar la UI automáticamente
-            InventoryManager.OnInventoryChanged += UpdateInventoryDisplay;
             CurrencyManager.OnGoldChanged += UpdateGoldDisplay;
 
-            // Configurar botones principales
             if (sellAllButton != null)
-            {
                 sellAllButton.onClick.AddListener(SellAllItems);
-            }
 
             if (closeButton != null)
-            {
                 closeButton.onClick.AddListener(CloseShop);
-            }
 
-            // Configurar botones de mejora 
             if (upgradeCableLengthButton != null)
-            {
                 upgradeCableLengthButton.onClick.AddListener(PurchaseCableUpgrade);
-            }
 
             if (upgradeCableStrengthButton != null)
-            {
                 upgradeCableStrengthButton.onClick.AddListener(PurchaseStrengthUpgrade);
-            }
 
             if (upgradeSwimSpeedButton != null)
-            {
                 upgradeSwimSpeedButton.onClick.AddListener(PurchaseSpeedUpgrade);
-            }
 
-            // Actualizar toda la información al abrir la tienda
-            UpdateAllDisplays();
+            UpdateGoldDisplay(0, 0);
+            UpdateInventoryDisplay();
         }
 
         private void OnDisable()
         {
-            // Desuscribirse de eventos y asi evitamos errores de memoria
-            InventoryManager.OnInventoryChanged -= UpdateInventoryDisplay;
             CurrencyManager.OnGoldChanged -= UpdateGoldDisplay;
 
-            // Limpiar listeners de los botones
             if (sellAllButton != null) sellAllButton.onClick.RemoveAllListeners();
             if (closeButton != null) closeButton.onClick.RemoveAllListeners();
             if (upgradeCableLengthButton != null) upgradeCableLengthButton.onClick.RemoveAllListeners();
@@ -93,73 +75,45 @@ namespace AbyssalReach.UI
 
         private void SellAllItems()
         {
-            // Verificación de seguridad
-            if (InventoryManager.Instance == null || CurrencyManager.Instance == null)
+            if (boatItemGrid == null || CurrencyManager.Instance == null)
             {
-                Debug.LogError("[ShopUI] Falta el manager");
+                Debug.LogError("[ShopUI] Falta boatItemGrid o CurrencyManager");
                 return;
             }
 
-            //  Calcular cuánto valen todos los objetos
-            int totalValue = InventoryManager.Instance.CalculateTotalValue();
+            List<InventoryItem> items = boatItemGrid.GetAllItems();
+            if (items.Count == 0) return;
 
-            if (totalValue <= 0)
-            {
-                return; // No hay nada que vender
-            }
+            int totalValue = 0;
+            foreach (InventoryItem item in items)
+                if (item != null && item.itemData != null)
+                    totalValue += item.itemData.value;
 
-            // Vender items 
-            int earnedGold = InventoryManager.Instance.SellAllItems();
+            if (totalValue <= 0) return;
 
-            // Añadir el oro ganado al jugador
-            CurrencyManager.Instance.AddGold(earnedGold);
+            CurrencyManager.Instance.AddGold(totalValue);
+            boatItemGrid.ClearAllItems();
+
+            Debug.Log("[ShopUI] Vendido todo por " + totalValue + "G");
+            UpdateInventoryDisplay();
         }
 
-        // Los botones de compra
+        private void PurchaseCableUpgrade() => PurchaseUpgrade("Cable Length", 50);
+        private void PurchaseStrengthUpgrade() => PurchaseUpgrade("Cable Strength", 75);
+        private void PurchaseSpeedUpgrade() => PurchaseUpgrade("Swim Speed", 100);
 
-        private void PurchaseCableUpgrade()
-        {
-            PurchaseUpgrade("Cable Length", 50);
-        }
-
-        private void PurchaseStrengthUpgrade()
-        {
-            PurchaseUpgrade("Cable Strength", 75);
-        }
-
-        private void PurchaseSpeedUpgrade()
-        {
-            PurchaseUpgrade("Swim Speed", 100);
-        }
-
-        // Lógica genérica de compra
         private void PurchaseUpgrade(string upgradeName, int cost)
         {
-            if (CurrencyManager.Instance == null)
-            {
-                return;
-            }
+            if (CurrencyManager.Instance == null) return;
 
-            // Intentar gastar el oro. Si devuelve true, la compra fue exitosa.
             if (CurrencyManager.Instance.SpendGold(cost))
             {
                 Debug.Log("[ShopUI] Purchased: " + upgradeName + " for " + cost + "G");
-                // Aquí tendriamos q introducir la lógica real de aplicar la mejora
 
-                if(upgradeName == "Cable Length")
-                {
+                if (upgradeName == "Cable Length" && tetherSystem != null)
                     tetherSystem.maxLength += mejoraLongitudCable;
-                    Debug.Log(tetherSystem.maxLength);
-                }
-                else if(upgradeName == "Cable Strength")
-                {
-                    
-                }
-                else if(upgradeName == "Swim Speed")
-                {
+                else if (upgradeName == "Swim Speed" && diverMovement != null)
                     diverMovement.swimSpeed += mejoraVelocidad;
-                    Debug.Log(diverMovement.swimSpeed);
-                }
             }
             else
             {
@@ -169,69 +123,41 @@ namespace AbyssalReach.UI
 
         private void CloseShop()
         {
-            // Notificar al PortArea para que maneje el cierre y el cooldown
             if (portArea != null)
-            {
                 portArea.CloseShop();
-            }
             else
-            {
-                // Si no hay referencia al PortArea, simplemente cerramos la UI
                 gameObject.SetActive(false);
-            }
         }
 
         #endregion
 
         #region UI Updates
 
-        private void UpdateAllDisplays()
-        {
-            // Actualizamos todo a la vez
-            UpdateGoldDisplay(0, 0); // Pasamos 0,0 porque solo queremos repintar el valor actual
-            UpdateInventoryDisplay();
-        }
-
-        // Se llama automáticamente cuando cambia el oro con el evento
         private void UpdateGoldDisplay(int newAmount, int delta)
         {
             if (goldText != null && CurrencyManager.Instance != null)
-            {
-                // Damos formato al texto para mostrar el oro actual
                 goldText.text = "Gold: " + CurrencyManager.Instance.GetGold() + "G";
-            }
         }
 
-        // Se llama automáticamente cuando cambia el inventario con el evento
         private void UpdateInventoryDisplay()
         {
-            if (InventoryManager.Instance == null)
-            {
-                return;
-            }
+            List<InventoryItem> items = boatItemGrid != null
+                ? boatItemGrid.GetAllItems()
+                : new List<InventoryItem>();
 
-            //  Mostrar valor total del inventario
+            int totalValue = 0;
+            foreach (InventoryItem item in items)
+                if (item != null && item.itemData != null)
+                    totalValue += item.itemData.value;
+
             if (inventoryValueText != null)
-            {
-                int totalValue = InventoryManager.Instance.CalculateTotalValue();
                 inventoryValueText.text = "Inventory Value: " + totalValue + "G";
-            }
 
-           
-            //  Mostrar número de items
             if (itemCountText != null)
-            {
-                int itemCount = InventoryManager.Instance.GetItemCount();
-                itemCountText.text = "Items: " + itemCount;
-            }
+                itemCountText.text = "Items: " + items.Count;
 
-           
-            //  Activar/desactivar botón de vender
             if (sellAllButton != null)
-            {
-                bool hasItems = !InventoryManager.Instance.IsEmpty();
-                sellAllButton.interactable = hasItems;
-            }
+                sellAllButton.interactable = items.Count > 0;
         }
 
         #endregion

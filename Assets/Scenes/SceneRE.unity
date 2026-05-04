@@ -8004,6 +8004,14 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7098699630147794078, guid: f3fb0083660ae334da4e2247137d0814, type: 3}
+      propertyPath: gridWidth
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 7098699630147794078, guid: f3fb0083660ae334da4e2247137d0814, type: 3}
+      propertyPath: gridHeight
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 7098699630147794078, guid: f3fb0083660ae334da4e2247137d0814, type: 3}
       propertyPath: inventoryItemPrefab
       value: 
       objectReference: {fileID: 584808322317816148, guid: 0a3337c7dcacfa643b745621ebb95c29, type: 3}

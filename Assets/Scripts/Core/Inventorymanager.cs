@@ -3,6 +3,7 @@ using UnityEngine;
 
 namespace AbyssalReach.Core
 {
+    // este script lo q hace es ser el manager del inventario del buzo, el q se encarga de almacenar los items recogidos, controlar el peso total, y notificar a la UI cuando hay cambios.
     public class InventoryManager : MonoBehaviour
     {
         private static InventoryManager instance;

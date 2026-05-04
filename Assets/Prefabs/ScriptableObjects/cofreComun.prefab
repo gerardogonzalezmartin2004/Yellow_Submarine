@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 9222985171715988148}
   - component: {fileID: 8472555324168492995}
   - component: {fileID: 1053051709770108334}
+  - component: {fileID: 9076154246785280911}
   m_Layer: 0
   m_Name: cofreComun
   m_TagString: Untagged
@@ -142,3 +143,30 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LootPickup
   itemData: {fileID: 11400000, guid: a6ac7b6f5cc4c044a934ee3c926f17d0, type: 2}
+--- !u!50 &9076154246785280911
+Rigidbody2D:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7252156863450275833}
+  m_BodyType: 0
+  m_Simulated: 1
+  m_UseFullKinematicContacts: 0
+  m_UseAutoMass: 0
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_GravityScale: 0.05
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_Interpolate: 0
+  m_SleepingMode: 1
+  m_CollisionDetection: 0
+  m_Constraints: 4

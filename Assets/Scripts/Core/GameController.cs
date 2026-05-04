@@ -251,12 +251,12 @@ namespace AbyssalReach.Core
         public void SetSailingMode()
         {
             isDiving = false;
-            SetGameState(GameState.Sailing);
 
-            boatCamera.SetActive(true);
-            diverCamera.SetActive(false);
-            ropeObject.SetActive(false);
-            bagObject.SetActive(false);
+            // Activar controles ANTES de cambiar estado para evitar el early return
+            boatCamera?.SetActive(true);
+            diverCamera?.SetActive(false);
+            ropeObject?.SetActive(false);
+            bagObject?.SetActive(false);
 
             if (boat != null) boat.SetActive(true);
             boatMovement?.SetMovementActive(true);
@@ -264,12 +264,16 @@ namespace AbyssalReach.Core
             if (diver != null) diver.SetActive(false);
             if (tetherSystem != null) tetherSystem.SetActive(false);
 
+            // Activar controles explícitamente siempre, independiente del estado
             controls.BoatControls.Enable();
             controls.DiverControls.Disable();
             controls.UI.Disable();
 
             oxygenTimer = maxTimer;
             oxygenSlider.value = maxTimer;
+
+            // Cambiar estado AL FINAL para que el early return no nos bloquee
+            currentState = GameState.Sailing;
 
             if (showDebug) Debug.Log("[GameController] Modo Navegación Activado");
         }
@@ -326,8 +330,18 @@ namespace AbyssalReach.Core
 
         public void ExitPort()
         {
+            // Forzamos currentState a InShop/InPort para que SetSailingMode
+            // no haga early return por estado igual
             if (currentState == GameState.InPort || currentState == GameState.InShop)
+            {
                 SetSailingMode();
+            }
+            else
+            {
+                // Venimos de CloseShop con estado inesperado — forzar controles igualmente
+                currentState = GameState.InShop; // forzar estado distinto a Sailing
+                SetSailingMode();
+            }
         }
         public void StartDive()
         {

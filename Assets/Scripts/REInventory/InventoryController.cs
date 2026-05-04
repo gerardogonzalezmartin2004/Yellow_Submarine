@@ -5,13 +5,12 @@ using AbyssalReach.Core;
 
 public class InventoryController : MonoBehaviour
 {
+    // este script controla la lógica principal del inventario: abrir/cerrar, drag & drop, transferencia de loot del buzo al barco, y el sistema de highlight para mostrar dónde se colocaría el item.
     #region Serialized Fields
 
     [Header("Input Actions")]
     [SerializeField] private InputActionReference rotateAction;
     [SerializeField] private InputActionReference pointerPositionAction;
-    // ToggleInventory vive en el Action Map Global que nunca se desactiva.
-    // Su callback delega en GameController.ToggleInventory() para gestión de estado.
     [SerializeField] private InputActionReference toggleInventoryAction;
 
     [Header("References")]
@@ -19,6 +18,10 @@ public class InventoryController : MonoBehaviour
     [SerializeField] private ItemGrid boatItemGrid;
     [SerializeField] private GameObject itemPrefab;
     [SerializeField] private Transform canvasTransform;
+
+    [Header("Drop Zone")]
+    [Tooltip("Grid de descarte. Los items aquí se destruyen al cerrar el inventario.")]
+    [SerializeField] private DropZoneGrid dropZoneGrid;
 
     #endregion
 
@@ -30,7 +33,6 @@ public class InventoryController : MonoBehaviour
     private RectTransform heldItemRect;
     private InventotyHighlight inventoryHighlight;
 
-    // Cache para optimización del highlight — solo recalculamos si cambia la celda o la rotación.
     private Vector2Int lastHighlightPos = new Vector2Int(-1, -1);
     private int lastRotationIdx = -1;
     private InventoryItem itemUnderCursor;
@@ -59,8 +61,6 @@ public class InventoryController : MonoBehaviour
         if (inventoryHighlight == null)
             Debug.LogError("[InventoryController] InventotyHighlight no encontrado");
 
-        // ForceInit garantiza que inventoryItemSlots esté listo aunque el Canvas esté desactivado.
-        // Sin esto, TransferDiverLoot falla porque Start() nunca corre en objetos desactivados.
         boatItemGrid?.ForceInit();
 
         if (inventoryCanvas != null)
@@ -74,19 +74,23 @@ public class InventoryController : MonoBehaviour
 
     private void Update()
     {
-        // El item en mano sigue al cursor cada frame.
         if (selectedItem != null && heldItemRect != null)
             heldItemRect.position = GetPointerPosition();
 
-        // Usamos Mouse.current en vez de InputAction para los clics en el Canvas.
-        // Esto evita conflictos entre el New Input System y el sistema de Raycast de la UI de Unity.
         if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
         {
             if (selectedItemGrid != null)
             {
                 Vector2Int tile = GetTileGridPosition();
-                if (selectedItem == null) PickUpItem(tile);
-                else PlaceItem(tile);
+                if (selectedItem == null)
+                    PickUpItem(tile);
+                else
+                    PlaceItem(tile);
+            }
+            else if (selectedItem != null)
+            {
+                // Click fuera de cualquier grid con item en mano → devolver a última posición.
+                ReturnSelectedItemToLastPosition();
             }
         }
 
@@ -114,7 +118,6 @@ public class InventoryController : MonoBehaviour
         if (pointerPositionAction?.action != null)
             pointerPositionAction.action.Enable();
 
-        // Toggle siempre activo — GameController gestiona qué estados permiten abrirlo.
         if (toggleInventoryAction?.action != null)
         {
             toggleInventoryAction.action.Enable();
@@ -136,8 +139,7 @@ public class InventoryController : MonoBehaviour
         if (toggleInventoryAction?.action != null)
         {
             toggleInventoryAction.action.performed -= OnToggleInventoryPerformed;
-            // No desactivamos toggleInventoryAction — pertenece al mapa Global
-            // que GameController gestiona. Desactivarlo aquí causaría que no se pueda reabrir.
+            // No desactivar — pertenece al Action Map Global.
         }
     }
 
@@ -149,13 +151,11 @@ public class InventoryController : MonoBehaviour
     {
         if (selectedItem == null) return;
         selectedItem.Rotate();
-        // Invalidamos cache para que HandleHighlight recalcule aunque el cursor no se mueva.
         lastRotationIdx = -1;
     }
 
     private void OnToggleInventoryPerformed(InputAction.CallbackContext ctx)
     {
-        // Delegamos en GameController para que gestione el estado global del juego.
         if (GameController.Instance != null)
             GameController.Instance.ToggleInventory();
         else
@@ -166,34 +166,49 @@ public class InventoryController : MonoBehaviour
 
     #region Public API
 
-    // GameController llama esto. visible=true también dispara la transferencia del botín.
     public void SetInventoryVisible(bool visible)
     {
         if (inventoryCanvas == null) return;
+
+        if (!visible)
+        {
+            // 1. Item en mano al cerrar → devolver a última posición válida.
+            if (selectedItem != null)
+            {
+                ItemPositionMemory memory = selectedItem.GetComponent<ItemPositionMemory>();
+
+                if (memory != null && memory.HasValidReturnPosition)
+                {
+                    memory.ReturnToLastPosition();
+                    Debug.Log("[InventoryController] Item devuelto al cerrar inventario.");
+                }
+                else
+                {
+                    Destroy(selectedItem.gameObject);
+                    Debug.LogWarning("[InventoryController] Item sin posición previa destruido al cerrar.");
+                }
+
+                selectedItem = null;
+                heldItemRect = null;
+            }
+
+            // 2. Descartar todo lo que esté en el drop zone al cerrar.
+            if (dropZoneGrid != null && !dropZoneGrid.IsEmpty)
+            {
+                Debug.Log("[InventoryController] Descartando items del drop zone...");
+                dropZoneGrid.DiscardAllItems();
+            }
+        }
 
         inventoryCanvas.SetActive(visible);
 
         if (visible)
         {
-            // Al abrir, transferimos automáticamente lo que el buzo haya recogido.
             if (InventoryManager.Instance != null)
                 TransferDiverLoot(InventoryManager.Instance.GetDiverInventory());
         }
-        else
-        {
-            // Si cerramos con algo en la mano, lo destruimos para no dejar estado sucio.
-            if (selectedItem != null)
-            {
-                Destroy(selectedItem.gameObject);
-                selectedItem = null;
-                heldItemRect = null;
-            }
-        }
     }
 
-    // Lee el DiverInventory e instancia un InventoryItem por cada ItemData,
-    // colocándolo automáticamente en el grid del barco.
-    // Los items que no quepan se quedan en el DiverInventory para la próxima vez.
     public void TransferDiverLoot(DiverInventory diverInv)
     {
         if (diverInv == null) { Debug.LogWarning("[InventoryController] DiverInventory null"); return; }
@@ -214,8 +229,6 @@ public class InventoryController : MonoBehaviour
 
             newItem.Set(loot);
 
-            // Buscamos hueco directamente en boatItemGrid sin depender de selectedItemGrid.
-            // La transferencia es una operación del sistema, no del jugador.
             Vector2Int? slot = boatItemGrid.FindSpaceForObject(newItem);
 
             if (slot == null)
@@ -226,8 +239,11 @@ public class InventoryController : MonoBehaviour
             }
 
             boatItemGrid.PlaceItem(newItem, slot.Value.x, slot.Value.y);
+
+            ItemPositionMemory memory = newItem.GetComponent<ItemPositionMemory>();
+            memory?.SaveCurrentPosition(boatItemGrid);
+
             transferidos.Add(loot);
-            Debug.Log("[InventoryController] Transferido al barco: " + loot.name);
         }
 
         foreach (ItemData loot in transferidos)
@@ -247,26 +263,108 @@ public class InventoryController : MonoBehaviour
 
         heldItemRect = selectedItem.GetComponent<RectTransform>();
         heldItemRect?.SetAsLastSibling();
+
+        ItemPositionMemory memory = selectedItem.GetComponent<ItemPositionMemory>();
+        memory?.MarkAsPickedUp();
+
+        dropZoneGrid?.RefreshVisual();
     }
 
     private void PlaceItem(Vector2Int tile)
     {
         if (selectedItem == null || selectedItemGrid == null) return;
 
+        InventoryItem itemBeingPlaced = selectedItem;
+
         bool placed = selectedItemGrid.PlaceItem(selectedItem, tile.x, tile.y, ref overlapItem);
-        if (!placed) return;
+
+        if (!placed)
+        {
+            // ── FIX "2 sprites bloqueando":
+            //    OverlapCheck devuelve false cuando la zona está ocupada por 2 items distintos
+            //    (swap imposible). En ese caso auto-devolvemos el item a su última posición,
+            //    en vez de dejarlo flotando indefinidamente en mano.
+            ItemPositionMemory memory = itemBeingPlaced.GetComponent<ItemPositionMemory>();
+            if (memory != null && memory.HasValidReturnPosition)
+            {
+                Debug.Log("[InventoryController] Colocación bloqueada por múltiples items — devolviendo a última posición.");
+                ReturnSelectedItemToLastPosition();
+            }
+            // Si nunca fue colocado, se queda en mano para que el jugador elija.
+            return;
+        }
+
+        // Colocación exitosa.
+        ItemPositionMemory placedMemory = itemBeingPlaced.GetComponent<ItemPositionMemory>();
+        placedMemory?.SaveCurrentPosition(selectedItemGrid);
+
+        // Forzar posición visual exacta en la celda (corrige ghost sprite).
+        SnapItemVisualToGrid(itemBeingPlaced, selectedItemGrid);
+
+        dropZoneGrid?.RefreshVisual();
 
         selectedItem = null;
         heldItemRect = null;
 
-        // Swap estilo RE4: si había un item, lo recogemos automáticamente.
+        // Swap RE4: el item desplazado pasa a la mano.
         if (overlapItem != null)
         {
             selectedItem = overlapItem;
             overlapItem = null;
             heldItemRect = selectedItem.GetComponent<RectTransform>();
             heldItemRect?.SetAsLastSibling();
+
+            ItemPositionMemory swapMemory = selectedItem.GetComponent<ItemPositionMemory>();
+            swapMemory?.MarkAsPickedUp();
         }
+    }
+
+    // Devuelve el item en mano a su última posición válida.
+    private void ReturnSelectedItemToLastPosition()
+    {
+        if (selectedItem == null) return;
+
+        ItemPositionMemory memory = selectedItem.GetComponent<ItemPositionMemory>();
+
+        if (memory != null && memory.HasValidReturnPosition)
+        {
+            bool returned = memory.ReturnToLastPosition();
+
+            if (returned)
+            {
+                dropZoneGrid?.RefreshVisual();
+                selectedItem = null;
+                heldItemRect = null;
+            }
+            else
+            {
+                Debug.LogWarning("[InventoryController] ReturnToLastPosition falló. Item sigue en mano.");
+            }
+        }
+        else
+        {
+            Debug.Log("[InventoryController] Item sin posición previa — debe colocarse en un grid.");
+        }
+    }
+
+    // Reposiciona el RectTransform del item a la celda exacta del grid.
+    // Necesario porque durante el drag el transform sigue al cursor,
+    // y al hacer drop puede quedar desplazado visualmente respecto al array del grid.
+    private void SnapItemVisualToGrid(InventoryItem item, ItemGrid grid)
+    {
+        if (item == null || grid == null) return;
+
+        RectTransform itemRect = item.GetComponent<RectTransform>();
+        if (itemRect == null) return;
+
+        Vector2 correctPos = grid.CalculatePositionOnGrid(
+            item,
+            item.onGridPositionX,
+            item.onGridPositionY
+        );
+
+        itemRect.SetParent(grid.GetComponent<RectTransform>());
+        itemRect.localPosition = correctPos;
     }
 
     #endregion
@@ -280,8 +378,6 @@ public class InventoryController : MonoBehaviour
         Vector2Int currentPos = GetTileGridPosition();
         int currentRot = selectedItem != null ? selectedItem.RotationIndex : -1;
 
-        // Solo recalculamos si la celda cambió o el item rotó.
-        // Esto evita trabajo innecesario 60 veces por segundo.
         if (currentPos == lastHighlightPos && currentRot == lastRotationIdx) return;
 
         lastHighlightPos = currentPos;
@@ -344,6 +440,7 @@ public class InventoryController : MonoBehaviour
         if (itemPrefab == null) Debug.LogWarning("[InventoryController] itemPrefab no asignado");
         if (canvasTransform == null) Debug.LogWarning("[InventoryController] canvasTransform no asignado");
         if (boatItemGrid == null) Debug.LogWarning("[InventoryController] boatItemGrid no asignado");
+        if (dropZoneGrid == null) Debug.LogWarning("[InventoryController] dropZoneGrid no asignado (opcional)");
         if (toggleInventoryAction == null) Debug.LogWarning("[InventoryController] toggleInventoryAction no asignado");
         if (pointerPositionAction == null) Debug.LogWarning("[InventoryController] pointerPositionAction no asignado");
     }
