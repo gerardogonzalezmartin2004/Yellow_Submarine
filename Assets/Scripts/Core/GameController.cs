@@ -38,6 +38,9 @@ namespace AbyssalReach.Core
         [Header("Anchor Points")]
         [SerializeField] private Transform boatAnchor;
 
+        [Header("UI - Gold Loss")]
+        [SerializeField] private GameObject goldLossCanvas; 
+
         [Header("State")]
         [SerializeField] private GameState currentState = GameState.Sailing;
 
@@ -276,6 +279,7 @@ namespace AbyssalReach.Core
             currentState = GameState.Sailing;
 
             if (showDebug) Debug.Log("[GameController] Modo Navegación Activado");
+            if (goldLossCanvas != null) goldLossCanvas.SetActive(false);
         }
 
         public void SetDivingMode()
@@ -315,6 +319,8 @@ namespace AbyssalReach.Core
             controls.UI.Disable();
 
             if (showDebug) Debug.Log("[GameController] Modo Buceo Activado");
+
+            if (goldLossCanvas != null) goldLossCanvas.SetActive(true);
         }
 
 

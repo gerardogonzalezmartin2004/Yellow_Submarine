@@ -87,7 +87,9 @@ namespace AbyssalReach.UI
             int totalValue = 0;
             foreach (InventoryItem item in items)
                 if (item != null && item.itemData != null)
-                    totalValue += item.itemData.value;
+                    totalValue += ItemDamageTracker.Instance != null
+                        ? ItemDamageTracker.Instance.GetRuntimeValue(item.itemData)
+                        : item.itemData.value; // fallback si no hay tracker
 
             if (totalValue <= 0) return;
 
@@ -148,7 +150,9 @@ namespace AbyssalReach.UI
             int totalValue = 0;
             foreach (InventoryItem item in items)
                 if (item != null && item.itemData != null)
-                    totalValue += item.itemData.value;
+                    totalValue += ItemDamageTracker.Instance != null
+                        ? ItemDamageTracker.Instance.GetRuntimeValue(item.itemData)
+                        : item.itemData.value;
 
             if (inventoryValueText != null)
                 inventoryValueText.text = "Inventory Value: " + totalValue + "G";
