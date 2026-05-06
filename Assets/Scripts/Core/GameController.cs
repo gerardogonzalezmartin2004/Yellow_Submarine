@@ -129,6 +129,7 @@ namespace AbyssalReach.Core
 
         #endregion
 
+
         #region Input
 
         private void OnStartDivePressed(UnityEngine.InputSystem.InputAction.CallbackContext context)
@@ -387,6 +388,23 @@ namespace AbyssalReach.Core
         public AbyssalReachControls GetControls() => controls;
 
         #endregion
+        // Llamado por objetos que drenan oxígeno (coral, corrientes, etc.)
+        public void DrainOxygen(float amount)
+        {
+            if (currentState != GameState.Diving || stopTimer) return;
+
+            oxygenTimer -= amount;
+            oxygenTimer = Mathf.Max(oxygenTimer, 0f);
+            oxygenSlider.value = oxygenTimer;
+
+            if (oxygenTimer <= 0f)
+            {
+                diverMovement?.EnterEmergencyAscent();
+                stopTimer = true;
+                emergencyAscent = true;
+                Debug.Log("[GameController] Oxígeno agotado por objeto externo");
+            }
+        }
 
         #region Debug GUI
 
