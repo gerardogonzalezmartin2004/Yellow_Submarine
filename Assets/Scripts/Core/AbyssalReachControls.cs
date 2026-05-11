@@ -866,6 +866,15 @@ namespace AbyssalReach.Core
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Pause"",
+                    ""type"": ""Button"",
+                    ""id"": ""07e54a6e-5352-4c3f-b019-f6c4aa4b5ce3"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -888,6 +897,28 @@ namespace AbyssalReach.Core
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""ToggleInventory"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""61e3e371-98a2-47f9-9bc5-b7aee4e87bda"",
+                    ""path"": ""<Keyboard>/escape"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Pause"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""effe1d62-3f63-4ada-b6c8-df7b77acc8ec"",
+                    ""path"": ""<Gamepad>/buttonEast"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Pause"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -926,6 +957,7 @@ namespace AbyssalReach.Core
             // Global
             m_Global = asset.FindActionMap("Global", throwIfNotFound: true);
             m_Global_ToggleInventory = m_Global.FindAction("ToggleInventory", throwIfNotFound: true);
+            m_Global_Pause = m_Global.FindAction("Pause", throwIfNotFound: true);
         }
 
         ~@AbyssalReachControls()
@@ -1560,6 +1592,7 @@ namespace AbyssalReach.Core
         private readonly InputActionMap m_Global;
         private List<IGlobalActions> m_GlobalActionsCallbackInterfaces = new List<IGlobalActions>();
         private readonly InputAction m_Global_ToggleInventory;
+        private readonly InputAction m_Global_Pause;
         /// <summary>
         /// Provides access to input actions defined in input action map "Global".
         /// </summary>
@@ -1575,6 +1608,10 @@ namespace AbyssalReach.Core
             /// Provides access to the underlying input action "Global/ToggleInventory".
             /// </summary>
             public InputAction @ToggleInventory => m_Wrapper.m_Global_ToggleInventory;
+            /// <summary>
+            /// Provides access to the underlying input action "Global/Pause".
+            /// </summary>
+            public InputAction @Pause => m_Wrapper.m_Global_Pause;
             /// <summary>
             /// Provides access to the underlying input action map instance.
             /// </summary>
@@ -1604,6 +1641,9 @@ namespace AbyssalReach.Core
                 @ToggleInventory.started += instance.OnToggleInventory;
                 @ToggleInventory.performed += instance.OnToggleInventory;
                 @ToggleInventory.canceled += instance.OnToggleInventory;
+                @Pause.started += instance.OnPause;
+                @Pause.performed += instance.OnPause;
+                @Pause.canceled += instance.OnPause;
             }
 
             /// <summary>
@@ -1618,6 +1658,9 @@ namespace AbyssalReach.Core
                 @ToggleInventory.started -= instance.OnToggleInventory;
                 @ToggleInventory.performed -= instance.OnToggleInventory;
                 @ToggleInventory.canceled -= instance.OnToggleInventory;
+                @Pause.started -= instance.OnPause;
+                @Pause.performed -= instance.OnPause;
+                @Pause.canceled -= instance.OnPause;
             }
 
             /// <summary>
@@ -1830,6 +1873,13 @@ namespace AbyssalReach.Core
             /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
             /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
             void OnToggleInventory(InputAction.CallbackContext context);
+            /// <summary>
+            /// Method invoked when associated input action "Pause" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+            /// </summary>
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+            void OnPause(InputAction.CallbackContext context);
         }
     }
 }

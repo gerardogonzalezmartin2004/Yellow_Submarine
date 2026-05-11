@@ -64,7 +64,7 @@ namespace AbyssalReach.Core
             }
 
             instance = this;
-            DontDestroyOnLoad(gameObject);
+           
 
             controls = new AbyssalReachControls();
             controls.Global.Enable();
