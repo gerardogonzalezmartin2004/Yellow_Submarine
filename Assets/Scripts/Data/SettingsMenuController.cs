@@ -5,10 +5,7 @@ using AbyssalReach.Core;
 
 namespace AbyssalReach.UI
 {
-    /// <summary>
-    /// Panel de ajustes reutilizable. Lo puedes poner tanto en el Menú Principal
-    /// como en la Pausa — simplemente arrástralo y llama RefreshUI() al abrirlo.
-    /// </summary>
+    // este script se encarga de gestionar el menú de ajustes, permitiendo modificar el volumen maestro, música y efectos, así como la calidad gráfica. También actualiza las etiquetas de porcentaje y guarda la configuración de calidad en PlayerPrefs.
     public class SettingsMenuController : MonoBehaviour
     {
         [Header("Sliders de volumen")]
@@ -26,24 +23,20 @@ namespace AbyssalReach.UI
 
         private void Start()
         {
-            // Rangos 0–1
             sliderMaster.minValue = 0f; sliderMaster.maxValue = 1f;
             sliderMusic.minValue = 0f; sliderMusic.maxValue = 1f;
             sliderSFX.minValue = 0f; sliderSFX.maxValue = 1f;
 
-            // Listeners
             sliderMaster.onValueChanged.AddListener(v => { AudioManager.Instance.SetMasterVolume(v); UpdateLabels(); });
             sliderMusic.onValueChanged.AddListener(v => { AudioManager.Instance.SetMusicVolume(v); UpdateLabels(); });
             sliderSFX.onValueChanged.AddListener(v => { AudioManager.Instance.SetSFXVolume(v); UpdateLabels(); });
 
             dropQuality.onValueChanged.AddListener(OnQualityChanged);
 
-            // Rellena opciones de calidad según Unity Quality Settings
             dropQuality.ClearOptions();
             dropQuality.AddOptions(new System.Collections.Generic.List<string>(QualitySettings.names));
         }
 
-        // ── Llamar al abrir el panel para sincronizar la UI con los valores reales ──
         public void RefreshUI()
         {
             if (AudioManager.Instance == null) return;

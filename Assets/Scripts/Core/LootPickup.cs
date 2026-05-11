@@ -12,7 +12,7 @@ public class LootPickup : MonoBehaviour
     [SerializeField] private string diverTag = "Diver";
     [SerializeField] private KeyCode pickupKey = KeyCode.E;
 
-    [Header("UI Prompt (opcional)")]
+    [Header("UI Prompt")]
     [Tooltip("GameObject con el texto '[E] Recoger' — se activa al entrar en rango.")]
     [SerializeField] private GameObject pickupPrompt;
 

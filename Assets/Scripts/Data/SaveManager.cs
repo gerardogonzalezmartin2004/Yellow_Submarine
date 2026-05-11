@@ -5,10 +5,7 @@ using AbyssalReach.Data;
 
 namespace AbyssalReach.Core
 {
-    /// <summary>
-    /// Singleton persistente. Gestiona 3 slots de guardado en JSON
-    /// bajo Application.persistentDataPath.
-    /// </summary>
+    // este script se encarga de gestionar las partidas guardadas, con soporte para múltiples ranuras (slots).
     public class SaveManager : MonoBehaviour
     {
         private static SaveManager instance;
@@ -19,7 +16,6 @@ namespace AbyssalReach.Core
         private const string FILE_PREFIX = "save_slot_";
         private const string FILE_EXT = ".json";
 
-        // ─── Singleton ────────────────────────────────────────────────────────
         private void Awake()
         {
             if (instance != null && instance != this) { Destroy(gameObject); return; }
@@ -27,11 +23,9 @@ namespace AbyssalReach.Core
             DontDestroyOnLoad(gameObject);
         }
 
-        // ─── Rutas ────────────────────────────────────────────────────────────
         private string Path(int slot) =>
             System.IO.Path.Combine(Application.persistentDataPath, $"{FILE_PREFIX}{slot}{FILE_EXT}");
 
-        // ─── Guardar ──────────────────────────────────────────────────────────
         public void Save(int slot, SaveData data)
         {
             if (!SlotValid(slot)) return;
@@ -45,7 +39,6 @@ namespace AbyssalReach.Core
             Debug.Log($"[SaveManager] Slot {slot} guardado → {Path(slot)}");
         }
 
-        // ─── Cargar ───────────────────────────────────────────────────────────
         public SaveData Load(int slot)
         {
             if (!SlotValid(slot) || !File.Exists(Path(slot))) return null;
@@ -54,7 +47,6 @@ namespace AbyssalReach.Core
             return JsonUtility.FromJson<SaveData>(json);
         }
 
-        // ─── Cargar todos (para la UI de selección) ───────────────────────────
         public SaveData[] LoadAllSlots()
         {
             var slots = new SaveData[MAX_SLOTS];
@@ -63,7 +55,6 @@ namespace AbyssalReach.Core
             return slots;
         }
 
-        // ─── Utilidades ───────────────────────────────────────────────────────
         public bool SlotExists(int slot) => SlotValid(slot) && File.Exists(Path(slot));
 
         public void Delete(int slot)

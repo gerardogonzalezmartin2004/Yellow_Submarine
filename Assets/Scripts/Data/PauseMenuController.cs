@@ -6,14 +6,7 @@ using AbyssalReach.Data;
 
 namespace AbyssalReach.UI.Pause
 {
-    /// <summary>
-    /// Menú de pausa en la escena de juego.
-    /// Escucha la acción Global/Pause del Input System para abrir/cerrar.
-    /// Conéctate al GameController sin duplicar lógica de estado.
-    ///
-    /// REQUISITO: Añade una acción "Pause" al Action Map "Global"
-    /// en el Input Actions Asset (AbyssalReachControls), con binding Escape o Start.
-    /// </summary>
+    // este script se encarga de gestionar el menú de pausa, incluyendo la navegación entre paneles (pausa, ajustes, guardar) y las acciones correspondientes.
     public class PauseMenuController : MonoBehaviour
     {
         [Header("── Paneles ──────────────────────────────────")]
@@ -42,7 +35,7 @@ namespace AbyssalReach.UI.Pause
        
         private void Start()
         {
-            // Botones
+            
             btnResume.onClick.AddListener(ResumeGame);
             btnSave.onClick.AddListener(OpenSave);
             btnSettings.onClick.AddListener(OpenSettings);
@@ -50,12 +43,10 @@ namespace AbyssalReach.UI.Pause
             btnBackFromSettings.onClick.AddListener(() => ShowPanel(panelPause));
             btnBackFromSave.onClick.AddListener(() => ShowPanel(panelPause));
 
-            // Save slots — en la pausa el botón es "Guardar aquí"
             for (int i = 0; i < saveSlots.Length; i++)
             {
                 int idx = i;
                 saveSlots[i].OnActionClicked += () => SaveToSlot(idx);
-                // Sin botón de borrado en pausa (pasamos btnDelete = null en el prefab)
             }
 
             HideAll();
@@ -142,7 +133,6 @@ namespace AbyssalReach.UI.Pause
 
         private void GoMainMenu() => SceneLoader.Instance.GoToMainMenu();
 
-        // ─── Guardar ──────────────────────────────────────────────────────────
         private void RefreshSaveSlots()
         {
             SaveData[] data = SaveManager.Instance.LoadAllSlots();

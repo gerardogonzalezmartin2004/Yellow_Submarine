@@ -5,10 +5,7 @@ using AbyssalReach.Data;
 
 namespace AbyssalReach.UI.MainMenu
 {
-    /// <summary>
-    /// Controlador del Menú Principal.
-    /// Gestiona la navegación entre paneles: Main → Slots → Settings.
-    /// </summary>
+    // este script se encarga de gestionar el menú principal, incluyendo la navegación entre paneles (principal, slots, ajustes, confirmación de borrado) y las acciones correspondientes.
     public class MainMenuController : MonoBehaviour
     {
         [Header("── Paneles ──────────────────────────────────")]
@@ -23,7 +20,7 @@ namespace AbyssalReach.UI.MainMenu
         [SerializeField] private Button btnQuit;
 
         [Header("── Panel de Slots ──────────────────────────")]
-        [SerializeField] private SaveSlotUI[] saveSlots;   // arrastrar los 3
+        [SerializeField] private SaveSlotUI[] saveSlots;   
         [SerializeField] private Button btnBackFromSlots;
 
         [Header("── Panel de Settings ───────────────────────")]
@@ -36,7 +33,7 @@ namespace AbyssalReach.UI.MainMenu
 
         private int pendingDeleteSlot = -1;
 
-        // ─── Init ─────────────────────────────────────────────────────────────
+       
         private void Start()
         {
             // Panel principal
@@ -53,17 +50,16 @@ namespace AbyssalReach.UI.MainMenu
                 saveSlots[i].OnDeleteClicked += () => RequestDelete(idx);
             }
 
-            // Settings
+            
             btnBackFromSettings.onClick.AddListener(() => ShowPanel(panelMain));
 
-            // Confirm delete
+           
             btnConfirmDelete.onClick.AddListener(ConfirmDelete);
             btnCancelDelete.onClick.AddListener(CancelDelete);
 
             ShowPanel(panelMain);
         }
 
-        // ─── Navegación ───────────────────────────────────────────────────────
         private void ShowPanel(GameObject target)
         {
             panelMain.SetActive(false);
@@ -94,7 +90,7 @@ namespace AbyssalReach.UI.MainMenu
 #endif
         }
 
-        // ─── Lógica de Slots ──────────────────────────────────────────────────
+        
         private void RefreshSlots()
         {
             SaveData[] data = SaveManager.Instance.LoadAllSlots();

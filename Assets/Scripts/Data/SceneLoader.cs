@@ -6,29 +6,26 @@ using TMPro;
 
 namespace AbyssalReach.Core
 {
-    /// <summary>
-    /// Singleton persistente. Gestiona transiciones entre escenas de forma asíncrona
-    /// y comunica al GameInitializer qué slot cargar al entrar en la escena de juego.
-    /// </summary>
+    // este script se encarga de gestionar la carga de escenas, incluyendo la transición entre el menú principal y el juego, así como la pantalla de carga opcional con barra de progreso y texto. También mantiene información sobre el slot pendiente y si es una nueva partida o no.
     public class SceneLoader : MonoBehaviour
     {
         private static SceneLoader instance;
         public static SceneLoader Instance => instance;
 
-        // ── Nombres de escena — deben coincidir con Build Settings ─────────────
+        
         public const string SCENE_MAIN_MENU = "MainMenu";
-        public const string SCENE_GAME = "GameScene"; // ← cambia por tu nombre real
+        public const string SCENE_GAME = "GameScene"; 
 
         [Header("Loading Screen (opcional)")]
         [SerializeField] private GameObject loadingScreen;
         [SerializeField] private Slider loadingBar;
         [SerializeField] private TextMeshProUGUI loadingText;
 
-        // ── Estado compartido ─────────────────────────────────────────────────
+      
         public int PendingSlot { get; private set; } = -1;
         public bool IsNewGame { get; private set; } = true;
 
-        // ─── Singleton ────────────────────────────────────────────────────────
+       
         private void Awake()
         {
             if (instance != null && instance != this) { Destroy(gameObject); return; }
@@ -36,7 +33,7 @@ namespace AbyssalReach.Core
             DontDestroyOnLoad(gameObject);
         }
 
-        // ─── API pública ──────────────────────────────────────────────────────
+       
         public void StartNewGame(int slot)
         {
             PendingSlot = slot;
@@ -54,11 +51,10 @@ namespace AbyssalReach.Core
         public void GoToMainMenu()
         {
             PendingSlot = -1;
-            Time.timeScale = 1f; // por si venimos de pausa
+            Time.timeScale = 1f; 
             StartCoroutine(LoadAsync(SCENE_MAIN_MENU));
         }
 
-        // ─── Carga asíncrona ──────────────────────────────────────────────────
         private IEnumerator LoadAsync(string sceneName)
         {
             if (loadingScreen != null) loadingScreen.SetActive(true);
@@ -73,7 +69,6 @@ namespace AbyssalReach.Core
                 yield return null;
             }
 
-            // Pequeño delay para que la pantalla de carga no parpadee
             yield return new WaitForSecondsRealtime(0.4f);
 
             op.allowSceneActivation = true;

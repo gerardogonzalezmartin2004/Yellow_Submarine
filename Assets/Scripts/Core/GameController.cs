@@ -388,7 +388,6 @@ namespace AbyssalReach.Core
         public AbyssalReachControls GetControls() => controls;
 
         #endregion
-        // Llamado por objetos que drenan oxígeno (coral, corrientes, etc.)
         public void DrainOxygen(float amount)
         {
             if (currentState != GameState.Diving || stopTimer) return;

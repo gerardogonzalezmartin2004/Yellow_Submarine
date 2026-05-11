@@ -6,16 +6,12 @@ using AbyssalReach.Data;
 
 namespace AbyssalReach.UI
 {
-    /// <summary>
-    /// Componente que representa un slot de guardado en la UI.
-    /// Sirve tanto para el Menú Principal (cargar) como para la Pausa (guardar).
-    /// Asigna los elementos en el Inspector.
-    /// </summary>
+    // este script se encarga de gestionar la interfaz de cada ranura de guardado (slot), mostrando la información relevante si hay datos o un mensaje de vacío si no los hay. También maneja los eventos de clic para jugar o borrar la partida.
     public class SaveSlotUI : MonoBehaviour
     {
         [Header("Grupos (activa uno u otro según si hay datos)")]
-        [SerializeField] private GameObject groupEmpty;   // Panel "Slot vacío"
-        [SerializeField] private GameObject groupFilled;  // Panel con datos
+        [SerializeField] private GameObject groupEmpty;  
+        [SerializeField] private GameObject groupFilled; 
 
         [Header("Textos (en groupFilled)")]
         [SerializeField] private TextMeshProUGUI txtSlotName;
@@ -24,11 +20,10 @@ namespace AbyssalReach.UI
         [SerializeField] private TextMeshProUGUI txtGold;
 
         [Header("Botones")]
-        [SerializeField] private Button btnAction;  // "Jugar" o "Guardar aquí"
-        [SerializeField] private Button btnDelete;  // Sólo en Menú Principal
+        [SerializeField] private Button btnAction; 
+        [SerializeField] private Button btnDelete; 
 
-        // ── Eventos ───────────────────────────────────────────────────────────
-        public event Action OnActionClicked;   // Jugar o Guardar
+        public event Action OnActionClicked; 
         public event Action OnDeleteClicked;
 
         private void Awake()
@@ -38,7 +33,6 @@ namespace AbyssalReach.UI
                 btnDelete.onClick.AddListener(() => OnDeleteClicked?.Invoke());
         }
 
-        // ── Método principal: rellena la UI según los datos del slot ──────────
         public void Populate(int slotIndex, SaveData data, string actionLabel = "Jugar")
         {
             bool hasData = data != null;
@@ -53,7 +47,6 @@ namespace AbyssalReach.UI
 
             if (!hasData)
             {
-                // Slot vacío: el botón de acción sigue visible para nueva partida
                 if (txtSlotName != null) txtSlotName.text = $"Slot {slotIndex + 1}";
                 return;
             }
@@ -64,7 +57,6 @@ namespace AbyssalReach.UI
             if (txtGold != null) txtGold.text = $"{data.gold:F0} ☽";
         }
 
-        // ── Util ──────────────────────────────────────────────────────────────
         private string FormatTime(float seconds)
         {
             int h = (int)(seconds / 3600);
