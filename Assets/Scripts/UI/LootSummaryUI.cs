@@ -22,8 +22,8 @@ public class LootSummaryUI : MonoBehaviour
     [Header("Animación")]
     [SerializeField] private float slideDistance = 80f;
     [SerializeField] private float slideInDuration = 0.18f;
-    [SerializeField] private float staggerDelay = 0.08f;   // pequeño delay entre cada tarjeta
-    [SerializeField] private float holdDuration = 3f;       // cuánto tiempo se quedan todas visibles
+    [SerializeField] private float staggerDelay = 0.08f;   
+    [SerializeField] private float holdDuration = 3f;       
     [SerializeField] private float fadeOutDuration = 0.3f;
 
     [Header("Debug")]
@@ -98,12 +98,11 @@ public class LootSummaryUI : MonoBehaviour
 
         LogDebug($"Mostrando {boatItems.Count} tarjetas apiladas.");
 
-        // ── Lanzar todas las tarjetas a la vez con un pequeño stagger ──
+        
         for (int i = 0; i < boatItems.Count; i++)
         {
             if (boatItems[i]?.itemData == null) continue;
 
-            // Cada tarjeta ocupa su fila: 0 = la más arriba, 1 = debajo, etc.
             float yPos = -i * (cardSize.y + cardSpacing);
             float delay = i * staggerDelay;
 
@@ -120,7 +119,6 @@ public class LootSummaryUI : MonoBehaviour
     {
         if (delay > 0f) yield return new WaitForSeconds(delay);
 
-        // ── Instanciar ──
         GameObject cardGO = Instantiate(cardPrefab, container);
 
         RectTransform cardRect = cardGO.GetComponent<RectTransform>();
@@ -129,7 +127,6 @@ public class LootSummaryUI : MonoBehaviour
 
         if (cardRect == null) { Destroy(cardGO); yield break; }
 
-        // ── Posición fija en la columna ──
         cardRect.anchorMin = new Vector2(1f, 1f);
         cardRect.anchorMax = new Vector2(1f, 1f);
         cardRect.pivot = new Vector2(1f, 1f);
@@ -143,7 +140,6 @@ public class LootSummaryUI : MonoBehaviour
 
         FillCard(cardGO, data);
 
-        // ── Slide-in ──
         float elapsed = 0f;
         while (elapsed < slideInDuration)
         {
@@ -156,10 +152,8 @@ public class LootSummaryUI : MonoBehaviour
         cardRect.anchoredPosition = visiblePos;
         cg.alpha = 1f;
 
-        // ── Todas visibles juntas hasta holdDuration ──
         yield return new WaitForSeconds(holdDuration);
 
-        // ── Fade-out ──
         elapsed = 0f;
         while (elapsed < fadeOutDuration)
         {

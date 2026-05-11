@@ -69,7 +69,6 @@ public class ItemGridDebugger : MonoBehaviour
 
     private void CreateDebugOverlay()
     {
-        // Crear canvas para overlays de debug
         debugOverlay = new GameObject("GridDebugOverlay");
         debugOverlay.transform.SetParent(transform);
 
@@ -99,12 +98,10 @@ public class ItemGridDebugger : MonoBehaviour
 
                 if (item != null)
                 {
-                    // Celda ocupada
                     EnsureCellDebugObject(pos, occupiedCellColor);
                 }
                 else
                 {
-                    // Celda vacía
                     if (cellDebugObjects.ContainsKey(pos))
                     {
                         Destroy(cellDebugObjects[pos]);
@@ -178,10 +175,8 @@ public class ItemGridDebugger : MonoBehaviour
 
                     Gizmos.DrawCube(cellCenter, cellSize);
 
-                    // Dibujar referencia al item
                     if (item.onGridPositionX == x && item.onGridPositionY == y)
                     {
-                        // Esta es la celda de origen del item
                         Gizmos.color = Color.cyan;
                         Gizmos.DrawWireCube(cellCenter, cellSize * 1.1f);
                         Gizmos.color = occupiedCellColor;
@@ -195,7 +190,6 @@ public class ItemGridDebugger : MonoBehaviour
 
     #region Public Debug Methods
 
-    // Imprime el estado completo del grid en la consola.
     public void DumpGridState()
     {
         if (grid == null)
@@ -205,12 +199,10 @@ public class ItemGridDebugger : MonoBehaviour
         }
 
         Vector2Int gridSize = grid.GetGridSize();
-        Debug.Log("=== GRID STATE DUMP ===");
         Debug.Log($"Tamaño: {gridSize.x}x{gridSize.y}");
 
         Dictionary<InventoryItem, Vector2Int> itemOrigins = new Dictionary<InventoryItem, Vector2Int>();
 
-        // Encontrar todos los items únicos y sus orígenes
         for (int x = 0; x < gridSize.x; x++)
         {
             for (int y = 0; y < gridSize.y; y++)
@@ -234,7 +226,6 @@ public class ItemGridDebugger : MonoBehaviour
 
     }
 
-    // Muestra información de una celda específica.
     public void InspectCell(int x, int y)
     {
         if (grid == null) return;
@@ -249,7 +240,6 @@ public class ItemGridDebugger : MonoBehaviour
 
     }
 
-    // Valida la integridad del grid (detecta items corruptos).
     public bool ValidateGridIntegrity()
     {
         if (grid == null) return false;
@@ -259,7 +249,6 @@ public class ItemGridDebugger : MonoBehaviour
 
         Dictionary<InventoryItem, List<Vector2Int>> itemCells = new Dictionary<InventoryItem, List<Vector2Int>>();
 
-        // Recopilar todas las celdas de cada item
         for (int x = 0; x < gridSize.x; x++)
         {
             for (int y = 0; y < gridSize.y; y++)
@@ -277,7 +266,6 @@ public class ItemGridDebugger : MonoBehaviour
             }
         }
 
-        // Validar cada item
         foreach (var kvp in itemCells)
         {
             InventoryItem item = kvp.Key;
@@ -290,7 +278,7 @@ public class ItemGridDebugger : MonoBehaviour
                 isValid = false;
             }
 
-            // Verificar que las celdas forman un rectángulo contiguo
+            
             int minX = int.MaxValue, maxX = int.MinValue;
             int minY = int.MaxValue, maxY = int.MinValue;
 
@@ -328,7 +316,7 @@ public class ItemGridDebugger : MonoBehaviour
     #region Context Menu (Editor Only) 
 
 #if UNITY_EDITOR
-    [ContextMenu("Dump Grid State")] // esto es para testing 
+    [ContextMenu("Dump Grid State")] 
     private void ContextDumpGridState()
     {
         DumpGridState();

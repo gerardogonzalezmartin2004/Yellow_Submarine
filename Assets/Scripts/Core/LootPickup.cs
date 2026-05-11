@@ -1,8 +1,8 @@
 ﻿using UnityEngine;
 using AbyssalReach.Core;
 
-// El buzo recoge el objeto SOLO al pulsar E cuando está en rango.
-// El objeto se desactiva (no destruye) para poder reaparecer si se descarta.
+// El buzo recoge el objeto solo al pulsar E cuando está en rango.
+// El objeto se desactiva para poder reaparecer si se descarta.
 public class LootPickup : MonoBehaviour
 {
     [Header("Item Data")]
@@ -82,7 +82,6 @@ public class LootPickup : MonoBehaviour
             if (pickupPrompt != null)
                 pickupPrompt.SetActive(false);
 
-            // Desactivar en vez de destruir — DropZoneGrid lo reactivará si se descarta.
             gameObject.SetActive(false);
 
             Debug.Log($"[LootPickup] Recogido: {itemData.itemName}");

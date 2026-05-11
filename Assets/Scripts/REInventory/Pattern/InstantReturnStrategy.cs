@@ -1,19 +1,16 @@
 using UnityEngine;
 
-// Strategy Pattern: Interfaz para diferentes estrategias de retorno del item.
-// Permite cambiar el comportamiento de "cómo vuelve el item" sin modificar el código principal.
+
 public interface IReturnStrategy
 {
-    // Ejecuta el retorno del item a su última posición.
-
-
+   
     bool ExecuteReturn(InventoryItem item, ItemMemento memento);
 
 
     string StrategyName { get; }
 }
 
-// Retorno instantáneo 
+
 // El item aparece inmediatamente en su posición original.
 public class InstantReturnStrategy : IReturnStrategy
 {
@@ -36,13 +33,12 @@ public class InstantReturnStrategy : IReturnStrategy
     }
 }
 
-//  Retorno animado con Lerp.
-// El item se mueve suavemente a su posición original.
+
 public class LerpReturnStrategy : IReturnStrategy
 {
     public string StrategyName => "Lerp Return";
 
-    private float duration = 0.3f; // Duración de la animación en segundos
+    private float duration = 0.3f; 
 
     public LerpReturnStrategy(float animationDuration = 0.3f)
     {
@@ -57,27 +53,26 @@ public class LerpReturnStrategy : IReturnStrategy
             return false;
         }
 
-        // Iniciar corrutina de animación en el ItemPositionMemory, pero ya luego
+      
 
 
         Debug.Log($"[LerpReturnStrategy] Iniciando lerp a ({memento.GridX}, {memento.GridY}) en {duration}s");
 
-        // Por ahora, hacemos el retorno instantáneo
-        // La implementación completa de la animación la haremos en ItemPositionMemory
+    
         return memento.RestoreItem(item);
     }
 
     public float GetDuration() => duration;
 }
 
-//  Retorno con efecto de rebote
+
 // El item vuelve con un efecto elástico.
 public class BounceReturnStrategy : IReturnStrategy
 {
     public string StrategyName => "Bounce Return";
 
     private float duration = 0.5f;
-    private float bounceAmount = 1.2f; // Overshoot del bounce
+    private float bounceAmount = 1.2f; 
 
     public BounceReturnStrategy(float animationDuration = 0.5f, float bounce = 1.2f)
     {
@@ -95,7 +90,7 @@ public class BounceReturnStrategy : IReturnStrategy
 
         Debug.Log($"[BounceReturnStrategy] Iniciando bounce a ({memento.GridX}, {memento.GridY})");
 
-        // Implementación completa en ItemPositionMemory
+     
         return memento.RestoreItem(item);
     }
 
@@ -103,7 +98,6 @@ public class BounceReturnStrategy : IReturnStrategy
     public float GetBounceAmount() => bounceAmount;
 }
 
-//Factory para crear estrategias de retorno
 public static class ReturnStrategyFactory
 {
     public enum StrategyType
@@ -113,7 +107,6 @@ public static class ReturnStrategyFactory
         Bounce
     }
 
-    // Crea una estrategia según el tipo especificado.
     public static IReturnStrategy CreateStrategy(StrategyType type)
     {
         switch (type)

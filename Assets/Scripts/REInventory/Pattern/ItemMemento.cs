@@ -1,35 +1,32 @@
 using UnityEngine;
 
-// Memento Pattern: Guarda un snapshot del estado de un InventoryItem.
-// Permite restaurar la posición, rotación y grid padre del item.
+
 public class ItemMemento
 {
     #region Memento Data
 
-    // Grid donde estaba colocado el item.
+    
     public ItemGrid SourceGrid { get; private set; }
 
-    // Posición X en el grid.
     public int GridX { get; private set; }
 
-    // Posición Y en el grid.
+    
     public int GridY { get; private set; }
 
-    // Índice de rotación (0-3).
+   
     public int RotationIndex { get; private set; }
 
-    // Timestamp de cuándo se creó este memento
+    
     public float Timestamp { get; private set; }
 
-    // Indica si este memento tiene datos válidos.
-    // Un memento sin grid es inválido (item nunca estuvo colocado).
+    
     public bool IsValid => SourceGrid != null;
 
     #endregion
 
     #region Constructors
 
-    // Constructor privado. Usar CreateMemento() para crear instancias.
+   
     private ItemMemento() { }
 
     // Crea un memento capturando el estado actual del item.
@@ -57,7 +54,6 @@ public class ItemMemento
         };
     }
 
-    // Crea un memento inválido (para items que nunca estuvieron colocados).
     public static ItemMemento CreateInvalidMemento()
     {
         return new ItemMemento
@@ -74,8 +70,7 @@ public class ItemMemento
 
     #region Public Methods
 
-    // Restaura el item a la posición guardada en este memento.
-    // Retorna true si la restauración fue exitosa.
+   
     public bool RestoreItem(InventoryItem item)
     {
         if (!IsValid)
@@ -96,13 +91,11 @@ public class ItemMemento
             return false;
         }
 
-        // Restaurar rotación
         while (item.RotationIndex != RotationIndex)
         {
             item.Rotate();
         }
 
-        // Intentar colocar en la posición original
         InventoryItem overlap = null;
         bool placed = SourceGrid.PlaceItem(item, GridX, GridY, ref overlap);
 
@@ -116,7 +109,6 @@ public class ItemMemento
         }
     }
 
-    // Comprueba si este memento apunta al mismo lugar que otro.
     public bool IsSameLocation(ItemMemento other)
     {
         if (other == null) return false;

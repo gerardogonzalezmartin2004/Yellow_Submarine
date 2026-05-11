@@ -4,10 +4,7 @@ using System.Collections.Generic;
 
 namespace AbyssalReach.Gameplay
 {
-    /// <summary>
-    /// Sistema de cuerda con límite de distancia ESCALABLE
-    /// Puede upgradearse en runtime
-    /// </summary>
+    // este script implementa un sistema de cuerda usando Verlet Integration, con soporte para colisiones, fuerzas de tensión, y un límite de distancia máxima. Se puede usar para simular la cuerda que conecta al buzo con el barco, permitiendo una experiencia de juego más realista y dinámica.
     [RequireComponent(typeof(LineRenderer))]
     public class ropeVerlet : MonoBehaviour
     {
@@ -278,7 +275,6 @@ namespace AbyssalReach.Gameplay
 
         #endregion
 
-        // ═══════════════ LÍMITE DE DISTANCIA ═══════════════
         #region Distance Limit
 
         /// <summary>
@@ -324,7 +320,6 @@ namespace AbyssalReach.Gameplay
         }
 
         #endregion
-        // ═══════════════════════════════════════════════════════════
 
         #region Tension Force
 
@@ -417,13 +412,9 @@ namespace AbyssalReach.Gameplay
 
         #endregion
 
-        // ═══════════════ API PÚBLICA PARA UPGRADES ═══════════════
         #region Public API
 
-        /// <summary>
-        /// Establece la longitud máxima del cable (para upgrades)
-        /// ESTA ES LA VARIABLE MAESTRA
-        /// </summary>
+        
         public void SetMaxLength(float length)
         {
             maxDistance = length;
@@ -436,25 +427,19 @@ namespace AbyssalReach.Gameplay
             }
         }
 
-        /// <summary>
-        /// Obtiene la longitud máxima actual
-        /// </summary>
+       
         public float GetMaxLength()
         {
             return maxDistance;
         }
 
-        /// <summary>
-        /// Obtiene la longitud actual de la cuerda (visual)
-        /// </summary>
+        
         public float GetCurrentLength()
         {
             return GetCurrentRopeLength();
         }
 
-        /// <summary>
-        /// Obtiene la distancia directa barco → diver
-        /// </summary>
+      
         public float GetDirectDistance()
         {
             if (ropeStartTransform == null || ropeEndTransform == null)
@@ -463,9 +448,7 @@ namespace AbyssalReach.Gameplay
             return Vector2.Distance(ropeStartTransform.position, ropeEndTransform.position);
         }
 
-        /// <summary>
-        /// Verifica si está al límite
-        /// </summary>
+        
         public bool IsAtDistanceLimit()
         {
             return GetDirectDistance() >= maxDistance * 0.95f;
@@ -482,7 +465,7 @@ namespace AbyssalReach.Gameplay
         }
 
         #endregion
-        // ═══════════════════════════════════════════════════════════
+       
 
         #region Debug
 
@@ -490,7 +473,6 @@ namespace AbyssalReach.Gameplay
         {
             if (!showDebug) return;
 
-            // Dibujar segmentos
             if (ropeSegments != null && ropeSegments.Count > 0)
             {
                 Gizmos.color = Color.yellow;

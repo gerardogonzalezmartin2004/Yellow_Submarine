@@ -9,15 +9,15 @@ namespace AbyssalReach.UI
     [RequireComponent(typeof(SpriteRenderer))]
     public class InteractablePrompt2D : MonoBehaviour
     {
-        // Define quién tiene permiso para activar este aviso (Barco, Buzo o ambos)
+        
         public enum InteractorType { BoatOnly, DiverOnly, Both }
 
-        // Define los tres estados visuales del icono
+      
         private enum State
         {
-            Hidden, // Fuera de rango (no se ve nada)
-            Far,    // Radio exterior (se ve el icono genérico)
-            Near    // Radio interior (se ve el botón de interacción)
+            Hidden, 
+            Far,    
+            Near   
         }
 
         [Header(" Interactor Settings")]
@@ -30,46 +30,43 @@ namespace AbyssalReach.UI
         [SerializeField] private Sprite nearGamepadSprite;
 
         [Header(" Size & Distance Settings")]
-        // Radios de detección. El exterior siempre debe ser mayor que el interior.
+        
         [SerializeField] private float outerRadius = 5f;
         [SerializeField] private float innerRadius = 2f;
 
-        // Escala que tendrá el SpriteRenderer cuando esté visible.
-        // Sirve para ajustar el tamaño del icono sin tocar el Transform en Unity.
+       
         [SerializeField] private Vector3 baseIconScale = new Vector3(1f, 1f, 1f);
 
         [Header(" Interaction Event")]
         [Tooltip("Función que se ejecutará al pulsar el botón cuando estás cerca.")]
-        // UnityEvent permite arrastrar funciones desde el Inspector (ej: abrir cofre, hablar)
-        // sin necesidad de "hardcodear" la lógica aquí.
+      
         public UnityEvent OnInteract;
 
-        // --- Variables Internas ---
+      
         private SpriteRenderer spriteRenderer;
-        private State currentState = State.Hidden; // Estado actual de la máquina de estados
-        private Transform boatTransform;           // Referencia cacheada del barco
-        private Transform diverTransform;          // Referencia cacheada del buzo
-        private AbyssalReachControls controls;     // Referencia al Input System autogenerado
-        private InputAction interactAction;        // La acción específica que estamos escuchando (ej. "Interact")
-        private bool isInRange = false;            // ¿Está el jugador en la zona 'Near'?
-        private bool usingGamepad = false;         // Rastrea si el último input fue de mando para no cambiar el sprite constantemente
+        private State currentState = State.Hidden; 
+        private Transform boatTransform;           
+        private Transform diverTransform;          
+        private AbyssalReachControls controls;     
+        private InputAction interactAction;        
+        private bool isInRange = false;            
+        private bool usingGamepad = false;         
 
         #region Unity Lifecycle
 
         private void Awake()
         {
-            // Cacheamos el componente al despertar para no usar GetComponent en el Update
+           
             spriteRenderer = GetComponent<SpriteRenderer>();
 
-            // Forzamos el color a blanco puro (para que el Sprite original se vea tal cual)
-            // Y lo apagamos (enabled = false) para que no sea visible al iniciar la escena.
+           
             spriteRenderer.color = Color.white;
             spriteRenderer.enabled = false;
         }
 
         private void Start()
         {
-            // Intentamos conectarnos al GameController centralizado para obtener los inputs
+            
             if (GameController.Instance != null)
             {
                 controls = GameController.Instance.GetControls();
@@ -77,8 +74,7 @@ namespace AbyssalReach.UI
             }
         }
 
-        // OnEnable y OnDisable son vitales con el New Input System.
-        // Si el objeto se apaga, dejamos de escuchar el botón para evitar memory leaks o bugs.
+      
         private void OnEnable()
         {
             if (controls != null) SubscribeInput();
@@ -96,41 +92,40 @@ namespace AbyssalReach.UI
 
         private void Update()
         {
-            // Buscamos a los jugadores. Lo hacemos en el Update por si el buzo 
-            // estaba desactivado en el Start (ej. cuando empiezas navegando en el barco).
+           
             FindPlayers();
 
-            // Averiguamos quién está jugando AHORA MISMO (Barco o Buzo) y si tiene permiso
+            
             Transform player = GetActivePlayer();
 
-            // Si no hay jugador válido, ocultamos el icono y salimos del Update temprano
+          
             if (player == null)
             {
                 if (currentState != State.Hidden) ChangeState(State.Hidden);
                 return;
             }
 
-            // Calculamos la distancia real en línea recta entre el icono y el jugador
+           
             float distance = Vector2.Distance(transform.position, player.position);
 
-            //  Determinamos en qué estado deberíamos estar según la distancia
+          
             State newState = GetStateFromDistance(distance);
 
-            //  Si el estado que deberíamos tener es distinto al actual, hacemos la transición
+           
             if (newState != currentState)
             {
                 ChangeState(newState);
             }
 
-            //  Lógica continua mientras estemos en la zona "Cerca" (Near)
+          
             if (currentState == State.Near)
             {
-                UpdateDeviceSprite(); // Vigila si el jugador coge el mando o el teclado
-                isInRange = true;     // Permite que el botón funcione
+                UpdateDeviceSprite(); 
+                isInRange = true;    
             }
             else
             {
-                isInRange = false;    // Bloquea el botón si estás lejos
+                isInRange = false;   
             }
         }
 
@@ -138,8 +133,7 @@ namespace AbyssalReach.UI
 
         #region Logic & State Management
 
-        // Busca los Transforms usando Tags. Es más barato guardarlos en variables 
-        // una vez encontrados que buscarlos cada frame.
+       
         private void FindPlayers()
         {
             if (boatTransform == null)
@@ -154,9 +148,7 @@ namespace AbyssalReach.UI
             }
         }
 
-        // Filtro de seguridad: Devuelve el Transform del jugador SOLO SI 
-        //  Ese jugador existe
-        //  El estado actual del juego coincide con el tipo de interactor permitido
+        
         private Transform GetActivePlayer()
         {
             if (GameController.Instance == null) return null;
@@ -169,7 +161,6 @@ namespace AbyssalReach.UI
             return null;
         }
 
-        // Función matemática simple que traduce distancia en Estados
         private State GetStateFromDistance(float distance)
         {
             if (distance <= innerRadius) return State.Near;
@@ -177,7 +168,7 @@ namespace AbyssalReach.UI
             return State.Hidden;
         }
 
-        // Aplica los cambios visuales cuando cambiamos de zona 
+      
         private void ChangeState(State newState)
         {
             currentState = newState;
@@ -185,30 +176,29 @@ namespace AbyssalReach.UI
             switch (currentState)
             {
                 case State.Hidden:
-                    spriteRenderer.enabled = false; // Apagamos el renderer por completo para ahorrar rendimiento
+                    spriteRenderer.enabled = false;
                     break;
 
                 case State.Far:
                     if (farSprite != null) spriteRenderer.sprite = farSprite;
-                    transform.localScale = baseIconScale; // Aplicamos el tamaño dictado en el Inspector
-                    spriteRenderer.enabled = true; // Encendemos el renderer
+                    transform.localScale = baseIconScale; 
+                    spriteRenderer.enabled = true; 
                     break;
 
                 case State.Near:
-                    UpdateDeviceSprite(true); // true = Forzamos a que ponga el icono de Teclado o Mando instantáneamente
+                    UpdateDeviceSprite(true); 
                     transform.localScale = baseIconScale;
                     spriteRenderer.enabled = true;
                     break;
             }
         }
 
-        // Se encarga de cambiar entre el icono de la Tecla 'E' y el Botón 'X'
-        // El parámetro 'forceUpdate' se usa cuando acabamos de entrar en la zona para que no espere a que movamos el mando.
+        
         private void UpdateDeviceSprite(bool forceUpdate = false)
         {
             bool nowUsingGamepad = IsGamepadActive();
 
-            // Solo cambiamos el sprite si has cambiado de dispositivo (para no sobreescribir la imagen cada frame inútilmente)
+           
             if (forceUpdate || nowUsingGamepad != usingGamepad)
             {
                 usingGamepad = nowUsingGamepad;
@@ -216,15 +206,15 @@ namespace AbyssalReach.UI
             }
         }
 
-        // Revisa directamente el Hardware de Unity para ver si se está usando un mando AHORA MISMO
+        // Revisa directamente el Hardware de Unity para ver si se está usando un mando
         private bool IsGamepadActive()
         {
             if (Gamepad.current == null) return false;
 
-            // Si el joystick se ha movido este frame...
+            
             if (Gamepad.current.wasUpdatedThisFrame) return true;
 
-            // O si algún botón del mando está siendo pulsado...
+          
             foreach (var control in Gamepad.current.allControls)
             {
                 if (control is UnityEngine.InputSystem.Controls.ButtonControl btn && btn.isPressed) return true;
@@ -241,14 +231,14 @@ namespace AbyssalReach.UI
         {
             if (controls == null) return;
 
-            // Decidimos a qué botón hacemos caso dependiendo de a quién configuramos en el inspector
+           
             if (allowedInteractor == InteractorType.BoatOnly)
             {
                 interactAction = controls.BoatControls.Interact;
             }
             else if (allowedInteractor == InteractorType.DiverOnly)
             {
-                //  Ahora usa Interact en vez de Ascend
+               
                 interactAction = controls.DiverControls.Interact;
             }
 
@@ -266,13 +256,13 @@ namespace AbyssalReach.UI
             }
         }
 
-        // Esta función se dispara SOLA cuando el jugador pulsa el botón configurado
+      
         private void OnInteract_Performed(InputAction.CallbackContext context)
         {
-            // Bloqueo de seguridad: Si has pulsado el botón, pero estás fuera del círculo interior, no hagas nada.
+         
             if (!isInRange || GameController.Instance == null) return;
 
-            Debug.Log("[InteractablePrompt2D] ¡BOTÓN PULSADO! Ejecutando OnInteract"); // ← Debug para verificar
+            Debug.Log("[InteractablePrompt2D] ¡BOTÓN PULSADO! Ejecutando OnInteract"); 
 
             // ?.Invoke() ejecuta todos los métodos que hayas arrastrado al evento OnInteract en el Inspector de Unity.
             OnInteract?.Invoke();
@@ -282,15 +272,14 @@ namespace AbyssalReach.UI
 
         #region Editor Gizmos
 
-        // Esta función SOLO se ejecuta en el Editor de Unity cuando seleccionas el objeto.
-        // Dibuja los círculos de colores para que puedas ajustar las distancias visualmente sin tener que probar el juego.
+     
         private void OnDrawGizmosSelected()
         {
-            // Círculo exterior 
+          
             Gizmos.color = new Color(1f, 1f, 0f, 0.3f);
             Gizmos.DrawWireSphere(transform.position, outerRadius);
 
-            // Círculo interior 
+           
             Gizmos.color = new Color(0f, 1f, 0f, 0.5f);
             Gizmos.DrawWireSphere(transform.position, innerRadius);
         }
