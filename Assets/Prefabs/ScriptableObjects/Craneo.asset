@@ -10,14 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 30516ff129d50dc4892ff9679be8e9b7, type: 3}
-  m_Name: Reloj
+  m_Name: Craneo
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
-  itemName: Reloj
-  width: 1
-  height: 1
-  itemIcon: {fileID: 21300000, guid: c0cca5053586f5548a4ec7658b602e34, type: 3}
-  worldPrefab: {fileID: 7269009199122026258, guid: 7f83387585dbecd4f888043bcfb81ac0, type: 3}
-  rarity: 2
-  value: 5
-  weight: 2
+  itemName: "Cr\xE1neo"
+  width: 2
+  height: 2
+  itemIcon: {fileID: 21300000, guid: 59df703a129f160408c39faa1bb5b0c6, type: 3}
+  worldPrefab: {fileID: 1280031807739478610, guid: 0d185b446307b8049841609fbda19b21, type: 3}
+  rarity: 1
+  value: 7
+  weight: 5
   description: 

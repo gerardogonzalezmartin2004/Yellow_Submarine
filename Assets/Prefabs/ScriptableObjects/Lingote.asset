@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Lingote
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   itemName: Lingote
-  width: 1
+  width: 2
   height: 1
   itemIcon: {fileID: 21300000, guid: a4e716cd0fe8af3448840c0bfd1056be, type: 3}
   worldPrefab: {fileID: 5455241682812131883, guid: 3f83dd64162b38f46873c61f23af51ec, type: 3}

@@ -10,14 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 30516ff129d50dc4892ff9679be8e9b7, type: 3}
-  m_Name: Reloj
+  m_Name: Moneda2
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
-  itemName: Reloj
+  itemName: Moneda Calavera
   width: 1
   height: 1
-  itemIcon: {fileID: 21300000, guid: c0cca5053586f5548a4ec7658b602e34, type: 3}
-  worldPrefab: {fileID: 7269009199122026258, guid: 7f83387585dbecd4f888043bcfb81ac0, type: 3}
+  itemIcon: {fileID: 21300000, guid: 0d2b674c9df9b724c9274a8ce8816fa2, type: 3}
+  worldPrefab: {fileID: 1209908641585738911, guid: cb74cf2281ccd984ab1e59f7e81051a5, type: 3}
   rarity: 2
-  value: 5
-  weight: 2
+  value: 10
+  weight: 1
   description: 
