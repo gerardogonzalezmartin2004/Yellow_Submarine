@@ -34,7 +34,7 @@ TagManager:
   - 
   - 
   - 
-  - 
+  - GroundCollision
   - fish
   - Bag
   - Collision

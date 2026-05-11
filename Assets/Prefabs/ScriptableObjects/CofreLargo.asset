@@ -10,14 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 30516ff129d50dc4892ff9679be8e9b7, type: 3}
-  m_Name: cofreLegendary
+  m_Name: CofreLargo
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
-  itemName: Cofre
-  width: 3
-  height: 2
-  itemIcon: {fileID: 21300000, guid: ecc67a32971bc5746a0fd0561a152052, type: 3}
-  worldPrefab: {fileID: 5455241682812131883, guid: 3f83dd64162b38f46873c61f23af51ec, type: 3}
-  rarity: 3
-  value: 5
-  weight: 15
+  itemName: Cofre Grande
+  width: 2
+  height: 1
+  itemIcon: {fileID: 21300000, guid: 84d4944ef47b4fd408bbaf4470649f6c, type: 3}
+  worldPrefab: {fileID: 8778847778797646946, guid: 21974772b46b6634ca6194a9694a6a25, type: 3}
+  rarity: 1
+  value: 10
+  weight: 10
   description: 

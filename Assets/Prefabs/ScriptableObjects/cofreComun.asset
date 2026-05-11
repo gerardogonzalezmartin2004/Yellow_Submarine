@@ -15,9 +15,9 @@ MonoBehaviour:
   itemName: Cofre
   width: 1
   height: 1
-  itemIcon: {fileID: 21300000, guid: ecc67a32971bc5746a0fd0561a152052, type: 3}
-  worldPrefab: {fileID: 7252156863450275833, guid: 16c2fc21b01875f4bab4ccb0be96eb6f, type: 3}
+  itemIcon: {fileID: 21300000, guid: 47016521d9ef6244fb0f1aed63692eed, type: 3}
+  worldPrefab: {fileID: 463321708710601501, guid: 61085412a9a307b44ab4bd0c656b8cd0, type: 3}
   rarity: 0
   value: 5
-  weight: 1
+  weight: 2
   description: 

@@ -10,14 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 30516ff129d50dc4892ff9679be8e9b7, type: 3}
-  m_Name: cofreRaro
+  m_Name: Neumatico
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
-  itemName: Cofre
-  width: 2
-  height: 1
-  itemIcon: {fileID: 21300000, guid: ecc67a32971bc5746a0fd0561a152052, type: 3}
-  worldPrefab: {fileID: 8778847778797646946, guid: 21974772b46b6634ca6194a9694a6a25, type: 3}
-  rarity: 1
-  value: 5
+  itemName: Neumatico
+  width: 3
+  height: 3
+  itemIcon: {fileID: 21300000, guid: edf2fa8f95f2a0144a4b4271b79ec784, type: 3}
+  worldPrefab: {fileID: 834752236389163041, guid: fb8f679758ca17443bcb9a71800a3eb4, type: 3}
+  rarity: 0
+  value: 4
   weight: 5
   description: 
