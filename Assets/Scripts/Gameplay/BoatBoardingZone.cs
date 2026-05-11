@@ -3,7 +3,6 @@ using AbyssalReach.Core;
 
 namespace AbyssalReach.Gameplay
 {
-    // Este componente se coloca en un objeto hijo del Barco con un BoxCollider.
     // Detecta si el buceador entra en la zona y permite pulsar un botón para "subir a bordo".
     [RequireComponent(typeof(BoxCollider2D))]
     public class BoatBoardingZone : MonoBehaviour
@@ -19,7 +18,7 @@ namespace AbyssalReach.Gameplay
         [Header("Debug")]
         [Tooltip("Muestra el collider y el mensaje en el editor")]
         [SerializeField] private bool showDebug = true;
-        [SerializeField] private Color gizmoColor = new Color(1f, 1f, 0f, 0.3f); // Amarillo transparente
+        [SerializeField] private Color gizmoColor = new Color(1f, 1f, 0f, 0.3f); 
 
         
         private bool diverInRange = false;
@@ -51,7 +50,7 @@ namespace AbyssalReach.Gameplay
             controls.DiverControls.Enable();
 
             
-            // Suscribimos la acción de "Ascender" (o saltar) para subir al barco
+            // Suscribimos 
             controls.DiverControls.Ascend.performed += OnBoardPressed;
         }
 

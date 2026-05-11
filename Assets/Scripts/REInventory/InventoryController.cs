@@ -132,7 +132,6 @@ public class InventoryController : MonoBehaviour
 
         if (toggleInventoryAction?.action != null)
             toggleInventoryAction.action.performed -= OnToggleInventoryPerformed;
-        // No desactivar toggleInventoryAction — es Global.
     }
 
     #endregion
@@ -164,7 +163,6 @@ public class InventoryController : MonoBehaviour
 
         if (!visible)
         {
-            // 1. Item en mano → devolver a su última posición.
             if (selectedItem != null)
             {
                 ItemPositionMemory memory = selectedItem.GetComponent<ItemPositionMemory>();
@@ -176,8 +174,7 @@ public class InventoryController : MonoBehaviour
                 }
                 else
                 {
-                    // Nunca fue colocado → destruir UI pero NO destruir el worldObject.
-                    // (Ya está desactivado en escena, se queda ahí.)
+                 
                     Destroy(selectedItem.gameObject);
                     Debug.LogWarning("[InventoryController] Item sin posición previa — UI destruida.");
                 }
@@ -186,7 +183,6 @@ public class InventoryController : MonoBehaviour
                 heldItemRect = null;
             }
 
-            // 2. Drop zone → restaurar world objects y destruir sprites de UI.
             if (dropZoneGrid != null && !dropZoneGrid.IsEmpty)
             {
                 dropZoneGrid.DiscardAllItems();
@@ -199,9 +195,7 @@ public class InventoryController : MonoBehaviour
             TransferDiverLoot(InventoryManager.Instance.GetDiverInventory());
     }
 
-    // Transfiere los items del DiverInventory al boatItemGrid.
-    // ── CLAVE: asigna item.worldObject en cada InventoryItem creado,
-    //           para que DropZoneGrid pueda reactivarlo si el jugador lo descarta.
+ 
     public void TransferDiverLoot(DiverInventory diverInv)
     {
         if (diverInv == null) { Debug.LogWarning("[InventoryController] DiverInventory null"); return; }
@@ -209,7 +203,6 @@ public class InventoryController : MonoBehaviour
         if (itemPrefab == null) { Debug.LogError("[InventoryController] itemPrefab no asignado"); return; }
         if (canvasTransform == null) { Debug.LogError("[InventoryController] canvasTransform no asignado"); return; }
 
-        // Copiamos la lista para poder modificar la original mientras iteramos.
         List<DiverInventory.DiverItem> diverItems = new List<DiverInventory.DiverItem>(diverInv.GetItems());
         List<DiverInventory.DiverItem> transferidos = new List<DiverInventory.DiverItem>();
 
@@ -227,7 +220,6 @@ public class InventoryController : MonoBehaviour
 
             newItem.Set(diverItem.data);
 
-            // ── Asignar referencia al world object desactivado.
             newItem.worldObject = diverItem.worldObject;
 
             Vector2Int? slot = boatItemGrid.FindSpaceForObject(newItem);
@@ -281,7 +273,6 @@ public class InventoryController : MonoBehaviour
 
         if (!placed)
         {
-            // Colocación bloqueada por múltiples items → auto-devolver.
             ItemPositionMemory memory = itemBeingPlaced.GetComponent<ItemPositionMemory>();
             if (memory != null && memory.HasValidReturnPosition)
             {
@@ -300,7 +291,7 @@ public class InventoryController : MonoBehaviour
         selectedItem = null;
         heldItemRect = null;
 
-        // Swap RE4.
+      
         if (overlapItem != null)
         {
             selectedItem = overlapItem;
@@ -339,7 +330,7 @@ public class InventoryController : MonoBehaviour
         }
     }
 
-    // Fuerza el sprite del item a la celda exacta del grid (corrige ghost sprite).
+ 
     private void SnapItemVisualToGrid(InventoryItem item, ItemGrid grid)
     {
         if (item == null || grid == null) return;

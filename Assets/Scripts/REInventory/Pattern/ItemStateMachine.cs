@@ -1,23 +1,17 @@
 ﻿using UnityEngine;
 
-// State Pattern: Define los diferentes estados en los que puede estar un InventoryItem.
 public enum ItemState
 {
-    // Item está colocado en un grid (posición estable).
     Placed,
 
-    // Item está siendo arrastrado por el jugador.
     BeingDragged,
 
-    // Item está volviendo automáticamente a su última posición válida.
     ReturningToLastPosition,
 
-    // Item está flotando (nunca ha sido colocado).
     Floating
 }
 
-// Máquina de estados para InventoryItem.
-// Gestiona transiciones entre estados y comportamientos específicos.
+
 public class ItemStateMachine
 {
     #region Private Fields
@@ -50,8 +44,7 @@ public class ItemStateMachine
 
     #region State Transitions
 
-    // Cambia al estado especificado.
-    // Ejecuta OnExit del estado actual y OnEnter del nuevo estado.
+    
     public void TransitionTo(ItemState newState)
     {
         if (currentState == newState)
@@ -60,7 +53,6 @@ public class ItemStateMachine
             return;
         }
 
-        // Validar transición
         if (!IsValidTransition(currentState, newState))
         {
             Debug.LogError($"[ItemStateMachine] Transición inválida: {currentState} → {newState}");
@@ -69,22 +61,17 @@ public class ItemStateMachine
 
         ItemState previousState = currentState;
 
-        // OnExit del estado anterior
         OnExitState(previousState);
 
-        // Cambiar estado
         currentState = newState;
 
-        // OnEnter del nuevo estado
         OnEnterState(newState);
 
         Debug.Log($"[ItemStateMachine] Transición: {previousState} → {newState}");
     }
 
-    // Valida si una transición es permitida.
     private bool IsValidTransition(ItemState from, ItemState to)
     {
-        // Definir transiciones válidas
         switch (from)
         {
             case ItemState.Floating:
@@ -110,7 +97,6 @@ public class ItemStateMachine
 
     #region State Behaviors
 
-    // Se ejecuta al entrar en un nuevo estado.
     private void OnEnterState(ItemState state)
     {
         switch (state)
@@ -133,7 +119,6 @@ public class ItemStateMachine
         }
     }
 
-    // Se ejecuta al salir de un estado.
     private void OnExitState(ItemState state)
     {
         switch (state)
@@ -164,20 +149,20 @@ public class ItemStateMachine
 
     private void OnEnterBeingDragged()
     {
-        // Item arrastrado: SetAsLastSibling para que se dibuje encima
+        
         if (owner != null)
         {
             RectTransform rt = owner.GetComponent<RectTransform>();
             rt?.SetAsLastSibling();
         }
-
-        // se podria aplicar efecto visual de arrastrando 
     }
+
+
 
     private void OnEnterReturning()
     {
 
-        //  sonido de "snap back"
+        //  Sonido de snap o algo del estilo
     }
 
     private void OnEnterFloating()
@@ -204,7 +189,7 @@ public class ItemStateMachine
 
     private void OnExitFloating()
     {
-        // Ya no está flotando
+        // ya no está flotando
     }
 
     #endregion

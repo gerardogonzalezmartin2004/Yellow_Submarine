@@ -3,11 +3,9 @@ using AbyssalReach.Core;
 
 namespace AbyssalReach.Gameplay
 {
-    // CAMBIO A 2D: Requerimos Rigidbody2D en lugar de Rigidbody
     [RequireComponent(typeof(Rigidbody2D))]
     public class DiverMovement : MonoBehaviour
     {
-        // Controla el movimiento del buceador con física de agua.
 
         [Header("Movement Settings")]
         [Tooltip("Velocidad máxima de nado")]
@@ -35,10 +33,9 @@ namespace AbyssalReach.Gameplay
 
         [Header("References")]
         [SerializeField] private Transform boatTransform;
-        [SerializeField] private ropeVerlet rope; // Corregido a mayúscula según tu arreglo anterior
+        [SerializeField] private ropeVerlet rope; 
         public bool emergencyAscent = false;
 
-        // CAMBIO A 2D: rb ahora es Rigidbody2D
         [SerializeField] private Rigidbody2D rb;
         private AbyssalReachControls controls;
 
@@ -49,14 +46,13 @@ namespace AbyssalReach.Gameplay
 
         private void Awake()
         {
-            // CAMBIO A 2D: GetComponent<Rigidbody2D>
             rb = GetComponent<Rigidbody2D>();
 
-            // Configurar Rigidbody2D
-            rb.gravityScale = 0f; // CAMBIO A 2D: En 2D no hay useGravity, se pone scale a 0
-            rb.linearDamping = rbDrag; // linearDamping es el equivalente a drag en 2D moderno
+            
+            rb.gravityScale = 0f; 
+            rb.linearDamping = rbDrag; 
 
-            // CAMBIO A 2D: Congelar rotación en el eje Z (único eje de rotación en 2D)
+           
             rb.constraints = RigidbodyConstraints2D.FreezeRotation;
 
             controls = new AbyssalReachControls();
@@ -66,14 +62,14 @@ namespace AbyssalReach.Gameplay
         {
             controls.Enable();
 
-            // Suscripción a los eventos de Input: Esta explicado en BoatMovement.
+          
             controls.DiverControls.Move.performed += OnMovePerformed;
             controls.DiverControls.Move.canceled += OnMoveCanceled;
         }
 
         private void OnDisable()
         {
-            // Desuscripción obligatoria para evitar errores
+           
             controls.DiverControls.Move.performed -= OnMovePerformed;
             controls.DiverControls.Move.canceled -= OnMoveCanceled;
 
@@ -92,10 +88,10 @@ namespace AbyssalReach.Gameplay
             }
             else
             {
-                // Debug usando Vector3 pero basado en datos 2D
+               
                 Debug.DrawRay(transform.position, new Vector3(rb.linearVelocity.x, rb.linearVelocity.y, 0f).normalized * 6f, Color.green, 0.15f);
             }
-            // En emergencia → NO control del jugador
+            
 
             EnforceSurfaceLimit();
         }
@@ -104,13 +100,11 @@ namespace AbyssalReach.Gameplay
 
         #region Input Callbacks
 
-        // Se ejecuta al mover el stick. Estos son diferentes respecto a los del barco porque el buceador se mueve en 2D (X e Y), mientras que el barco solo en X.
         private void OnMovePerformed(UnityEngine.InputSystem.InputAction.CallbackContext context)
         {
             moveInput = context.ReadValue<Vector2>();
         }
 
-        // Se ejecuta al soltar el stick
         private void OnMoveCanceled(UnityEngine.InputSystem.InputAction.CallbackContext context)
         {
             moveInput = Vector2.zero;
@@ -124,22 +118,18 @@ namespace AbyssalReach.Gameplay
         {
             if (!emergencyAscent)
             {
-                // CAMBIO A 2D: Usamos Vector2.down y ForceMode2D.Force
                 rb.AddForce(Vector2.down * underwaterGravity, ForceMode2D.Force);
             }
             else
             {
-                // CAMBIO A 2D: Usamos ForceMode2D.Force
                 rb.AddForce(rope.GetTensionDirection() * underwaterGravity, ForceMode2D.Force);
             }
         }
 
         private void UpdateMovement()
         {
-            // Calcular velocidad deseada
             Vector2 targetVelocity = moveInput * swimSpeed;
 
-            //  Decidir si aceleramos o frenamos 
             float rate;
             if (moveInput.magnitude > 0.01f)
             {
@@ -150,34 +140,27 @@ namespace AbyssalReach.Gameplay
                 rate = waterDrag;
             }
 
-            //  Suavizar el cambio de velocidad con MoveTowards
             currentVelocity = Vector2.MoveTowards(currentVelocity, targetVelocity, rate * Time.fixedDeltaTime);
 
-            // Aplicar restricciones especiales (Barco)
             currentVelocity = ApplyHemisphereConstraint(currentVelocity);
 
-            //  Mover el Rigidbody2D
             Vector2 movement = currentVelocity * Time.fixedDeltaTime;
             rb.MovePosition(rb.position + movement);
         }
 
         private Vector2 ApplyHemisphereConstraint(Vector2 velocity)
         {
-            // Si no hay barco asignado, no limitamos nada
             if (boatTransform == null)
             {
                 return velocity;
             }
 
-            // Lógica: Si intentamos subir (Y > 0)
             if (velocity.y > 0)
             {
                 float distanceToBoat = Mathf.Abs(transform.position.y - boatTransform.position.y);
 
-                // Si estamos demasiado cerca del barco, prohibimos subir más
                 if (distanceToBoat < minDepthFromBoat)
                 {
-                    // Forzamos la velocidad Y a 0 (o menos)
                     velocity.y = Mathf.Min(velocity.y, 0f);
                 }
             }
@@ -187,31 +170,29 @@ namespace AbyssalReach.Gameplay
 
         private void EnforceSurfaceLimit()
         {
-            // Lógica: Si salimos del agua
             if (transform.position.y > waterSurfaceY)
             {
-                //  Teletransportar de vuelta a la superficie
-                Vector2 pos = transform.position; // Usamos Vector2
+                Vector2 pos = transform.position; 
                 pos.y = waterSurfaceY;
-                transform.position = pos; // Unity convierte implícitamente Vector2 a Vector3 para transform.position
+                transform.position = pos; 
                 rb.position = pos;
 
                 if (moveInput.y > 0f)
                 {
-                    currentVelocity.y = 0f;// Cancelamos cualquier intento de seguir subiendo si el jugador sigue pulsando hacia arriba, para evitar que se quede atascado intentando subir sin poder porque ya está en la superficie.
-                    Vector2 vel = rb.linearVelocity; // Usamos Vector2
+                    currentVelocity.y = 0f;
+                    Vector2 vel = rb.linearVelocity; 
                     vel.y = 0f;
                     rb.linearVelocity = vel;
                 }
                 else if (moveInput.y < 0f)
                 {
-                    // Si el jugador está intentando bajar, permitimos que siga bajando aunque esté en la superficie, para que pueda volver a sumergirse sin problemas.
+                    
                     Debug.Log("[DiverMovement] En superficie - Permitiendo movimiento hacia abajo");
                 }
                 else
                 {
-                    // Solo cancelar velocidad hacia arriba si la hay
-                    Vector2 vel = rb.linearVelocity; // Usamos Vector2
+                   
+                    Vector2 vel = rb.linearVelocity; 
                     if (vel.y > 0)
                     {
                         vel.y = 0f;
@@ -225,7 +206,7 @@ namespace AbyssalReach.Gameplay
 
         #region Aplicaciones Publicas
 
-        // Detiene el movimiento del buceador en seco
+        
         public void Stop()
         {
             currentVelocity = Vector2.zero;
@@ -253,14 +234,13 @@ namespace AbyssalReach.Gameplay
             rb.linearDamping = rbDrag;
         }
 
-        // Posiciona el buceador y asegura que esté bajo el agua
-        // Acepta Vector2 (2D)
+        
         public void SetPosition(Vector2 position)
         {
-            // Mathf.Min asegura que nunca spawnee por encima de la superficie
+            
             position.y = Mathf.Min(position.y, waterSurfaceY);
 
-            // Convertir a Vector3 para el transform
+          
             transform.position = new Vector3(position.x, position.y, 0f);
             rb.position = position;
             Stop();
@@ -287,28 +267,25 @@ namespace AbyssalReach.Gameplay
 
         private void OnDrawGizmos()
         {
-            // Si no estamos jugando, no dibujamos la velocidad porque sería 0
             if (!Application.isPlaying)
             {
                 return;
             }
 
-            // Flecha de Velocidad = Cyan
             Gizmos.color = Color.cyan;
             Vector3 vel3D = new Vector3(currentVelocity.x, currentVelocity.y, 0f);
-            Gizmos.DrawRay(transform.position, vel3D); // Sirve para ver hacia dónde y qué tan rápido se está intentando mover el personaje en ese instante.
+            Gizmos.DrawRay(transform.position, vel3D);
 
-            // Línea de Superficie del agua
             Gizmos.color = Color.blue;
             float xPos = transform.position.x;
-            Gizmos.DrawLine(new Vector3(xPos - 5f, waterSurfaceY, 0f), new Vector3(xPos + 5f, waterSurfaceY, 0f)); // Dibuja una línea de 10 metros de ancho que sigue al jugador horizontalmente pero se mantiene fija en la altura del agua. Indica dónde está el límite para salir a la superficie.
+            Gizmos.DrawLine(new Vector3(xPos - 5f, waterSurfaceY, 0f), new Vector3(xPos + 5f, waterSurfaceY, 0f));
 
-            //  Línea de Límite del Barco = Amarilla
+          
             if (boatTransform != null)
             {
                 Gizmos.color = Color.yellow;
                 float minY = boatTransform.position.y - minDepthFromBoat;
-                Gizmos.DrawLine(new Vector3(xPos - 3f, minY, 0f), new Vector3(xPos + 3f, minY, 0f)); // Indica la altura mínima a la que el buceador puede acercarse al barco. Si intenta subir por encima de esta línea, se le bloqueará el movimiento hacia arriba para evitar que se meta dentro del barco o salga a la superficie demasiado cerca de él.
+                Gizmos.DrawLine(new Vector3(xPos - 3f, minY, 0f), new Vector3(xPos + 3f, minY, 0f)); 
             }
         }
 

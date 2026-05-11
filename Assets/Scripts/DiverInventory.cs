@@ -4,13 +4,13 @@ using UnityEngine;
 [System.Serializable]
 public class DiverInventory
 {
-    // Guardamos el ItemData Y el GameObject del mundo (desactivado).
+    // Guardamos el ItemData y el ameObject del mundo 
     // Así al descartar podemos reactivarlo sin instanciar nada nuevo.
     [System.Serializable]
     public class DiverItem
     {
         public ItemData data;
-        public GameObject worldObject; // el objeto desactivado en escena
+        public GameObject worldObject; 
 
         public DiverItem(ItemData data, GameObject worldObject)
         {
@@ -47,7 +47,7 @@ public class DiverInventory
 
     public float GetMaxWeight() => maxWeight;
 
-    // Devuelve solo los ItemData (para compatibilidad con ShopUI, etc.)
+    // Devuelve solo los ItemData 
     public List<ItemData> GetItemDatas()
     {
         var result = new List<ItemData>();
