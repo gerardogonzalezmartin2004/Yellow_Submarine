@@ -34,7 +34,6 @@ namespace AbyssalReach.Core
                 Debug.Log("[InventoryManager] Inicializado correctamente.");
         }
 
-        // ── Nuevo: recibe también el worldObject (el GameObject desactivado en escena).
         public bool TryPickupItem(ItemData item, GameObject worldObject)
         {
             if (item == null)

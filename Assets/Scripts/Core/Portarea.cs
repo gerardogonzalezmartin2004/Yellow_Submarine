@@ -1,4 +1,5 @@
 ﻿using AbyssalReach.Core;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -241,7 +242,10 @@ namespace AbyssalReach.Gameplay
             isInShop = true;
             shopUIPanel.SetActive(true);
             GameController.Instance?.SetGameState(GameController.GameState.InShop);
-            if (showDebug) Debug.Log("[PortArea] Tienda abierta");
+
+            controls.Global.Disable(); 
+
+            if (showDebug) Debug.Log("[PortArea] Tienda abierta — Global inputs desactivados");
         }
 
         public void CloseShop()
@@ -253,9 +257,23 @@ namespace AbyssalReach.Gameplay
             if (boatRb != null) boatRb.isKinematic = false;
             GameController.Instance?.ExitPort();
             StartExitCooldown();
-            if (showDebug) Debug.Log("[PortArea] Tienda cerrada — cooldown activo");
+
+            StartCoroutine(ReenableGlobalNextFrame());
+
+            if (showDebug) Debug.Log("[PortArea] Tienda cerrada — Global inputs reactivados");
         }
 
+        private IEnumerator ReenableGlobalNextFrame()
+        {
+            var escapeAction = controls.UI.Cancel;
+            while (escapeAction.IsPressed() || escapeAction.WasPressedThisFrame())
+                yield return null;
+
+            yield return null;
+
+            controls.Global.Enable();
+            if (showDebug) Debug.Log("[PortArea] Global inputs reactivados");
+        }
         #endregion
 
         #region Cooldown
