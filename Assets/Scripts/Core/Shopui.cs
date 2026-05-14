@@ -27,7 +27,10 @@ namespace AbyssalReach.UI
         [Header("External References")]
         [SerializeField] private TetherSystem tetherSystem;
         [SerializeField] private DiverMovement diverMovement;
+
+        [Header("Upgrade Settings")]
         [SerializeField] private float mejoraLongitudCable;
+        [SerializeField] private float mejoraPeso; // Paso A: Campo añadido
         [SerializeField] private float mejoraVelocidad;
 
         [Header("Boat Grid Reference")]
@@ -45,11 +48,12 @@ namespace AbyssalReach.UI
             if (closeButton != null)
                 closeButton.onClick.AddListener(CloseShop);
 
+            // Paso C: Actualización de Listeners
             if (upgradeCableLengthButton != null)
                 upgradeCableLengthButton.onClick.AddListener(PurchaseCableUpgrade);
 
             if (upgradeCableStrengthButton != null)
-                upgradeCableStrengthButton.onClick.AddListener(PurchaseStrengthUpgrade);
+                upgradeCableStrengthButton.onClick.AddListener(PurchaseCableStrength);
 
             if (upgradeSwimSpeedButton != null)
                 upgradeSwimSpeedButton.onClick.AddListener(PurchaseSpeedUpgrade);
@@ -89,37 +93,53 @@ namespace AbyssalReach.UI
                 if (item != null && item.itemData != null)
                     totalValue += ItemDamageTracker.Instance != null
                         ? ItemDamageTracker.Instance.GetRuntimeValue(item.itemData)
-                        : item.itemData.value; // fallback si no hay tracker
+                        : item.itemData.value;
 
             if (totalValue <= 0) return;
 
             CurrencyManager.Instance.AddGold(totalValue);
+            if (ItemDamageTracker.Instance != null)
+                ItemDamageTracker.Instance.ClearDamages();
             boatItemGrid.ClearAllItems();
 
             Debug.Log("[ShopUI] Vendido todo por " + totalValue + "G");
             UpdateInventoryDisplay();
         }
 
-        private void PurchaseCableUpgrade() => PurchaseUpgrade("Cable Length", 50);
-        private void PurchaseStrengthUpgrade() => PurchaseUpgrade("Cable Strength", 75);
-        private void PurchaseSpeedUpgrade() => PurchaseUpgrade("Swim Speed", 100);
-
-        private void PurchaseUpgrade(string upgradeName, int cost)
+        
+        private void PurchaseCableUpgrade()
         {
             if (CurrencyManager.Instance == null) return;
-
-            if (CurrencyManager.Instance.SpendGold(cost))
+            if (CurrencyManager.Instance.SpendGold(50))
             {
-                Debug.Log("[ShopUI] Purchased: " + upgradeName + " for " + cost + "G");
+                if (tetherSystem != null)
+                    tetherSystem.UpgradeCableLength(mejoraLongitudCable);
 
-                if (upgradeName == "Cable Length" && tetherSystem != null)
-                    tetherSystem.maxLength += mejoraLongitudCable;
-                else if (upgradeName == "Swim Speed" && diverMovement != null)
-                    diverMovement.swimSpeed += mejoraVelocidad;
+                Debug.Log("[ShopUI] Cable Length upgraded by " + mejoraLongitudCable);
             }
-            else
+        }
+
+        private void PurchaseCableStrength()
+        {
+            if (CurrencyManager.Instance == null) return;
+            if (CurrencyManager.Instance.SpendGold(75))
             {
-                Debug.Log("[ShopUI] No tienes suficiente oro para " + upgradeName);
+                if (InventoryManager.Instance != null)
+                    InventoryManager.Instance.GetDiverInventory().UpgradeMaxWeight(mejoraPeso);
+
+                Debug.Log("[ShopUI] Max Weight upgraded by " + mejoraPeso);
+            }
+        }
+
+        private void PurchaseSpeedUpgrade()
+        {
+            if (CurrencyManager.Instance == null) return;
+            if (CurrencyManager.Instance.SpendGold(100))
+            {
+                if (diverMovement != null)
+                    diverMovement.UpgradeSwimSpeed(mejoraVelocidad);
+
+                Debug.Log("[ShopUI] Swim Speed upgraded by " + mejoraVelocidad);
             }
         }
 

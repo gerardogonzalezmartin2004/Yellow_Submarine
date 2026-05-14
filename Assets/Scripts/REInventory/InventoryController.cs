@@ -131,7 +131,10 @@ public class InventoryController : MonoBehaviour
             pointerPositionAction.action.Disable();
 
         if (toggleInventoryAction?.action != null)
+        {
             toggleInventoryAction.action.performed -= OnToggleInventoryPerformed;
+            toggleInventoryAction.action.Disable();
+        }
     }
 
     #endregion

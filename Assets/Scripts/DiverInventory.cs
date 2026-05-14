@@ -65,4 +65,8 @@ public class DiverInventory
     {
         items.Clear();
     }
+    public void UpgradeMaxWeight(float amount)
+    {
+        maxWeight += amount;
+    }
 }

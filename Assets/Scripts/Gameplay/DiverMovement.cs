@@ -255,7 +255,10 @@ namespace AbyssalReach.Gameplay
         {
             return currentVelocity;
         }
-
+        public void UpgradeSwimSpeed(float amount)
+        {
+            swimSpeed += amount;
+        }
         public Vector3 GetPosition()
         {
             return transform.position;

@@ -103,17 +103,22 @@ namespace AbyssalReach.Gameplay
 
         private void CheckBoatInZones()
         {
-            GameObject boat = GameObject.FindGameObjectWithTag(targetTag);
-            if (boat == null) { boatInOuterZone = false; detectedBoat = null; return; }
+            if (detectedBoat == null)
+            {
+                detectedBoat = GameObject.FindGameObjectWithTag(targetTag);
+                if (detectedBoat == null) { boatInOuterZone = false; return; }
+                boatRb = detectedBoat.GetComponent<Rigidbody>();
+                boatMovement = detectedBoat.GetComponent<BoatMovement>();
+            }
 
-            float distance = Vector3.Distance(transform.position, boat.transform.position);
+            float distance = Vector3.Distance(transform.position, detectedBoat.transform.position);
 
             if (!isExiting)
             {
                 bool was = boatInOuterZone;
                 boatInOuterZone = distance <= outerRadius;
 
-                if (boatInOuterZone && !was) OnBoatEnterOuterZone(boat);
+                if (boatInOuterZone && !was) OnBoatEnterOuterZone(detectedBoat);
                 else if (!boatInOuterZone && was) OnBoatExitOuterZone();
             }
         }

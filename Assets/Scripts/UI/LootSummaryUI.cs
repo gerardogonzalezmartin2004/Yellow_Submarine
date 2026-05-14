@@ -6,12 +6,10 @@ using System.Collections.Generic;
 
 public class LootSummaryUI : MonoBehaviour
 {
-    #region Serialized Fields
-
     [Header("Prefab de tarjeta")]
     [SerializeField] private GameObject cardPrefab;
 
-    [Header("Posición — margen desde la esquina superior derecha")]
+    [Header("Posicion — margen desde la esquina superior derecha")]
     [SerializeField] private float marginRight = 20f;
     [SerializeField] private float marginTop = 20f;
 
@@ -19,42 +17,30 @@ public class LootSummaryUI : MonoBehaviour
     [SerializeField] private Vector2 cardSize = new Vector2(200f, 50f);
     [SerializeField] private float cardSpacing = 6f;
 
-    [Header("Animación")]
+    [Header("Animacion")]
     [SerializeField] private float slideDistance = 80f;
     [SerializeField] private float slideInDuration = 0.18f;
-    [SerializeField] private float staggerDelay = 0.08f;   
-    [SerializeField] private float holdDuration = 3f;       
+    [SerializeField] private float staggerDelay = 0.08f;
+    [SerializeField] private float holdDuration = 3f;
     [SerializeField] private float fadeOutDuration = 0.3f;
 
     [Header("Debug")]
     [SerializeField] private bool showDebugLogs = true;
 
-    #endregion
-
-    #region Private
-
     private RectTransform container;
     private List<Coroutine> activeCoroutines = new List<Coroutine>();
-
-    #endregion
-
-    #region Unity Lifecycle
 
     private void Awake()
     {
         CreateContainer();
     }
 
-    #endregion
-
-    #region Container Setup
-
     private void CreateContainer()
     {
         Canvas rootCanvas = FindRootCanvas();
         if (rootCanvas == null)
         {
-            Debug.LogError("[LootSummaryUI] No se encontró Canvas en la escena.");
+            Debug.LogError("[LootSummaryUI] No se encontro Canvas en la escena.");
             return;
         }
 
@@ -77,16 +63,12 @@ public class LootSummaryUI : MonoBehaviour
         Canvas c = GetComponentInParent<Canvas>();
         if (c != null) return c.rootCanvas;
 
-        Canvas[] all = FindObjectsByType<Canvas>(FindObjectsSortMode.None);
+        Canvas[] all = Object.FindObjectsByType<Canvas>(FindObjectsSortMode.None);
         foreach (Canvas canvas in all)
             if (canvas.isRootCanvas) return canvas;
 
         return null;
     }
-
-    #endregion
-
-    #region Public API
 
     public void ShowLootSummary(List<InventoryItem> boatItems, float totalTime)
     {
@@ -96,9 +78,8 @@ public class LootSummaryUI : MonoBehaviour
 
         StopAll();
 
-        LogDebug($"Mostrando {boatItems.Count} tarjetas apiladas.");
+        LogDebug("Mostrando " + boatItems.Count + " tarjetas apiladas.");
 
-        
         for (int i = 0; i < boatItems.Count; i++)
         {
             if (boatItems[i]?.itemData == null) continue;
@@ -111,10 +92,6 @@ public class LootSummaryUI : MonoBehaviour
         }
     }
 
-    #endregion
-
-    #region Card Coroutine
-
     private IEnumerator ShowCard(ItemData data, float delay, float yPos)
     {
         if (delay > 0f) yield return new WaitForSeconds(delay);
@@ -123,7 +100,7 @@ public class LootSummaryUI : MonoBehaviour
 
         RectTransform cardRect = cardGO.GetComponent<RectTransform>();
         CanvasGroup cg = cardGO.GetComponent<CanvasGroup>()
-                                 ?? cardGO.AddComponent<CanvasGroup>();
+                         ?? cardGO.AddComponent<CanvasGroup>();
 
         if (cardRect == null) { Destroy(cardGO); yield break; }
 
@@ -165,10 +142,6 @@ public class LootSummaryUI : MonoBehaviour
         Destroy(cardGO);
     }
 
-    #endregion
-
-    #region Fill Card
-
     private void FillCard(GameObject card, ItemData data)
     {
         Transform iconT = card.transform.Find("Icon");
@@ -187,7 +160,12 @@ public class LootSummaryUI : MonoBehaviour
         if (nameT != null)
         {
             TextMeshProUGUI tmp = nameT.GetComponent<TextMeshProUGUI>();
-            if (tmp != null) tmp.text = data.itemName;
+            if (tmp != null)
+            {
+                tmp.text = data.itemName;
+                tmp.textWrappingMode = TextWrappingModes.NoWrap;
+                tmp.overflowMode = TextOverflowModes.Ellipsis;
+            }
         }
 
         Transform rarityT = card.transform.Find("Rarity");
@@ -202,10 +180,6 @@ public class LootSummaryUI : MonoBehaviour
         }
     }
 
-    #endregion
-
-    #region Helpers
-
     private void StopAll()
     {
         foreach (Coroutine c in activeCoroutines)
@@ -219,8 +193,6 @@ public class LootSummaryUI : MonoBehaviour
 
     private void LogDebug(string msg)
     {
-        if (showDebugLogs) Debug.Log($"[LootSummaryUI] {msg}");
+        if (showDebugLogs) Debug.Log("[LootSummaryUI] " + msg);
     }
-
-    #endregion
 }

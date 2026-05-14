@@ -181,6 +181,7 @@ namespace AbyssalReach.Core
                     controls.BoatControls.Disable();
                     controls.UI.Disable();
                     controls.DiverControls.Enable();
+                    controls.Global.Enable();
                     break;
 
                 case GameState.InPort:
@@ -191,6 +192,7 @@ namespace AbyssalReach.Core
                     controls.BoatControls.Disable();
                     controls.DiverControls.Disable();
                     controls.UI.Enable();
+                    controls.Global.Disable();
                     break;
 
                 case GameState.Inventory:
@@ -214,7 +216,6 @@ namespace AbyssalReach.Core
                 SetSailingMode();
                 stopTimer = false;
                 diverMovement.ExitEmergencyAscent();
-                tether.UpgradeLength(10f);
                 diverMovement.emergencyAscent = false;
                 tether.ResetTetherToMax();
             }
@@ -272,6 +273,7 @@ namespace AbyssalReach.Core
             controls.BoatControls.Enable();
             controls.DiverControls.Disable();
             controls.UI.Disable();
+            controls.Global.Enable();
 
             oxygenTimer = maxTimer;
             oxygenSlider.value = maxTimer;

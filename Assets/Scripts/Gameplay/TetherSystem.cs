@@ -142,6 +142,14 @@ namespace AbyssalReach.Gameplay
                 }
             }
         }
+        public void UpgradeCableLength(float amount)
+        {
+            maxLength += amount;
+            if (ropeVerlet != null)
+                ropeVerlet.SetMaxLength(maxLength);
+            if (showDebug)
+                Debug.Log("[TetherSystem] Cable length upgraded to " + maxLength + "m");
+        }
         public void ReelInRope(float amount)
         {
             if (ropeVerlet != null)

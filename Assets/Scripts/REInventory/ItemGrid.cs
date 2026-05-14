@@ -69,7 +69,8 @@ public class ItemGrid : MonoBehaviour
             return;
         }
 
-        Init(gridWidth, gridHeight);
+        if (inventoryItemSlots == null)
+            Init(gridWidth, gridHeight);
     }
 
     #endregion
