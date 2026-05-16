@@ -33,13 +33,16 @@ TagManager:
   - 
   - 
   - 
-  - 
+  - Back
   - GroundCollision
   - fish
   - Bag
   - Collision
   - Rope
   m_SortingLayers:
+  - name: Background
+    uniqueID: 175083907
+    locked: 0
   - name: Default
     uniqueID: 0
     locked: 0
@@ -52,3 +55,4 @@ TagManager:
   - Light Layer 5
   - Light Layer 6
   - Light Layer 7
+  - background

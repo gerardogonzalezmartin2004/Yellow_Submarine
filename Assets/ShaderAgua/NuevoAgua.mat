@@ -83,7 +83,7 @@ Material:
     - _Blend: 0
     - _BlendModePreserveSpecular: 1
     - _CastShadows: 0
-    - _Choopness: 0.03
+    - _Choopness: 0.02
     - _Cull: 0
     - _DstBlend: 10
     - _DstBlendAlpha: 10
@@ -95,7 +95,7 @@ Material:
     - _QueueControl: 0
     - _QueueOffset: 50
     - _ReceiveShadows: 1
-    - _Size: 3.3
+    - _Size: 7.36
     - _Smoothness: 0.718
     - _SrcBlend: 1
     - _SrcBlendAlpha: 1

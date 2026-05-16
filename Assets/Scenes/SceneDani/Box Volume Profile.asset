@@ -69,7 +69,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 66f335fb1ffd8684294ad653bf1c7564, type: 3}
   m_Name: ColorAdjustments
   m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.ColorAdjustments
-  active: 0
+  active: 1
   postExposure:
     m_OverrideState: 0
     m_Value: 0
@@ -78,13 +78,13 @@ MonoBehaviour:
     m_Value: 5.5
   colorFilter:
     m_OverrideState: 1
-    m_Value: {r: 0.6245283, g: 0.8236421, b: 1, a: 1}
+    m_Value: {r: 0.19324312, g: 0.3132075, b: 0.27855113, a: 1}
   hueShift:
     m_OverrideState: 0
     m_Value: 0
   saturation:
     m_OverrideState: 1
-    m_Value: 100
+    m_Value: 20.6
 --- !u!114 &6187667950030276525
 MonoBehaviour:
   m_ObjectHideFlags: 3
