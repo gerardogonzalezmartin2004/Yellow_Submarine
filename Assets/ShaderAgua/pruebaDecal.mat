@@ -47,7 +47,7 @@ Material:
     - _Density: 0.5
     - _DrawOrder: 1
     - _Offset: 1
-    - _WaterHeight: -1.72
+    - _WaterHeight: 34.5
     - _power: 4.11
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}

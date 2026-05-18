@@ -2,19 +2,22 @@ using UnityEngine;
 
 public class UnderwaterEffects : MonoBehaviour
 {
-    [SerializeField] private GameObject waterFx;
+    [SerializeField] private GameObject WaterArriba;
+    [SerializeField] private GameObject WaterAbajo;
 
     private void OnTriggerEnter(Collider other)
     {
-        //waterFx.SetActive(true);
         RenderSettings.fog = true;
+        WaterArriba.SetActive(false);
+        WaterAbajo.SetActive(true);
         Debug.Log("Debería activarse la fog");
     }
 
     private void OnTriggerExit(Collider other)
     {
-        //waterFx.SetActive(false);
         RenderSettings.fog = false;
+        WaterArriba.SetActive(true);
+        WaterAbajo.SetActive(false);
         Debug.Log("Debería desactivarse la fog");
     }
 }
