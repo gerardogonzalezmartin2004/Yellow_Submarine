@@ -64,7 +64,7 @@ namespace AbyssalReach.Core
             }
 
             instance = this;
-            DontDestroyOnLoad(gameObject);
+           
 
             controls = new AbyssalReachControls();
             controls.Global.Enable();
@@ -129,6 +129,7 @@ namespace AbyssalReach.Core
 
         #endregion
 
+
         #region Input
 
         private void OnStartDivePressed(UnityEngine.InputSystem.InputAction.CallbackContext context)
@@ -180,6 +181,7 @@ namespace AbyssalReach.Core
                     controls.BoatControls.Disable();
                     controls.UI.Disable();
                     controls.DiverControls.Enable();
+                    controls.Global.Enable();
                     break;
 
                 case GameState.InPort:
@@ -190,6 +192,7 @@ namespace AbyssalReach.Core
                     controls.BoatControls.Disable();
                     controls.DiverControls.Disable();
                     controls.UI.Enable();
+                    controls.Global.Disable();
                     break;
 
                 case GameState.Inventory:
@@ -213,7 +216,6 @@ namespace AbyssalReach.Core
                 SetSailingMode();
                 stopTimer = false;
                 diverMovement.ExitEmergencyAscent();
-                tether.UpgradeLength(10f);
                 diverMovement.emergencyAscent = false;
                 tether.ResetTetherToMax();
             }
@@ -271,6 +273,7 @@ namespace AbyssalReach.Core
             controls.BoatControls.Enable();
             controls.DiverControls.Disable();
             controls.UI.Disable();
+            controls.Global.Enable();
 
             oxygenTimer = maxTimer;
             oxygenSlider.value = maxTimer;
@@ -387,6 +390,22 @@ namespace AbyssalReach.Core
         public AbyssalReachControls GetControls() => controls;
 
         #endregion
+        public void DrainOxygen(float amount)
+        {
+            if (currentState != GameState.Diving || stopTimer) return;
+
+            oxygenTimer -= amount;
+            oxygenTimer = Mathf.Max(oxygenTimer, 0f);
+            oxygenSlider.value = oxygenTimer;
+
+            if (oxygenTimer <= 0f)
+            {
+                diverMovement?.EnterEmergencyAscent();
+                stopTimer = true;
+                emergencyAscent = true;
+                Debug.Log("[GameController] Oxígeno agotado por objeto externo");
+            }
+        }
 
         #region Debug GUI
 

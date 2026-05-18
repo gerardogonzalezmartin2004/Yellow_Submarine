@@ -14,9 +14,9 @@ Material:
   m_ValidKeywords: []
   m_InvalidKeywords: []
   m_LightmapFlags: 4
-  m_EnableInstancingVariants: 0
+  m_EnableInstancingVariants: 1
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: -1
+  m_CustomRenderQueue: 2001
   stringTagMap: {}
   disabledShaderPasses: []
   m_LockedProperties: 
@@ -44,9 +44,10 @@ Material:
     - _DecalMeshBiasType: 0
     - _DecalMeshDepthBias: 0
     - _DecalMeshViewBias: 0
-    - _Density: 0.25
-    - _DrawOrder: 0
+    - _Density: 0.5
+    - _DrawOrder: 1
     - _Offset: 1
+    - _WaterHeight: -1.72
     - _power: 4.11
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}

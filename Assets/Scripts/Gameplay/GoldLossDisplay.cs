@@ -8,10 +8,7 @@ public class GoldLossDisplay : MonoBehaviour
     [SerializeField] private TextMeshProUGUI tmpText;
 
     [Header("Display Settings")]
-    [Tooltip("Segundos visible antes del fade")]
     [SerializeField] private float visibleDuration = 2f;
-
-    [Tooltip("Duración del fade out")]
     [SerializeField] private float fadeDuration = 0.4f;
 
     [Header("Text Format")]
@@ -31,26 +28,24 @@ public class GoldLossDisplay : MonoBehaviour
     }
 
     private void OnEnable() => ItemDamageTracker.OnDamageApplied += OnDamageApplied;
+
     private void OnDisable()
     {
         ItemDamageTracker.OnDamageApplied -= OnDamageApplied;
 
-        // Matar la coroutine y resetear alpha al desactivarse
+        // Resetear al desactivar para evitar que quede visible al volver
         if (fadeCoroutine != null)
         {
             StopCoroutine(fadeCoroutine);
             fadeCoroutine = null;
         }
-
         SetAlpha(0f);
     }
 
-    // Ahora recibe solo el daño de este golpe
     private void OnDamageApplied(int goldLostThisHit)
     {
         if (tmpText == null || goldLostThisHit <= 0) return;
 
-        // Muestra solo lo perdido en este golpe, varía según cuántos objetos tengas
         tmpText.text = "-" + goldLostThisHit + "G";
 
         if (fadeCoroutine != null)

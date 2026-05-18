@@ -3,7 +3,6 @@ using UnityEngine;
 
 namespace AbyssalReach.Core
 {
-    // este script lo q hace es ser el manager del inventario del buzo, el q se encarga de almacenar los items recogidos, controlar el peso total, y notificar a la UI cuando hay cambios.
     public class InventoryManager : MonoBehaviour
     {
         private static InventoryManager instance;
@@ -35,7 +34,7 @@ namespace AbyssalReach.Core
                 Debug.Log("[InventoryManager] Inicializado correctamente.");
         }
 
-        public bool TryPickupItem(ItemData item)
+        public bool TryPickupItem(ItemData item, GameObject worldObject)
         {
             if (item == null)
             {
@@ -44,19 +43,20 @@ namespace AbyssalReach.Core
             }
 
             string error;
-            bool success = diverInventory.TryAddItem(item, out error);
+            bool success = diverInventory.TryAddItem(item, worldObject, out error);
 
             if (success)
             {
                 OnInventoryChanged?.Invoke();
                 OnItemAdded?.Invoke(item);
+
                 if (showDebug)
-                    Debug.Log("[InventoryManager] Recogido: " + item.name +
-                              " | Total items: " + diverInventory.GetItemCount());
+                    Debug.Log($"[InventoryManager] Recogido: {item.name} | " +
+                              $"Total: {diverInventory.GetItemCount()} items");
             }
             else
             {
-                Debug.LogWarning("[InventoryManager] No se pudo recoger " + item.name + ": " + error);
+                Debug.LogWarning($"[InventoryManager] No se pudo recoger {item.name}: {error}");
             }
 
             return success;
@@ -70,9 +70,22 @@ namespace AbyssalReach.Core
             OnInventoryChanged?.Invoke();
         }
 
-        // Stubs para ShopUI — se implementan en PASO 5
-        public int CalculateTotalValue() => 0;
-        public int SellAllItems() => 0;
+        public int CalculateTotalValue()
+        {
+            int total = 0;
+            foreach (var item in diverInventory.GetItems())
+                total += item.data.value;
+            return total;
+        }
+
+        public int SellAllItems()
+        {
+            int total = CalculateTotalValue();
+            diverInventory.Clear();
+            OnInventoryChanged?.Invoke();
+            return total;
+        }
+
         public int GetItemCount() => diverInventory.GetItemCount();
         public bool IsEmpty() => diverInventory.GetItemCount() == 0;
 
@@ -83,8 +96,8 @@ namespace AbyssalReach.Core
             GUIStyle style = new GUIStyle { fontSize = 14 };
             style.normal.textColor = Color.white;
             GUI.Label(new Rect(10, 120, 300, 20),
-                "Diver: " + diverInventory.GetItemCount() + " items / " +
-                diverInventory.GetCurrentWeight().ToString("F1") + "kg", style);
+                $"Diver: {diverInventory.GetItemCount()} items / " +
+                $"{diverInventory.GetCurrentWeight():F1}kg", style);
         }
     }
 }

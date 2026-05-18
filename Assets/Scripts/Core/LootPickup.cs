@@ -1,59 +1,106 @@
-using UnityEngine;
+﻿using UnityEngine;
 using AbyssalReach.Core;
-using UnityEngine.InputSystem;
 
-
+// El buzo recoge el objeto solo al pulsar E cuando está en rango.
+// El objeto se desactiva para poder reaparecer si se descarta.
 public class LootPickup : MonoBehaviour
 {
-    [SerializeField] private ItemData itemData;
+    [Header("Item Data")]
+    public ItemData itemData;
 
-    private AbyssalReachControls controls;
+    [Header("Settings")]
+    [SerializeField] private string diverTag = "Diver";
+    [SerializeField] private KeyCode pickupKey = KeyCode.E;
 
-    private bool playerInRange = false;
+    [Header("UI Prompt")]
+    [Tooltip("GameObject con el texto '[E] Recoger' — se activa al entrar en rango.")]
+    [SerializeField] private GameObject pickupPrompt;
 
-    private void Awake()
-    {
-        controls = new AbyssalReachControls();
-    }
-    private void OnEnable()
-    {
-        controls.DiverControls.Interact.Enable();
-        controls.DiverControls.Interact.performed += OnInteractPerformed;
-    }
+    private bool diverInRange = false;
+    private bool alreadyPickedUp = false;
 
-    private void OnDisable()
-    {
-        controls.DiverControls.Interact.performed -= OnInteractPerformed;
-        controls.DiverControls.Interact.Disable();
-    }
-    private void OnInteractPerformed(InputAction.CallbackContext ctx)
-    {
-        if (!playerInRange) return;
-        if (InventoryManager.Instance == null) return;
-
-        bool success = InventoryManager.Instance.TryPickupItem(itemData);
-        if (success)
-        {
-            Destroy(gameObject);
-        }
-    }
-
-   
+    #region Trigger Detection
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.CompareTag("Diver"))
-        {
-            playerInRange = true;
-        }
+        if (alreadyPickedUp) return;
+        if (!other.CompareTag(diverTag)) return;
+
+        diverInRange = true;
+
+        if (pickupPrompt != null)
+            pickupPrompt.SetActive(true);
     }
 
     private void OnTriggerExit2D(Collider2D other)
     {
-        if (other.CompareTag("Diver"))
+        if (!other.CompareTag(diverTag)) return;
+
+        diverInRange = false;
+
+        if (pickupPrompt != null)
+            pickupPrompt.SetActive(false);
+    }
+
+    #endregion
+
+    #region Update — esperar input
+
+    private void Update()
+    {
+        if (!diverInRange || alreadyPickedUp) return;
+
+        if (Input.GetKeyDown(pickupKey))
+            TryPickup();
+    }
+
+    #endregion
+
+    #region Pickup Logic
+
+    private void TryPickup()
+    {
+        if (itemData == null)
         {
-            playerInRange = false;
+            Debug.LogWarning("[LootPickup] itemData no asignado en " + gameObject.name);
+            return;
+        }
+
+        if (InventoryManager.Instance == null)
+        {
+            Debug.LogError("[LootPickup] InventoryManager.Instance es null");
+            return;
+        }
+
+        bool picked = InventoryManager.Instance.TryPickupItem(itemData, gameObject);
+
+        if (picked)
+        {
+            alreadyPickedUp = true;
+            diverInRange = false;
+
+            if (pickupPrompt != null)
+                pickupPrompt.SetActive(false);
+
+            gameObject.SetActive(false);
+
+            Debug.Log($"[LootPickup] Recogido: {itemData.itemName}");
+        }
+        else
+        {
+            Debug.LogWarning($"[LootPickup] No se pudo recoger {itemData.itemName} (peso máximo?)");
         }
     }
 
+    // Llamado por DropZoneGrid antes de reactivar el objeto.
+    public void ResetForReuse()
+    {
+        alreadyPickedUp = false;
+        diverInRange = false;
+
+        if (pickupPrompt != null)
+            pickupPrompt.SetActive(false);
+    }
+
+    #endregion
 }

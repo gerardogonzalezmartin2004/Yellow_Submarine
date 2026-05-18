@@ -1,38 +1,32 @@
+ï»¿using AbyssalReach.Core;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
-using AbyssalReach.Core;
 
 namespace AbyssalReach.Gameplay
 {
     public class PortArea : MonoBehaviour
     {
-        // Sistema de atraque del barco con dos zonas: Detección y Docking. Zona Exterior: Muestra UI 
-        // Auto-Pilot: El barco navega automáticamente al punto de atraque. Zona Interior: Se abre la tienda cuando llega al punto exacto
-
         [Header("Detection Zones")]
-        [Tooltip("Radio de la zona exterior (detección)")]
         [SerializeField] private float outerRadius = 15f;
-
-        [Tooltip("Radio de la zona interior (tienda)")]
         [SerializeField] private float innerRadius = 3f;
 
         [Header("Docking")]
-        [Tooltip("Punto exacto donde debe llegar el barco")]
         [SerializeField] private Transform dockingPoint;
-
-        [Tooltip("Velocidad del auto-pilot")]
         [SerializeField] private float dockingSpeed = 2f;
-
-        [Tooltip("Distancia mínima para considerar que llegó")]
         [SerializeField] private float arrivalThreshold = 0.5f;
-
-        [Tooltip("Cooldown para evitar re-captura inmediata (segundos)")]
         [SerializeField] private float exitCooldown = 2f;
 
         [Header("References")]
-        [Tooltip("Tag del barco")]
         [SerializeField] private string targetTag = "Boat";
-
         [SerializeField] private GameObject shopUIPanel;
+
+        [Header("Loot Summary")]
+        [Tooltip("Script LootSummaryUI â€” muestra los items del grid del barco al entrar al puerto.")]
+        [SerializeField] private LootSummaryUI lootSummaryUI;
+
+        [Tooltip("ItemGrid del barco â€” fuente de los items a mostrar en el resumen.")]
+        [SerializeField] private ItemGrid boatItemGrid;
 
         [Header("UI Messages")]
         [SerializeField] private string dockingMessage = "Press 'E' to Dock";
@@ -43,34 +37,31 @@ namespace AbyssalReach.Gameplay
         [SerializeField] private Color outerGizmoColor = new Color(0f, 1f, 0.5f, 0.2f);
         [SerializeField] private Color innerGizmoColor = new Color(1f, 0.5f, 0f, 0.3f);
 
-        
+        // â”€â”€ Estado interno â”€â”€
         private bool boatInOuterZone = false;
         private bool isAutoPiloting = false;
         private bool isInShop = false;
         private bool isExiting = false;
         private float exitTimer = 0f;
+        private float dockingTravelTime = 0f;
 
         private GameObject detectedBoat;
         private Rigidbody boatRb;
         private BoatMovement boatMovement;
 
-        
         private AbyssalReachControls controls;
 
-        #region Unity ciclo de vida
+        #region Unity Lifecycle
 
         private void Awake()
         {
-            controls = new AbyssalReachControls();            
+            controls = new AbyssalReachControls();
         }
 
         private void OnEnable()
         {
             controls.Enable();
             controls.BoatControls.Enable();
-
-            // Asignar evento al botón de interacción (definido en Input System)
-            // Asumiendo que has creado una acción (Interact) en el mapa BoatControls, de los input actions
             controls.BoatControls.Interact.performed += OnDockPressed;
             controls.UI.Enable();
             controls.UI.Cancel.performed += OnCancelPressed;
@@ -84,29 +75,26 @@ namespace AbyssalReach.Gameplay
             controls.Disable();
         }
 
-        private void OnDockPressed(UnityEngine.InputSystem.InputAction.CallbackContext context)
-        {
-            // Solo procesar si estamos en zona exterior y no en auto-pilot
-            if (boatInOuterZone && !isAutoPiloting && !isInShop)
-            {
-                StartAutoPilot();
-            }
-        }
-        private void OnCancelPressed(UnityEngine.InputSystem.InputAction.CallbackContext context)
-        {
-            if (isInShop)
-                CloseShop();
-        }
-
         private void Update()
         {
             UpdateCooldown();
             CheckBoatInZones();
+            if (isAutoPiloting) UpdateAutoPilot();
+        }
 
-            if (isAutoPiloting)
-            {
-                UpdateAutoPilot();
-            }
+        #endregion
+
+        #region Input
+
+        private void OnDockPressed(UnityEngine.InputSystem.InputAction.CallbackContext ctx)
+        {
+            if (boatInOuterZone && !isAutoPiloting && !isInShop)
+                StartAutoPilot();
+        }
+
+        private void OnCancelPressed(UnityEngine.InputSystem.InputAction.CallbackContext ctx)
+        {
+            if (isInShop) CloseShop();
         }
 
         #endregion
@@ -115,50 +103,23 @@ namespace AbyssalReach.Gameplay
 
         private void CheckBoatInZones()
         {
-           
-            GameObject boat = GameObject.FindGameObjectWithTag(targetTag);
-            // Si no encontramos el barco, reseteamos estados y salimos
-            if (boat == null)
+            if (detectedBoat == null)
             {
-               
-                if (boatInOuterZone || detectedBoat != null)
-                {
-                    if (showDebug)
-                    {
-                        Debug.Log("[PortArea] Barco no encontrado - Reseteando estado");
-                    }
-                }
-
-                boatInOuterZone = false;
-                detectedBoat = null;
-                return;
+                detectedBoat = GameObject.FindGameObjectWithTag(targetTag);
+                if (detectedBoat == null) { boatInOuterZone = false; return; }
+                boatRb = detectedBoat.GetComponent<Rigidbody>();
+                boatMovement = detectedBoat.GetComponent<BoatMovement>();
             }
 
-            float distance = Vector3.Distance(transform.position, boat.transform.position);
+            float distance = Vector3.Distance(transform.position, detectedBoat.transform.position);
 
-            // Verificar zona exterior, y detectar cambios de estado para notificar eventos de entrada/salida
             if (!isExiting)
             {
-                // Verificar zona exterior
-                bool wasInOuterZone = boatInOuterZone;
+                bool was = boatInOuterZone;
                 boatInOuterZone = distance <= outerRadius;
 
-                if (boatInOuterZone && !wasInOuterZone)
-                {
-                    OnBoatEnterOuterZone(boat);
-                }
-                else if (!boatInOuterZone && wasInOuterZone)
-                {
-                    OnBoatExitOuterZone();
-                }
-            }
-            else
-            {
-                // Durante el cooldown, seguir rastreando la distancia pero no cambiar estado
-                if (showDebug && Time.frameCount % 60 == 0) // Log cada 60 frames
-                {
-                    Debug.Log("[PortArea] Cooldown activo - Distancia: " + distance.ToString("F1") + "m | Tiempo restante: " + exitTimer.ToString("F1") + "s");
-                }
+                if (boatInOuterZone && !was) OnBoatEnterOuterZone(detectedBoat);
+                else if (!boatInOuterZone && was) OnBoatExitOuterZone();
             }
         }
 
@@ -168,42 +129,16 @@ namespace AbyssalReach.Gameplay
             boatRb = boat.GetComponent<Rigidbody>();
             boatMovement = boat.GetComponent<BoatMovement>();
 
-            if (showDebug)
-            {
-                Debug.Log("[PortArea] Barco en zona de detección");
-            }
-
-            // Notificar al GameController 
-            if (GameController.Instance != null)
-            {
-                GameController.Instance.EnterPort();
-            }
+            if (showDebug) Debug.Log("[PortArea] Barco en zona de detecciÃ³n");
+            GameController.Instance?.EnterPort();
         }
 
         private void OnBoatExitOuterZone()
         {
             detectedBoat = null;
-
-            if (showDebug)
-            {
-                Debug.Log("[PortArea] Barco salió de zona de detección");
-            }
-            // Si el barco sale de la zona exterior, también consideramos que salió de la tienda, si estaba dentro
-            if (!isInShop)
-            {
-                detectedBoat = null;
-            }
-            // Si estaba en auto-pilot, cancelar
-            if (isAutoPiloting)
-            {
-                CancelAutoPilot();
-            }
-
-            // Notificar al GameController
-            if (GameController.Instance != null)
-            {
-                GameController.Instance.ExitPort();
-            }
+            if (isAutoPiloting) CancelAutoPilot();
+            if (showDebug) Debug.Log("[PortArea] Barco saliÃ³ de zona de detecciÃ³n");
+            GameController.Instance?.ExitPort();
         }
 
         #endregion
@@ -212,59 +147,35 @@ namespace AbyssalReach.Gameplay
 
         private void StartAutoPilot()
         {
-            if (dockingPoint == null || detectedBoat == null)
-            {
-                return;
-            }
+            if (dockingPoint == null || detectedBoat == null) return;
 
             isAutoPiloting = true;
+            boatMovement?.SetMovementActive(false);
 
-            // Desactivar control manual del barco
-            if (boatMovement != null)
-            {
-                boatMovement.SetMovementActive(false);
-            }
+            // Tiempo de viaje real = distancia / velocidad.
+            float distance = Vector3.Distance(detectedBoat.transform.position, dockingPoint.position);
+            dockingTravelTime = distance / Mathf.Max(dockingSpeed, 0.01f);
 
             if (showDebug)
-            {
-                Debug.Log("[PortArea] Auto-Pilot activado");
-            }
+                Debug.Log($"[PortArea] Auto-Pilot | distancia: {distance:F1}m | tiempo: {dockingTravelTime:F1}s");
+
+            // â”€â”€ Mostrar resumen de items del barco â”€â”€
+            TriggerLootSummary(dockingTravelTime);
         }
 
         private void UpdateAutoPilot()
         {
-            if (detectedBoat == null || dockingPoint == null)
-            {
-                CancelAutoPilot();
-                return;
-            }
+            if (detectedBoat == null || dockingPoint == null) { CancelAutoPilot(); return; }
 
-            // Calcular dirección hacia el punto de atraque
-            Vector3 targetPos = dockingPoint.position;
-            Vector3 currentPos = detectedBoat.transform.position;
-            Vector3 direction = (targetPos - currentPos).normalized;
+            float distance = Vector3.Distance(detectedBoat.transform.position, dockingPoint.position);
+            if (distance <= arrivalThreshold) { ArriveAtDock(); return; }
 
-            // Calcular distancia
-            float distance = Vector3.Distance(currentPos, targetPos);
-
-            // Verificar si llegamos
-            if (distance <= arrivalThreshold)
-            {
-                ArriveAtDock();
-                return;
-            }
-
-            // Mover el barco hacia el punto
-            // Reducir velocidad gradualmente según la distancia
-            float speedMultiplier = Mathf.Clamp01(distance / 5f); // Frena cuando está a menos de 5m
-            float currentSpeed = dockingSpeed * speedMultiplier;
+            Vector3 dir = (dockingPoint.position - detectedBoat.transform.position).normalized;
+            float speed = dockingSpeed * Mathf.Clamp01(distance / 5f);
 
             if (boatRb != null)
             {
-                Vector3 movement = direction * currentSpeed * Time.deltaTime;
-                boatRb.MovePosition(boatRb.position + movement);
-
-                // Asegurar que no rota
+                boatRb.MovePosition(boatRb.position + dir * speed * Time.deltaTime);
                 boatRb.angularVelocity = Vector3.zero;
             }
         }
@@ -273,7 +184,6 @@ namespace AbyssalReach.Gameplay
         {
             isAutoPiloting = false;
 
-            // Detener el barco completamente
             if (boatRb != null)
             {
                 boatRb.linearVelocity = Vector3.zero;
@@ -281,128 +191,126 @@ namespace AbyssalReach.Gameplay
                 boatRb.isKinematic = true;
             }
 
-            if (boatMovement != null)
-            {
-                boatMovement.Stop();
-            }
-
-            // Abrir tienda
+            boatMovement?.Stop();
             OpenShop();
-
-            if (showDebug)
-            {
-                Debug.Log("[PortArea] Barco atracado - Tienda abierta");
-            }
+            if (showDebug) Debug.Log("[PortArea] Barco atracado â€” tienda abierta");
         }
 
         private void CancelAutoPilot()
         {
             isAutoPiloting = false;
-
-            // Reactivar control manual
-            if (boatMovement != null)
-            {
-                boatMovement.SetMovementActive(true);
-            }
-
-            if (boatRb != null)
-            {
-                boatRb.isKinematic = false;
-            }
-
-            if (showDebug)
-            {
-                Debug.Log("[PortArea] Auto-Pilot cancelado");
-            }
+            boatMovement?.SetMovementActive(true);
+            if (boatRb != null) boatRb.isKinematic = false;
+            if (showDebug) Debug.Log("[PortArea] Auto-Pilot cancelado");
         }
 
         #endregion
 
-        #region Shop Control
+        #region Loot Summary
 
-        private void OpenShop()
+        private void TriggerLootSummary(float travelTime)
         {
-            if (shopUIPanel == null)
+            if (lootSummaryUI == null)
             {
-                Debug.LogWarning("[PortArea] Shop UI Panel no asignado");
+                Debug.LogWarning("[PortArea] lootSummaryUI no asignado.");
                 return;
             }
 
+            if (boatItemGrid == null)
+            {
+                Debug.LogWarning("[PortArea] boatItemGrid no asignado â€” no se pueden leer los items del barco.");
+                return;
+            }
+
+            // Obtener items Ãºnicos del grid del barco.
+            List<InventoryItem> items = boatItemGrid.GetAllItems();
+
+            if (items == null || items.Count == 0)
+            {
+                if (showDebug) Debug.Log("[PortArea] Grid del barco vacÃ­o â€” sin resumen.");
+                return;
+            }
+
+            if (showDebug)
+                Debug.Log($"[PortArea] Resumen: {items.Count} items del barco en {travelTime:F1}s");
+
+            lootSummaryUI.ShowLootSummary(items, travelTime);
+        }
+
+        #endregion
+
+        #region Shop
+
+        private void OpenShop()
+        {
+            if (shopUIPanel == null) { Debug.LogWarning("[PortArea] shopUIPanel no asignado"); return; }
             isInShop = true;
             shopUIPanel.SetActive(true);
+            GameController.Instance?.SetGameState(GameController.GameState.InShop);
 
-            // Delegar al GameController para que gestione controles e inputs correctamente
-            if (GameController.Instance != null)
-                GameController.Instance.SetGameState(GameController.GameState.InShop);
+            controls.Global.Disable(); 
 
-            if (showDebug) Debug.Log("[PortArea] Tienda abierta");
+            if (showDebug) Debug.Log("[PortArea] Tienda abierta â€” Global inputs desactivados");
         }
 
         public void CloseShop()
         {
             if (shopUIPanel == null) return;
-
             isInShop = false;
             shopUIPanel.SetActive(false);
-
-            // Reactivar física del barco
-            if (boatMovement != null) boatMovement.SetMovementActive(true);
+            boatMovement?.SetMovementActive(true);
             if (boatRb != null) boatRb.isKinematic = false;
-
-            // Delegar al GameController: él activa BoatControls y pone estado Sailing
-            if (GameController.Instance != null)
-                GameController.Instance.ExitPort();
-
+            GameController.Instance?.ExitPort();
             StartExitCooldown();
 
-            if (showDebug) Debug.Log("[PortArea] Tienda cerrada - Cooldown activo");
+            StartCoroutine(ReenableGlobalNextFrame());
+
+            if (showDebug) Debug.Log("[PortArea] Tienda cerrada â€” Global inputs reactivados");
         }
 
+        private IEnumerator ReenableGlobalNextFrame()
+        {
+            var escapeAction = controls.UI.Cancel;
+            while (escapeAction.IsPressed() || escapeAction.WasPressedThisFrame())
+                yield return null;
+
+            yield return null;
+
+            controls.Global.Enable();
+            if (showDebug) Debug.Log("[PortArea] Global inputs reactivados");
+        }
         #endregion
 
-        #region Exit Cooldown
+        #region Cooldown
 
         private void StartExitCooldown()
         {
             isExiting = true;
             exitTimer = exitCooldown;
-            boatInOuterZone = false; // Evitar que el jugador pueda reactivar la zona inmediatamente
+            boatInOuterZone = false;
         }
 
         private void UpdateCooldown()
         {
-            if (isExiting)
+            if (!isExiting) return;
+            exitTimer -= Time.deltaTime;
+            if (exitTimer <= 0f)
             {
-                exitTimer = exitTimer - Time.deltaTime;
-
-                if (exitTimer <= 0f)
-                {
-                    isExiting = false;
-                    exitTimer = 0f;
-
-                    
-                    Debug.Log("[PortArea] Cooldown terminado - Zona activa de nuevo");
-                    
-                    CheckBoatInZones();// Re-evaluar si el barco está en la zona al terminar el cooldown
-                }
+                isExiting = false;
+                exitTimer = 0f;
+                if (showDebug) Debug.Log("[PortArea] Cooldown terminado");
+                CheckBoatInZones();
             }
         }
 
         #endregion
 
-        #region Debug (Gizmos)
+        #region Gizmos & GUI
 
         private void OnDrawGizmos()
         {
-            // Zona exterior (detección)
-            Gizmos.color = outerGizmoColor;
-            DrawWireCircle(transform.position, outerRadius, 32);
-
-            // Zona interior (tienda)
-            Gizmos.color = innerGizmoColor;
-            DrawWireCircle(transform.position, innerRadius, 32);
-
-            // Punto de atraque
+            Gizmos.color = outerGizmoColor; DrawWireCircle(transform.position, outerRadius, 32);
+            Gizmos.color = innerGizmoColor; DrawWireCircle(transform.position, innerRadius, 32);
             if (dockingPoint != null)
             {
                 Gizmos.color = Color.yellow;
@@ -413,71 +321,36 @@ namespace AbyssalReach.Gameplay
 
         private void OnDrawGizmosSelected()
         {
-            Gizmos.color = Color.green;
-            DrawWireCircle(transform.position, outerRadius, 64);
-
-            Gizmos.color = Color.red;
-            DrawWireCircle(transform.position, innerRadius, 64);
-
+            Gizmos.color = Color.green; DrawWireCircle(transform.position, outerRadius, 64);
+            Gizmos.color = Color.red; DrawWireCircle(transform.position, innerRadius, 64);
+#if UNITY_EDITOR
             if (dockingPoint != null)
-            {
-                UnityEditor.Handles.Label(dockingPoint.position + Vector3.up,"Punto de amarre");
-            }
+                UnityEditor.Handles.Label(dockingPoint.position + Vector3.up, "Punto de amarre");
+#endif
         }
 
         private void DrawWireCircle(Vector3 center, float radius, int segments)
         {
-            float angleStep = 360f / segments;
-            Vector3 previousPoint = center + new Vector3(radius, 0, 0);
-
+            float step = 360f / segments;
+            Vector3 prev = center + new Vector3(radius, 0, 0);
             for (int i = 1; i <= segments; i++)
             {
-                float angle = angleStep * i * Mathf.Deg2Rad;
-                Vector3 currentPoint = center + new Vector3(Mathf.Cos(angle) * radius,Mathf.Sin(angle) * radius,0);
-
-                Gizmos.DrawLine(previousPoint, currentPoint);
-                previousPoint = currentPoint;
+                float angle = step * i * Mathf.Deg2Rad;
+                Vector3 curr = center + new Vector3(Mathf.Cos(angle) * radius, Mathf.Sin(angle) * radius, 0);
+                Gizmos.DrawLine(prev, curr);
+                prev = curr;
             }
         }
 
         private void OnGUI()
         {
-            if (!showDebug)
-            {
-                return;
-            }
-
-            GUIStyle style = new GUIStyle();
-            style.fontSize = 20;
-            style.normal.textColor = Color.yellow;
-            style.fontStyle = FontStyle.Bold;
-            style.alignment = TextAnchor.MiddleCenter;
-
-            float width = 500;
-            float height = 40;
-            Rect rect = new Rect((Screen.width - width) / 2,Screen.height - 100,width,height);
-
-            // Fondo semitransparente
-            GUI.color = new Color(0, 0, 0, 0.7f);
-            GUI.Box(rect, "");
-            GUI.color = Color.white;
-
-            // Mostrar mensaje según estado
-            string message = "";
-
-            if (isAutoPiloting)
-            {
-                message = autoPilotMessage;
-            }
-            else if (boatInOuterZone && !isInShop && !isExiting)
-            {
-                message = dockingMessage;
-            }
-
-            if (message != "")
-            {
-                GUI.Label(rect, message, style);
-            }
+            if (!showDebug) return;
+            GUIStyle s = new GUIStyle { fontSize = 20, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
+            s.normal.textColor = Color.yellow;
+            Rect r = new Rect((Screen.width - 500) / 2, Screen.height - 100, 500, 40);
+            GUI.color = new Color(0, 0, 0, 0.7f); GUI.Box(r, ""); GUI.color = Color.white;
+            string msg = isAutoPiloting ? autoPilotMessage : (boatInOuterZone && !isInShop && !isExiting) ? dockingMessage : "";
+            if (msg != "") GUI.Label(r, msg, s);
         }
 
         #endregion

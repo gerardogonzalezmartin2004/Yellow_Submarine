@@ -3,8 +3,7 @@ using static AbyssalReach.Gameplay.ropeVerlet;
 
 namespace AbyssalReach.Gameplay
 {
-    // TetherSystem simplificado - Solo gestiona estado, upgrades y provee API
-    // La física y visual la maneja RopeVerlet
+   
     public class TetherSystem : MonoBehaviour
     {
         [Header("References")]
@@ -100,41 +99,31 @@ namespace AbyssalReach.Gameplay
 
         #region Public API
 
-        /// <summary>
-        /// Verifica si el cable está estirado al máximo
-        /// </summary>
+       
         public bool IsAtMaxLength()
         {
             return currentLength >= maxLength * 0.99f;
         }
 
-        /// <summary>
-        /// Obtiene la longitud actual del cable
-        /// </summary>
+       
         public float GetCurrentLength()
         {
             return currentLength;
         }
 
-        /// <summary>
-        /// Obtiene la longitud máxima del cable
-        /// </summary>
+       
         public float GetMaxLength()
         {
             return maxLength;
         }
 
-        /// <summary>
-        /// Obtiene el factor de tensión (0-1)
-        /// </summary>
+        
         public float GetTension()
         {
             return tension;
         }
 
-        /// <summary>
-        /// Mejora la longitud del cable
-        /// </summary>
+      
         public void UpgradeLength(float newLength)
         {
             if (newLength > maxLength)
@@ -153,6 +142,14 @@ namespace AbyssalReach.Gameplay
                 }
             }
         }
+        public void UpgradeCableLength(float amount)
+        {
+            maxLength += amount;
+            if (ropeVerlet != null)
+                ropeVerlet.SetMaxLength(maxLength);
+            if (showDebug)
+                Debug.Log("[TetherSystem] Cable length upgraded to " + maxLength + "m");
+        }
         public void ReelInRope(float amount)
         {
             if (ropeVerlet != null)
@@ -169,26 +166,20 @@ namespace AbyssalReach.Gameplay
             }
         }
 
-        /// <summary>
-        /// Configura los anclajes
-        /// </summary>
+      
         public void SetAnchors(Transform boat, Transform diver)
         {
             boatAnchor = boat;
             diverAnchor = diver;
         }
 
-        /// <summary>
-        /// Obtiene el transform del buceador
-        /// </summary>
+       
         public Transform GetDiverAnchor()
         {
             return diverAnchor;
         }
 
-        /// <summary>
-        /// Obtiene el transform del barco
-        /// </summary>
+       
         public Transform GetBoatAnchor()
         {
             return boatAnchor;

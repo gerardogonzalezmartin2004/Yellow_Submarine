@@ -1,26 +1,23 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 
-// Grid de descarte: los items colocados aquí se "tiran al mar" al cerrar el inventario.
-// En vez de destruirlos sin más, re-instancia el prefab del mundo (con Rigidbody2D)
-// en el punto de spawn del barco — el objeto cae al agua por física.
+// este script se encarga de gestionar la zona de descarte del inventario, permitiendo al jugador descartar los items arrastrándolos a esta zona. Al hacerlo, los objetos correspondientes en el mundo se reactivan y caen desde un punto definido (como el borde del barco). También proporciona feedback visual para indicar si la zona está vacía o no.
+
+
 [RequireComponent(typeof(ItemGrid))]
 public class DropZoneGrid : MonoBehaviour
 {
     #region Serialized Fields
 
     [Header("Spawn del mundo")]
-    [Tooltip("Transform desde donde caerán los objetos descartados (p.ej. el borde del barco). " +
-             "Debe estar en coordenadas del mundo 2D, no del Canvas.")]
+    [Tooltip("Punto desde donde caerán los objetos descartados (borde del barco, en coordenadas mundo 2D).")]
     [SerializeField] private Transform worldSpawnPoint;
 
-    [Tooltip("Offset aleatorio en X para que los objetos no caigan todos apilados.")]
+    [Tooltip("Scatter aleatorio en X para que no caigan apilados.")]
     [SerializeField] private float spawnScatterRadius = 0.5f;
 
     [Header("Visual Feedback")]
-    [Tooltip("Image del fondo del grid (opcional) — cambia de color si hay items dentro.")]
     [SerializeField] private UnityEngine.UI.Image backgroundImage;
-
     [SerializeField] private Color emptyColor = new Color(0.8f, 0.3f, 0.3f, 0.3f);
     [SerializeField] private Color occupiedColor = new Color(0.9f, 0.2f, 0.2f, 0.55f);
 
@@ -29,7 +26,7 @@ public class DropZoneGrid : MonoBehaviour
 
     #endregion
 
-    #region Private Fields
+    #region Private
 
     private ItemGrid itemGrid;
 
@@ -51,8 +48,7 @@ public class DropZoneGrid : MonoBehaviour
             Debug.LogError("[DropZoneGrid] No se encontró ItemGrid en " + gameObject.name);
 
         if (worldSpawnPoint == null)
-            Debug.LogWarning("[DropZoneGrid] worldSpawnPoint no asignado — los items descartados " +
-                             "no podrán re-instanciarse en el mundo.");
+            Debug.LogWarning("[DropZoneGrid] worldSpawnPoint no asignado.");
 
         UpdateVisualFeedback();
     }
@@ -61,36 +57,29 @@ public class DropZoneGrid : MonoBehaviour
 
     #region Public API
 
-    // Llamado por InventoryController al cerrar el inventario.
-    // Para cada item del drop zone:
-    //   1. Lo quita del grid (limpia el array interno).
-    //   2. Re-instancia su worldPrefab en el spawn point del barco.
-    //      El Rigidbody2D lo hará caer al agua automáticamente.
-    //   3. Destruye el InventoryItem (el sprite de UI).
+  
+   
     public void DiscardAllItems()
     {
         List<InventoryItem> items = CollectUniqueItems();
 
         if (items.Count == 0)
         {
-            LogDebug("Drop zone vacío, nada que descartar.");
+            LogDebug("Drop zone vacío.");
             return;
         }
 
-        LogDebug($"Descartando {items.Count} items — re-instanciando en el mundo...");
+        LogDebug($"Descartando {items.Count} items...");
 
         foreach (InventoryItem item in items)
         {
             if (item == null) continue;
 
-            // 1. Limpiar referencia del grid.
             itemGrid.PickUpItem(item.onGridPositionX, item.onGridPositionY);
 
-            // 2. Re-instanciar el prefab del mundo si está configurado.
-            SpawnWorldObject(item.itemData);
+            RestoreWorldObject(item);
 
-            // 3. Destruir el sprite de UI.
-            LogDebug($"  → Descartado: {(item.itemData != null ? item.itemData.itemName : item.name)}");
+            LogDebug($"  Descartado UI: {item.name}");
             Destroy(item.gameObject);
         }
 
@@ -98,61 +87,51 @@ public class DropZoneGrid : MonoBehaviour
         LogDebug("Descarte completado.");
     }
 
-    // Llamado por InventoryController cada vez que se coloca/recoge un item
-    // para que el fondo del drop zone cambie de color.
-    public void RefreshVisual()
-    {
-        UpdateVisualFeedback();
-    }
+    public void RefreshVisual() => UpdateVisualFeedback();
 
     #endregion
 
-    #region Private — Spawn
+    #region Private — Restore world object
 
-    // Re-instancia el prefab del mundo en la posición del barco con un scatter aleatorio.
-    // El Rigidbody2D (Dynamic, Gravity Scale > 0) se encarga de hacerlo caer.
-    private void SpawnWorldObject(ItemData data)
+    private void RestoreWorldObject(InventoryItem inventoryItem)
     {
-        if (data == null)
-        {
-            Debug.LogWarning("[DropZoneGrid] ItemData null — no se puede re-instanciar.");
-            return;
-        }
+        GameObject worldObj = inventoryItem.worldObject;
 
-        if (data.worldPrefab == null)
+        if (worldObj == null)
         {
-            Debug.LogWarning($"[DropZoneGrid] '{data.itemName}' no tiene worldPrefab asignado. " +
-                             "Asígnalo en el ScriptableObject para que reaparezca en el mundo.");
+            Debug.LogWarning($"[DropZoneGrid] '{inventoryItem.name}' no tiene worldObject — " +
+                             "asegúrate de asignarlo en TransferDiverLoot.");
             return;
         }
 
         if (worldSpawnPoint == null)
         {
-            Debug.LogWarning("[DropZoneGrid] worldSpawnPoint no asignado. " +
-                             "El objeto no puede re-instanciarse sin saber dónde.");
+            Debug.LogWarning("[DropZoneGrid] worldSpawnPoint no asignado — no se puede restaurar la posición.");
+            worldObj.SetActive(true);
             return;
         }
 
-        // Posición base del spawn con scatter aleatorio en X
-        // para que los objetos no caigan todos exactamente en el mismo punto.
         Vector3 spawnPos = worldSpawnPoint.position;
         spawnPos.x += Random.Range(-spawnScatterRadius, spawnScatterRadius);
+        worldObj.transform.position = spawnPos;
 
-        GameObject worldObj = Instantiate(data.worldPrefab, spawnPos, Quaternion.identity);
+        LootPickup lootPickup = worldObj.GetComponent<LootPickup>();
+        lootPickup?.ResetForReuse();
 
-        // Opcional: si el Rigidbody2D tiene velocidad inicial 0,
-        // le damos un pequeño impulso hacia abajo para que no flote.
         Rigidbody2D rb = worldObj.GetComponent<Rigidbody2D>();
         if (rb != null)
         {
-            // Gravity Scale ya lo hará caer; esto solo añade un empujón inicial.
             rb.linearVelocity = new Vector2(
-                Random.Range(-0.5f, 0.5f),  // pequeña deriva lateral
-                -1f                          // empuja ligeramente hacia abajo
+                Random.Range(-0.3f, 0.3f),  
+                -0.5f                      
             );
+            rb.angularVelocity = 0f;
         }
 
-        LogDebug($"  → Spawneado en mundo: {data.itemName} en {spawnPos}");
+      
+        worldObj.SetActive(true);
+
+        LogDebug($"  Restaurado en mundo: {worldObj.name} en {spawnPos}");
     }
 
     #endregion

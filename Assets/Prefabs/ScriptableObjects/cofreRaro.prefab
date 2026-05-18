@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 5689128266678908890}
   - component: {fileID: 3846841144402371920}
   - component: {fileID: 3328429376162321232}
+  - component: {fileID: 3988317266090492412}
   m_Layer: 0
   m_Name: cofreRaro
   m_TagString: Untagged
@@ -84,8 +85,8 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 21300000, guid: ecc67a32971bc5746a0fd0561a152052, type: 3}
-  m_Color: {r: 0, g: 0.69084215, b: 1, a: 1}
+  m_Sprite: {fileID: 21300000, guid: 84d4944ef47b4fd408bbaf4470649f6c, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -142,7 +143,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 85b9a99ff8d294f47b573f7095dd7396, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LootPickup
-  itemData: {fileID: 11400000, guid: 817fa56c69f1ae84eaa4770b65e53b32, type: 2}
+  itemData: {fileID: 11400000, guid: 24c3288337861fa4d9f12113ec0829f2, type: 2}
+  diverTag: Diver
+  pickupKey: 101
+  pickupPrompt: {fileID: 0}
 --- !u!50 &3328429376162321232
 Rigidbody2D:
   serializedVersion: 5
@@ -170,3 +174,49 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 4
+--- !u!61 &3988317266090492412
+BoxCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8778847778797646946}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: 0}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0.5, y: 0.5}
+    oldSize: {x: 3.59, y: 1.99}
+    newSize: {x: 1, y: 1}
+    adaptiveTilingThreshold: 0.5
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  m_Size: {x: 3.59, y: 1.99}
+  m_EdgeRadius: 0
