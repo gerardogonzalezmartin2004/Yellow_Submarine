@@ -50,6 +50,8 @@ namespace AbyssalReach.Gameplay
         private float targetYRotation = 0f;
         private Quaternion targetRotation;
 
+        [SerializeField] private Animator diverAnim;
+
         #region Unity ciclo de vida
 
         private void Awake()
@@ -183,10 +185,13 @@ namespace AbyssalReach.Gameplay
             if (moveInput.magnitude > 0.01f)
             {
                 rate = acceleration;
+                diverAnim.SetBool("Moving", true);
+
             }
             else
             {
                 rate = waterDrag;
+                diverAnim.SetBool("Moving", false);
             }
 
             currentVelocity = Vector2.MoveTowards(currentVelocity, targetVelocity, rate * Time.fixedDeltaTime);
