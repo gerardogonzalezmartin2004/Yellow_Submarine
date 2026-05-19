@@ -42,6 +42,14 @@ namespace AbyssalReach.Gameplay
         private Vector2 moveInput = Vector2.zero;
         private Vector2 currentVelocity = Vector2.zero;
 
+        [Header("Visual Rotation")]
+        [SerializeField] private float rotationSpeed = 12f;
+
+        [SerializeField] private float maxTiltAngle = 55f;
+
+        private float targetYRotation = 0f;
+        private Quaternion targetRotation;
+
         #region Unity ciclo de vida
 
         private void Awake()
@@ -85,6 +93,7 @@ namespace AbyssalReach.Gameplay
             if (!emergencyAscent)
             {
                 UpdateMovement();
+                UpdateVisualRotation();
             }
             else
             {
@@ -113,6 +122,46 @@ namespace AbyssalReach.Gameplay
         #endregion
 
         #region Movement Logic
+
+        private void UpdateVisualRotation()
+        {
+            if (currentVelocity.magnitude < 0.05f)
+            {
+                return;
+            }
+
+            Vector2 dir = currentVelocity.normalized;
+
+            if (dir.x > 0.05f)
+            {
+                targetYRotation = 0f;
+            }
+            else if (dir.x < -0.05f)
+            {
+                targetYRotation = 180f;
+            }
+
+            float angle = Mathf.Atan2(dir.y, Mathf.Abs(dir.x)) * Mathf.Rad2Deg;
+
+            angle = Mathf.Clamp(angle, -maxTiltAngle, maxTiltAngle);
+
+            float zRotation =
+                targetYRotation == 180f
+                ? angle
+                : angle;
+
+            targetRotation = Quaternion.Euler(
+                0f,
+                targetYRotation,
+                zRotation
+            );
+
+            transform.rotation = Quaternion.Slerp(
+                transform.rotation,
+                targetRotation,
+                rotationSpeed * Time.fixedDeltaTime
+            );
+        }
 
         private void ApplyGravity()
         {
