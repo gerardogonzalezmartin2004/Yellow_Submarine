@@ -13520,10 +13520,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3b5f34762192c454d885f15ed5e67e59, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Portarea
-  outerRadius: 9.29
-  innerRadius: 3
+  outerRadius: 7.66
+  innerRadius: 4.52
   dockingPoint: {fileID: 603160692}
-  dockingSpeed: 7.61
+  dockingSpeed: 5
   arrivalThreshold: 1.43
   exitCooldown: 2
   targetTag: Boat
@@ -28588,8 +28588,8 @@ Transform:
   m_GameObject: {fileID: 1753281855}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.295, y: 0.812, z: 0}
-  m_LocalScale: {x: 8.716804, y: 5.5267587, z: 5.5267587}
+  m_LocalPosition: {x: -0.295, y: 1.21, z: 0}
+  m_LocalScale: {x: 10.180354, y: 6.4547014, z: 6.4547014}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1724961923}
@@ -29254,9 +29254,9 @@ Transform:
   m_GameObject: {fileID: 1809407412}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.29499996, y: 0.81200004, z: 0}
-  m_LocalScale: {x: 8.716804, y: 5.5267587, z: 5.5267587}
-  m_ConstrainProportionsScale: 0
+  m_LocalPosition: {x: -0.29499996, y: 1.21, z: 0}
+  m_LocalScale: {x: 10.180354, y: 6.4547014, z: 6.4547014}
+  m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 1724961923}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
