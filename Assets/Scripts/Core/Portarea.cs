@@ -345,12 +345,13 @@ namespace AbyssalReach.Gameplay
         private void OnGUI()
         {
             if (!showDebug) return;
+            string msg = isAutoPiloting ? autoPilotMessage : (boatInOuterZone && !isInShop && !isExiting) ? dockingMessage : "";
+            if (msg == "") return;
             GUIStyle s = new GUIStyle { fontSize = 20, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
             s.normal.textColor = Color.yellow;
             Rect r = new Rect((Screen.width - 500) / 2, Screen.height - 100, 500, 40);
             GUI.color = new Color(0, 0, 0, 0.7f); GUI.Box(r, ""); GUI.color = Color.white;
-            string msg = isAutoPiloting ? autoPilotMessage : (boatInOuterZone && !isInShop && !isExiting) ? dockingMessage : "";
-            if (msg != "") GUI.Label(r, msg, s);
+            GUI.Label(r, msg, s);
         }
 
         #endregion

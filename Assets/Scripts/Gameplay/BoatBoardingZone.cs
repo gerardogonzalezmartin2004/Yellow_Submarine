@@ -3,7 +3,7 @@ using AbyssalReach.Core;
 
 namespace AbyssalReach.Gameplay
 {
-    // Detecta si el buceador entra en la zona y permite pulsar un botón para "subir a bordo".
+    // Detecta si el buceador entra en la zona y permite pulsar un botï¿½n para "subir a bordo".
     [RequireComponent(typeof(BoxCollider2D))]
     public class BoatBoardingZone : MonoBehaviour
     {
@@ -46,7 +46,7 @@ namespace AbyssalReach.Gameplay
         {
             controls.Enable();
 
-            // Habilitamos el mapa de controles del buceador, ya que es quien interactúa
+            // Habilitamos el mapa de controles del buceador, ya que es quien interactï¿½a
             controls.DiverControls.Enable();
 
             
@@ -67,10 +67,10 @@ namespace AbyssalReach.Gameplay
 
         #region Input Logic
 
-        // Este método se llama automáticamente cuando el jugador pulsa el botón
+        // Este mï¿½todo se llama automï¿½ticamente cuando el jugador pulsa el botï¿½n
         private void OnBoardPressed(UnityEngine.InputSystem.InputAction.CallbackContext context)
         {
-            // Solo hacemos algo si el buzo está realmente cerca del barco
+            // Solo hacemos algo si el buzo estï¿½ realmente cerca del barco
             if (diverInRange)
             {
                 BoardTheBoat();
@@ -117,7 +117,7 @@ namespace AbyssalReach.Gameplay
             // Llamamos al GameController (Singleton) para cambiar el estado del juego
             if (GameController.Instance != null)
             {
-                // Esta función se encarga de apagar al buzo, encender al barco y cambiar la cámara
+                // Esta funciï¿½n se encarga de apagar al buzo, encender al barco y cambiar la cï¿½mara
                 GameController.Instance.EndDive();
             }
             else
@@ -155,38 +155,18 @@ namespace AbyssalReach.Gameplay
             {
                 Gizmos.matrix = transform.localToWorldMatrix;
                 Gizmos.color = Color.yellow;
-                // Dibujamos solo las líneas del borde
+                // Dibujamos solo las lï¿½neas del borde
                 Gizmos.DrawWireCube(boxCollider.center, boxCollider.size);
             }
         }
 
-        // Dibuja el mensaje "Press Space..." en la pantalla del juego
         private void OnGUI()
         {
-            // Solo dibujamos si el debug está activo Y el buzo está cerca
-            if (!showDebug || !diverInRange)
-            {
-                return;
-            }
-
-            // Configuración del estilo del texto
-            GUIStyle style = new GUIStyle();
-            style.fontSize = 20;
+            if (!showDebug || !diverInRange) return;
+            GUIStyle style = new GUIStyle { fontSize = 20, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
             style.normal.textColor = Color.yellow;
-            style.fontStyle = FontStyle.Bold;
-            style.alignment = TextAnchor.MiddleCenter;
-
-            // Calculamos la posición (centro inferior de la pantalla)
-            float width = 500;
-            float height = 40;
-            Rect rect = new Rect((Screen.width - width) / 2,Screen.height - 150,width,height);
-
-            // Caja negra semitransparente de fondo para que se lea mejor. Al fnal todos estos apartado es para ir mas rapido, ya que ya introduciremos nuestro sistema de UI propio, pero por ahora esto nos sirve para testear la zona de abordaje sin tener que crear nada mas.
-            GUI.color = new Color(0, 0, 0, 0.7f);
-            GUI.Box(rect, "");
-
-            // Texto blanco encima
-            GUI.color = Color.white;
+            Rect rect = new Rect((Screen.width - 500) / 2, Screen.height - 100, 500, 40);
+            GUI.color = new Color(0, 0, 0, 0.7f); GUI.Box(rect, ""); GUI.color = Color.white;
             GUI.Label(rect, boardingMessage, style);
         }
 

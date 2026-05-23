@@ -9,19 +9,16 @@ public class ItemGrid : MonoBehaviour
 {
     #region Constants
 
-    
-    // Ancho de cada celda del grid en píxeles.
-    
-    public const float tileSizeWidht = 32f;
-
-    
-    // Alto de cada celda del grid en píxeles.
-    
-    public const float tileSizeHeight = 32f;
+    public static float tileSizeWidht = 32f;
+    public static float tileSizeHeight = 32f;
 
     #endregion
 
     #region Serialized Fields
+
+    [Header("Tile Size")]
+    [Tooltip("Tamaño de cada celda en píxeles. Modifica este valor para agrandar o achicar el grid. NO uses el Transform Scale.")]
+    [SerializeField] private float tileSize = 32f;
 
     [Header("Grid Configuration")]
     [Tooltip("Ancho del grid en número de celdas")]
@@ -61,6 +58,9 @@ public class ItemGrid : MonoBehaviour
 
     private void Awake()
     {
+        tileSizeWidht = tileSize;
+        tileSizeHeight = tileSize;
+
         rectTransform = GetComponent<RectTransform>();
 
         if (rectTransform == null)
@@ -169,7 +169,10 @@ public class ItemGrid : MonoBehaviour
     // está en un Canvas desactivado y Start no ha corrido todavía.
     public void ForceInit()
     {
-        if (inventoryItemSlots != null) return; // Ya inicializado
+        if (inventoryItemSlots != null) return;
+
+        tileSizeWidht = tileSize;
+        tileSizeHeight = tileSize;
 
         rectTransform = GetComponent<RectTransform>();
         Init(gridWidth, gridHeight);

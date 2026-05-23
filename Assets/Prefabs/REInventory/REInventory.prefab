@@ -89,6 +89,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b18c89f61205cfa46847dbebbbd1062b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ItemGrid
+  tileSize: 32
   gridWidth: 6
   gridHeight: 4
   inventoryItemPrefab: {fileID: 584808322317816148, guid: 0a3337c7dcacfa643b745621ebb95c29, type: 3}
@@ -269,6 +270,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b18c89f61205cfa46847dbebbbd1062b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ItemGrid
+  tileSize: 32
   gridWidth: 6
   gridHeight: 4
   inventoryItemPrefab: {fileID: 584808322317816148, guid: 0a3337c7dcacfa643b745621ebb95c29, type: 3}
@@ -296,9 +298,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 153b528ac21143949b5145f992b1c2a7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DropZoneGrid
+  worldSpawnPoint: {fileID: 0}
+  spawnScatterRadius: 0.5
+  backgroundImage: {fileID: 0}
   emptyColor: {r: 0.8, g: 0.3, b: 0.3, a: 0.3}
   occupiedColor: {r: 0.9, g: 0.2, b: 0.2, a: 0.5}
-  backgroundImage: {fileID: 0}
   showDebugLogs: 0
 --- !u!1 &7998944323399816224
 GameObject:
@@ -331,8 +335,8 @@ RectTransform:
   m_LocalScale: {x: 0, y: 0, z: 0}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 2185898061908138104}
   - {fileID: 3265780530580650887}
+  - {fileID: 2185898061908138104}
   - {fileID: 6428106149284919590}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
