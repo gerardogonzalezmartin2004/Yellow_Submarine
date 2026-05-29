@@ -260,7 +260,10 @@ namespace AbyssalReach.Gameplay
 
         #region Aplicaciones Publicas
 
-        
+        public void Breathe()
+        {
+            AudioManager.Instance.PlaySFX("Breathe");
+        }
         public void Stop()
         {
             currentVelocity = Vector2.zero;

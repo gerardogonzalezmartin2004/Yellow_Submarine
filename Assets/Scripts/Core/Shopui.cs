@@ -104,6 +104,7 @@ namespace AbyssalReach.UI
 
             Debug.Log("[ShopUI] Vendido todo por " + totalValue + "G");
             UpdateInventoryDisplay();
+            AudioManager.Instance.PlaySFX("Vender");
         }
 
         
@@ -114,6 +115,7 @@ namespace AbyssalReach.UI
             {
                 if (tetherSystem != null)
                     tetherSystem.UpgradeCableLength(mejoraLongitudCable);
+                AudioManager.Instance.PlaySFX("Vender");
 
                 Debug.Log("[ShopUI] Cable Length upgraded by " + mejoraLongitudCable);
             }
@@ -126,6 +128,7 @@ namespace AbyssalReach.UI
             {
                 if (InventoryManager.Instance != null)
                     InventoryManager.Instance.GetDiverInventory().UpgradeMaxWeight(mejoraPeso);
+                AudioManager.Instance.PlaySFX("Vender");
 
                 Debug.Log("[ShopUI] Max Weight upgraded by " + mejoraPeso);
             }
@@ -138,6 +141,7 @@ namespace AbyssalReach.UI
             {
                 if (diverMovement != null)
                     diverMovement.UpgradeSwimSpeed(mejoraVelocidad);
+                AudioManager.Instance.PlaySFX("Vender");
 
                 Debug.Log("[ShopUI] Swim Speed upgraded by " + mejoraVelocidad);
             }

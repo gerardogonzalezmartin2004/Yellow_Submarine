@@ -1,3 +1,4 @@
+using AbyssalReach.Core;
 using DG.Tweening;
 using UnityEngine;
 
@@ -6,6 +7,8 @@ public class UnderwaterEffects : MonoBehaviour
     [SerializeField] private GameObject WaterArriba;
     [SerializeField] private GameObject WaterAbajo;
     [SerializeField] private ParticleSystem bubblesEffect;
+    [SerializeField] private GameObject underWaterSource;
+
 
     private void Start()
     {
@@ -19,7 +22,9 @@ public class UnderwaterEffects : MonoBehaviour
         RenderSettings.fog = true;
         WaterArriba.SetActive(false);
         WaterAbajo.SetActive(true);
+        underWaterSource.SetActive(true);
         bubblesEffect.Play();
+        AudioManager.Instance.SetUnderwater(true);
         Debug.Log("Debería activarse la fog");
     }
 
@@ -28,8 +33,10 @@ public class UnderwaterEffects : MonoBehaviour
         RenderSettings.fog = false;
         WaterArriba.SetActive(true);
         WaterAbajo.SetActive(false);
+        underWaterSource.SetActive(false);
         bubblesEffect.Stop();
         bubblesEffect.DORestart();
+        AudioManager.Instance.SetUnderwater(false);
         Debug.Log("Debería desactivarse la fog");
     }
 }

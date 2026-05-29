@@ -101,6 +101,7 @@ namespace AbyssalReach.Core
 
         private void Start()
         {
+            AudioManager.Instance.PlayMusic("Music");
             SetSailingMode();
         }
 
