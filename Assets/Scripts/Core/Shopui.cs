@@ -20,6 +20,7 @@ namespace AbyssalReach.UI
         [SerializeField] private Button upgradeCableLengthButton;
         [SerializeField] private Button upgradeCableStrengthButton;
         [SerializeField] private Button upgradeSwimSpeedButton;
+        [SerializeField] private Button upgradeGridButton;
 
         [Header("Port Reference")]
         [SerializeField] private Gameplay.PortArea portArea;
@@ -30,8 +31,11 @@ namespace AbyssalReach.UI
 
         [Header("Upgrade Settings")]
         [SerializeField] private float mejoraLongitudCable;
-        [SerializeField] private float mejoraPeso; // Paso A: Campo añadido
+        [SerializeField] private float mejoraPeso;
         [SerializeField] private float mejoraVelocidad;
+        [SerializeField] private int   gridUpgradeCost    = 150;
+        [SerializeField] private int   gridUpgradeColumns = 2;
+        [SerializeField] private int   maxGridWidth       = 20;
 
         [Header("Boat Grid Reference")]
         [SerializeField] private ItemGrid boatItemGrid;
@@ -58,6 +62,9 @@ namespace AbyssalReach.UI
             if (upgradeSwimSpeedButton != null)
                 upgradeSwimSpeedButton.onClick.AddListener(PurchaseSpeedUpgrade);
 
+            if (upgradeGridButton != null)
+                upgradeGridButton.onClick.AddListener(PurchaseGridUpgrade);
+
             UpdateGoldDisplay(0, 0);
             UpdateInventoryDisplay();
         }
@@ -71,6 +78,7 @@ namespace AbyssalReach.UI
             if (upgradeCableLengthButton != null) upgradeCableLengthButton.onClick.RemoveAllListeners();
             if (upgradeCableStrengthButton != null) upgradeCableStrengthButton.onClick.RemoveAllListeners();
             if (upgradeSwimSpeedButton != null) upgradeSwimSpeedButton.onClick.RemoveAllListeners();
+            if (upgradeGridButton      != null) upgradeGridButton.onClick.RemoveAllListeners();
         }
 
         #endregion
@@ -147,6 +155,31 @@ namespace AbyssalReach.UI
             }
         }
 
+        private void PurchaseGridUpgrade()
+        {
+            if (boatItemGrid == null || CurrencyManager.Instance == null) return;
+
+            if (boatItemGrid.GetWidth() >= maxGridWidth)
+            {
+                Debug.Log("[ShopUI] Grid ya al maximo de " + maxGridWidth + " columnas.");
+                return;
+            }
+
+            if (CurrencyManager.Instance.SpendGold(gridUpgradeCost))
+            {
+                boatItemGrid.ExpandGrid(gridUpgradeColumns);
+                RefreshUpgradeGridButton();
+                AudioManager.Instance.PlaySFX("Vender");
+                Debug.Log("[ShopUI] Grid ampliado a " + boatItemGrid.GetWidth() + "x" + boatItemGrid.GetHeight());
+            }
+        }
+
+        private void RefreshUpgradeGridButton()
+        {
+            if (upgradeGridButton == null || boatItemGrid == null) return;
+            upgradeGridButton.interactable = boatItemGrid.GetWidth() < maxGridWidth;
+        }
+
         private void CloseShop()
         {
             if (portArea != null)
@@ -186,6 +219,8 @@ namespace AbyssalReach.UI
 
             if (sellAllButton != null)
                 sellAllButton.interactable = items.Count > 0;
+
+            RefreshUpgradeGridButton();
         }
 
         #endregion

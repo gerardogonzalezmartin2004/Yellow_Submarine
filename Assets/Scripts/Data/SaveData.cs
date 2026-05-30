@@ -47,6 +47,9 @@ namespace AbyssalReach.Data
         
         public List<string> collectedPropIds = new List<string>();
 
+        public int boatGridWidth  = 0;
+        public int boatGridHeight = 0;
+
         public List<InventoryItemData> boatInventory = new List<InventoryItemData>();
         public List<InventoryItemData> diverInventory = new List<InventoryItemData>();
 

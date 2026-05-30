@@ -541,30 +541,47 @@ public class ItemGrid : MonoBehaviour
 
     #endregion
 
-    #region Public Getters
+    #region Grid Expansion
 
-   
-    // Obtiene las dimensiones del grid.
-   
-    public Vector2Int GetGridSize()
+    public void ExpandGrid(int extraWidth, int extraHeight = 0)
     {
-        return new Vector2Int(gridWidth, gridHeight);
+        int newWidth  = Mathf.Max(gridWidth,  gridWidth  + extraWidth);
+        int newHeight = Mathf.Max(gridHeight, gridHeight + extraHeight);
+
+        if (newWidth == gridWidth && newHeight == gridHeight) return;
+
+        InventoryItem[,] newSlots = new InventoryItem[newWidth, newHeight];
+
+        for (int x = 0; x < gridWidth; x++)
+            for (int y = 0; y < gridHeight; y++)
+                newSlots[x, y] = inventoryItemSlots[x, y];
+
+        inventoryItemSlots = newSlots;
+        gridWidth  = newWidth;
+        gridHeight = newHeight;
+
+        if (rectTransform != null)
+            rectTransform.sizeDelta = new Vector2(gridWidth * tileSizeWidht, gridHeight * tileSizeHeight);
+
+        Debug.Log("[ItemGrid] Grid expandido a " + gridWidth + "x" + gridHeight);
     }
 
-   
-    // Obtiene el ancho del grid.
-   
-    public int GetWidth() => gridWidth;
+    public void SetGridSize(int width, int height)
+    {
+        int extraW = Mathf.Max(0, width  - gridWidth);
+        int extraH = Mathf.Max(0, height - gridHeight);
+        if (extraW > 0 || extraH > 0)
+            ExpandGrid(extraW, extraH);
+    }
 
-   
-    // Obtiene el alto del grid.
-    
-    public int GetHeight() => gridHeight;
+    #endregion
 
-   
-    // Obtiene el número total de celdas en el grid.
-   
-    public int GetTotalCells() => gridWidth * gridHeight;
+    #region Public Getters
+
+    public Vector2Int GetGridSize() => new Vector2Int(gridWidth, gridHeight);
+    public int GetWidth()           => gridWidth;
+    public int GetHeight()          => gridHeight;
+    public int GetTotalCells()      => gridWidth * gridHeight;
 
     #endregion
 

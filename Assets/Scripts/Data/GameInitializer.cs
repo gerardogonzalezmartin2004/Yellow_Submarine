@@ -101,6 +101,10 @@ namespace AbyssalReach.Core
             if (CurrencyManager.Instance != null)
                 CurrencyManager.Instance.SetGold((int)data.gold);
 
+            if (boatItemGrid != null && data.boatGridWidth > 0)
+                boatItemGrid.SetGridSize(data.boatGridWidth,
+                    data.boatGridHeight > 0 ? data.boatGridHeight : boatItemGrid.GetHeight());
+
             LoadDiverInventory(data.diverInventory);
             LoadBoatGrid(data.boatInventory);
 
@@ -214,6 +218,9 @@ namespace AbyssalReach.Core
 
             if (boatItemGrid != null)
             {
+                data.boatGridWidth  = boatItemGrid.GetWidth();
+                data.boatGridHeight = boatItemGrid.GetHeight();
+
                 List<InventoryItem> boatItems = boatItemGrid.GetAllItems();
                 foreach (InventoryItem item in boatItems)
                 {
