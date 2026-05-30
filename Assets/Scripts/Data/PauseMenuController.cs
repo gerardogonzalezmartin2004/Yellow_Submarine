@@ -84,8 +84,14 @@ namespace AbyssalReach.UI.Pause
 
         public void TogglePause()
         {
+            AudioManager.Instance.PlaySFX("Button1");
             if (isPaused) ResumeGame();
             else PauseGame();
+        }
+
+        public void ButtonSound()
+        {
+            AudioManager.Instance.PlaySFX("Button1");
         }
 
         public void PauseGame()

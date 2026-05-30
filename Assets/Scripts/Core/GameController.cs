@@ -234,6 +234,8 @@ namespace AbyssalReach.Core
             {
                 SetGameState(GameState.Inventory);
 
+                AudioManager.Instance.PlaySFX("Button1");
+
                 boatMovement?.SetMovementActive(false);
 
                 controls.BoatControls.Disable();
@@ -244,6 +246,8 @@ namespace AbyssalReach.Core
             else if (currentState == GameState.Inventory)
             {
                 SetGameState(GameState.Sailing);
+
+                AudioManager.Instance.PlaySFX("Button1");
 
                 boatMovement?.SetMovementActive(true);
 
