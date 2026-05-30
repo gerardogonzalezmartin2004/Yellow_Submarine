@@ -82,6 +82,7 @@ public class LootPickup : MonoBehaviour
             if (pickupPrompt != null)
                 pickupPrompt.SetActive(false);
 
+            AudioManager.Instance.PlaySFX("Pickup");
             gameObject.SetActive(false);
 
             Debug.Log($"[LootPickup] Recogido: {itemData.itemName}");

@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 8635379037911034731}
   - component: {fileID: 2539977448410400589}
   - component: {fileID: 7035309991560044421}
-  - component: {fileID: 9102729686232625091}
+  - component: {fileID: 2838611498168635201}
   m_Layer: 0
   m_Name: Ancla
   m_TagString: Untagged
@@ -174,8 +174,8 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 4
---- !u!70 &9102729686232625091
-CapsuleCollider2D:
+--- !u!61 &2838611498168635201
+BoxCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -190,7 +190,7 @@ CapsuleCollider2D:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 536871168
+    m_Bits: 0
   m_LayerOverridePriority: 0
   m_ForceSendLayers:
     serializedVersion: 2
@@ -208,6 +208,15 @@ CapsuleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -0.0093425065, y: 0.26551825}
-  m_Size: {x: 3.1063218, y: 4.158968}
-  m_Direction: 0
+  m_Offset: {x: 0, y: 0.25841218}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0.5, y: 0.5}
+    oldSize: {x: 3.67, y: 4.69}
+    newSize: {x: 1, y: 1}
+    adaptiveTilingThreshold: 0.5
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  m_Size: {x: 3.75, y: 4.1731753}
+  m_EdgeRadius: 0

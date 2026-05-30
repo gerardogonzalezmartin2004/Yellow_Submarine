@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 7290850728701740850}
   - component: {fileID: 658626759537528746}
   - component: {fileID: 5657871465110274347}
-  - component: {fileID: 8705030338701658644}
+  - component: {fileID: 8321478049732690451}
   m_Layer: 0
   m_Name: "Tim\xF3n"
   m_TagString: Untagged
@@ -174,8 +174,8 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 4
---- !u!58 &8705030338701658644
-CircleCollider2D:
+--- !u!61 &8321478049732690451
+BoxCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -190,7 +190,7 @@ CircleCollider2D:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 536871168
+    m_Bits: 0
   m_LayerOverridePriority: 0
   m_ForceSendLayers:
     serializedVersion: 2
@@ -208,5 +208,15 @@ CircleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
-  m_Radius: 1.5691589
+  m_Offset: {x: -0.008726239, y: -0.023176491}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0.5, y: 0.5}
+    oldSize: {x: 4.95, y: 5.3375}
+    newSize: {x: 1, y: 1}
+    adaptiveTilingThreshold: 0.5
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  m_Size: {x: 3.1893327, y: 3.252586}
+  m_EdgeRadius: 0

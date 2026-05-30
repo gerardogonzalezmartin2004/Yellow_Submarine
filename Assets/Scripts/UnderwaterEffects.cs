@@ -25,6 +25,7 @@ public class UnderwaterEffects : MonoBehaviour
         underWaterSource.SetActive(true);
         bubblesEffect.Play();
         AudioManager.Instance.SetUnderwater(true);
+        AudioManager.Instance.PlaySFX("Breathe");
         Debug.Log("Debería activarse la fog");
     }
 
@@ -36,6 +37,7 @@ public class UnderwaterEffects : MonoBehaviour
         underWaterSource.SetActive(false);
         bubblesEffect.Stop();
         bubblesEffect.DORestart();
+        AudioManager.Instance.PlaySFX("SalirAgua");
         AudioManager.Instance.SetUnderwater(false);
         Debug.Log("Debería desactivarse la fog");
     }

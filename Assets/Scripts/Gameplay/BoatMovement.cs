@@ -53,6 +53,9 @@ namespace AbyssalReach.Gameplay
         private Quaternion targetRotation;
         private float targetYRotation = 0f;
 
+        [SerializeField] private AudioSource engineAudioSource;
+        private bool enginePlaying;
+
         #region Unity ciclo de vida
 
         private void Awake()
@@ -102,6 +105,7 @@ namespace AbyssalReach.Gameplay
 
             UpdateMovement();
             UpdateBoatVisuals();
+            UpdateEngineSound();
         }
 
         #endregion
@@ -143,6 +147,30 @@ namespace AbyssalReach.Gameplay
         #endregion
 
         #region Movement Logic
+
+        private void UpdateEngineSound()
+        {
+            float speedPercent =
+                Mathf.Abs(currentSpeed) / maxSpeed;
+
+            bool shouldPlay = speedPercent > 0.05f;
+
+            if (shouldPlay)
+            {
+                if (!engineAudioSource.isPlaying)
+                    engineAudioSource.Play();
+
+                engineAudioSource.pitch =
+                    Mathf.Lerp(0.8f, 1.2f, speedPercent);
+
+                engineAudioSource.volume =
+                    Mathf.Lerp(0.2f, 1f, speedPercent);
+            }
+            else
+            {
+                engineAudioSource.Stop();
+            }
+        }
 
         private void UpdateMovement()
         {

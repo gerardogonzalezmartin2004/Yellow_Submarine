@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 8225183163848975297}
   - component: {fileID: 7140501942360810295}
   - component: {fileID: 2294973313591552448}
-  - component: {fileID: 7484767676076180956}
+  - component: {fileID: 7421847359208935546}
   m_Layer: 0
   m_Name: MonedaKraken
   m_TagString: Untagged
@@ -174,8 +174,8 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 4
---- !u!58 &7484767676076180956
-CircleCollider2D:
+--- !u!61 &7421847359208935546
+BoxCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -190,7 +190,7 @@ CircleCollider2D:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 536871168
+    m_Bits: 0
   m_LayerOverridePriority: 0
   m_ForceSendLayers:
     serializedVersion: 2
@@ -209,4 +209,14 @@ CircleCollider2D:
   m_CompositeOperation: 0
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
-  m_Radius: 0.335
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0.5, y: 0.5}
+    oldSize: {x: 0.66333336, y: 0.67}
+    newSize: {x: 1, y: 1}
+    adaptiveTilingThreshold: 0.5
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  m_Size: {x: 0.66333336, y: 0.67}
+  m_EdgeRadius: 0

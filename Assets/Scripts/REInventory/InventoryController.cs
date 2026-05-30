@@ -145,6 +145,7 @@ public class InventoryController : MonoBehaviour
     {
         if (selectedItem == null) return;
         selectedItem.Rotate();
+        AudioManager.Instance.PlaySFX("Button3");
         lastRotationIdx = -1;
     }
 
@@ -257,6 +258,7 @@ public class InventoryController : MonoBehaviour
         selectedItem = selectedItemGrid.PickUpItem(tile.x, tile.y);
         if (selectedItem == null) return;
 
+        AudioManager.Instance.PlaySFX("Button2");
         heldItemRect = selectedItem.GetComponent<RectTransform>();
         heldItemRect?.SetAsLastSibling();
 
@@ -270,6 +272,7 @@ public class InventoryController : MonoBehaviour
     {
         if (selectedItem == null || selectedItemGrid == null) return;
 
+        AudioManager.Instance.PlaySFX("Button2.1");
         InventoryItem itemBeingPlaced = selectedItem;
 
         bool placed = selectedItemGrid.PlaceItem(selectedItem, tile.x, tile.y, ref overlapItem);
