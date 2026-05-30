@@ -69,6 +69,10 @@ namespace AbyssalReach.UI.MainMenu
             target.SetActive(true);
         }
 
+        public void ButtonSound()
+        {
+            AudioManager.Instance.PlaySFX("Button1");
+        }
         private void OpenSlots()
         {
             RefreshSlots();
