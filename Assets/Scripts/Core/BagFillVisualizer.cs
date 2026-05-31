@@ -48,6 +48,6 @@ public class BagFillVisualizer : MonoBehaviour
             Time.deltaTime * animationSpeed
         );
 
-        bagTriangle.localScale = currentTri;
+        //bagTriangle.localScale = currentTri;
     }
 }
