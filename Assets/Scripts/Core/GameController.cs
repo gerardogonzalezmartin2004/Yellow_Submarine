@@ -107,9 +107,6 @@ namespace AbyssalReach.Core
 
         private void Update()
         {
-            if (Input.GetKeyDown(KeyCode.F5))
-                ToggleDiving();
-
             if (currentState == GameState.Diving && !stopTimer)
             {
                 oxygenTimer -= Time.deltaTime;
@@ -434,7 +431,7 @@ namespace AbyssalReach.Core
             GUI.Label(new Rect(10, 55, 400, 20), "Controls: " + controlsState, normal);
 
             normal.normal.textColor = Color.white;
-            GUI.Label(new Rect(10, 80, 400, 20), "F5: Toggle Sailing/Diving | I: Toggle Inventory", normal);
+            GUI.Label(new Rect(10, 80, 400, 20), "I: Toggle Inventory", normal);
         }
 
         #endregion
