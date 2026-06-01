@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using AbyssalReach.Gameplay;
 using UnityEngine.UI;
+using UnityEngine.Assertions.Must;
 
 namespace AbyssalReach.Core
 {
@@ -42,7 +43,7 @@ namespace AbyssalReach.Core
         [SerializeField] private GameObject goldLossCanvas; 
 
         [Header("State")]
-        [SerializeField] private GameState currentState = GameState.Sailing;
+        [SerializeField] private GameState currentState = GameState.Tutorial;
 
         [Header("Debug")]
         [SerializeField] private bool showDebug = true;
@@ -52,6 +53,8 @@ namespace AbyssalReach.Core
         private DiverMovement diverMovement;
         private AbyssalReachControls controls;
         private bool isDiving = false;
+
+        [SerializeField] private Dialogue tutorialDialogue;
 
         #region Unity Lifecycle
 
@@ -102,7 +105,17 @@ namespace AbyssalReach.Core
         private void Start()
         {
             AudioManager.Instance.PlayMusic("Music");
-            SetSailingMode();
+            SetTutorialMode();
+
+            if (tutorialDialogue != null)
+            {
+                tutorialDialogue.OnDialogueFinished += OnTutorialFinished;
+                Debug.Log("suscrito al evento del diálogo");
+            }
+            else
+            {
+                Debug.Log("tutorialDialogue es NULL");
+            }
         }
 
         private void Update()
@@ -169,6 +182,11 @@ namespace AbyssalReach.Core
 
             switch (newState)
             {
+                case GameState.Tutorial:
+                    controls.BoatControls.Disable();
+                    controls.DiverControls.Disable();
+                    controls.UI.Disable();
+                    break;
                 case GameState.Sailing:
                     controls.BoatControls.Enable();
                     controls.UI.Disable();
@@ -253,6 +271,34 @@ namespace AbyssalReach.Core
 
                 inventoryController?.SetInventoryVisible(false);
             }
+        }
+
+        public void SetTutorialMode()
+        {
+            SetSailingMode();
+
+            currentState = GameState.Tutorial;
+
+            boatMovement?.SetMovementActive(false);
+
+            controls.BoatControls.Disable();
+        }
+
+        private void OnTutorialFinished()
+        {
+            Debug.Log("Tutorial terminado");
+
+            SetSailingMode();
+
+            if (showDebug)
+            {
+                Debug.Log("[GameController] Tutorial terminado");
+            }
+        }
+
+        public bool IsInteractionLocked()
+        {
+            return currentState == GameState.Tutorial;
         }
 
         public void SetSailingMode()
@@ -373,6 +419,7 @@ namespace AbyssalReach.Core
 
         public enum GameState
         {
+            Tutorial,
             Sailing,
             Diving,
             InPort,

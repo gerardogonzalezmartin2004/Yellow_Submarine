@@ -243,6 +243,9 @@ namespace AbyssalReach.Gameplay
 
         private void OpenShop()
         {
+            if (GameController.Instance.IsInteractionLocked())
+                return;
+
             if (shopUIPanel == null) { Debug.LogWarning("[PortArea] shopUIPanel no asignado"); return; }
             isInShop = true;
             shopUIPanel.SetActive(true);
