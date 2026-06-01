@@ -88,6 +88,10 @@ namespace AbyssalReach.Gameplay
 
         private void OnDockPressed(UnityEngine.InputSystem.InputAction.CallbackContext ctx)
         {
+            if (GameController.Instance != null &&
+                GameController.Instance.GetCurrentState() == GameController.GameState.Diving)
+                return;
+
             if (boatInOuterZone && !isAutoPiloting && !isInShop)
                 StartAutoPilot();
         }

@@ -12,12 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 30516ff129d50dc4892ff9679be8e9b7, type: 3}
   m_Name: Ancla
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
-  itemName: Reloj
+  itemName: Ancla
   width: 4
   height: 4
   itemIcon: {fileID: 21300000, guid: cae358149b3d94349ab5545ad50bbf67, type: 3}
   worldPrefab: {fileID: 1350043178417297560, guid: f19c1bfc5a34d1343837dce88bc2d140, type: 3}
   rarity: 2
-  value: 5
+  value: 35
   weight: 15
   description: 
