@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using System.Collections;
 using System.Collections.Generic;
 using AbyssalReach.Core;
 using AbyssalReach.Gameplay;
@@ -40,6 +41,13 @@ namespace AbyssalReach.UI
         [Header("Boat Grid Reference")]
         [SerializeField] private ItemGrid boatItemGrid;
 
+        [Header("Cuota (Final del Juego)")]
+        [SerializeField] private Button cuotaButton;
+        [Tooltip("Coste en oro necesario para pagar la cuota y completar el juego.")]
+        [SerializeField] private int cuotaCost = 1000;
+        [Tooltip("Panel opcional que se muestra antes de volver al menu. Dejalo vacio para ir directo.")]
+        [SerializeField] private GameObject victoryPanel;
+
         #region Unity Lifecycle
 
         private void OnEnable()
@@ -65,6 +73,9 @@ namespace AbyssalReach.UI
             if (upgradeGridButton != null)
                 upgradeGridButton.onClick.AddListener(PurchaseGridUpgrade);
 
+            if (cuotaButton != null)
+                cuotaButton.onClick.AddListener(PurchaseCuota);
+
             UpdateGoldDisplay(0, 0);
             UpdateInventoryDisplay();
         }
@@ -78,7 +89,8 @@ namespace AbyssalReach.UI
             if (upgradeCableLengthButton != null) upgradeCableLengthButton.onClick.RemoveAllListeners();
             if (upgradeCableStrengthButton != null) upgradeCableStrengthButton.onClick.RemoveAllListeners();
             if (upgradeSwimSpeedButton != null) upgradeSwimSpeedButton.onClick.RemoveAllListeners();
-            if (upgradeGridButton      != null) upgradeGridButton.onClick.RemoveAllListeners();
+            if (upgradeGridButton != null) upgradeGridButton.onClick.RemoveAllListeners();
+            if (cuotaButton       != null) cuotaButton.onClick.RemoveAllListeners();
         }
 
         #endregion
@@ -180,6 +192,32 @@ namespace AbyssalReach.UI
             upgradeGridButton.interactable = boatItemGrid.GetWidth() < maxGridWidth;
         }
 
+        private void PurchaseCuota()
+        {
+            if (CurrencyManager.Instance == null) return;
+
+            if (!CurrencyManager.Instance.SpendGold(cuotaCost))
+            {
+                Debug.Log("[ShopUI] Oro insuficiente para pagar la cuota. Necesitas " + cuotaCost + "G.");
+                return;
+            }
+
+            AudioManager.Instance.PlaySFX("Vender");
+            Debug.Log("[ShopUI] Cuota pagada. Juego completado.");
+
+            if (victoryPanel != null)
+                StartCoroutine(VictorySequence());
+            else
+                SceneLoader.Instance.GoToMainMenu();
+        }
+
+        private IEnumerator VictorySequence()
+        {
+            victoryPanel.SetActive(true);
+            yield return new WaitForSecondsRealtime(3f);
+            SceneLoader.Instance.GoToMainMenu();
+        }
+
         private void CloseShop()
         {
             if (portArea != null)
@@ -196,6 +234,9 @@ namespace AbyssalReach.UI
         {
             if (goldText != null && CurrencyManager.Instance != null)
                 goldText.text = "Gold: " + CurrencyManager.Instance.GetGold() + "G";
+
+            if (cuotaButton != null && CurrencyManager.Instance != null)
+                cuotaButton.interactable = CurrencyManager.Instance.HasEnoughGold(cuotaCost);
         }
 
         private void UpdateInventoryDisplay()
