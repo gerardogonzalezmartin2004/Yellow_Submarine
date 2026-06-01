@@ -9,16 +9,12 @@ public class ItemGrid : MonoBehaviour
 {
     #region Constants
 
-    public static float tileSizeWidht = 32f;
-    public static float tileSizeHeight = 32f;
+    public const float tileSizeWidht = 32f;
+    public const float tileSizeHeight = 32f;
 
     #endregion
 
     #region Serialized Fields
-
-    [Header("Tile Size")]
-    [Tooltip("Tamaño de cada celda en píxeles. Modifica este valor para agrandar o achicar el grid. NO uses el Transform Scale.")]
-    [SerializeField] private float tileSize = 32f;
 
     [Header("Grid Configuration")]
     [Tooltip("Ancho del grid en número de celdas")]
@@ -27,8 +23,8 @@ public class ItemGrid : MonoBehaviour
     [Tooltip("Alto del grid en número de celdas")]
     [SerializeField] private int gridHeight = 10;
 
-    [Header("References (Optional)")]
-    [Tooltip("Prefab del item de inventario (opcional, para debug/spawn)")]
+    [Header("References")]
+    [Tooltip("Prefab del item de inventario ")]
     [SerializeField] private GameObject inventoryItemPrefab;
 
     #endregion
@@ -58,9 +54,6 @@ public class ItemGrid : MonoBehaviour
 
     private void Awake()
     {
-        tileSizeWidht = tileSize;
-        tileSizeHeight = tileSize;
-
         rectTransform = GetComponent<RectTransform>();
 
         if (rectTransform == null)
@@ -170,9 +163,6 @@ public class ItemGrid : MonoBehaviour
     public void ForceInit()
     {
         if (inventoryItemSlots != null) return;
-
-        tileSizeWidht = tileSize;
-        tileSizeHeight = tileSize;
 
         rectTransform = GetComponent<RectTransform>();
         Init(gridWidth, gridHeight);

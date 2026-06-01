@@ -202,20 +202,33 @@ namespace AbyssalReach.UI
                 return;
             }
 
-            AudioManager.Instance.PlaySFX("Vender");
+            if (AudioManager.Instance != null)
+                AudioManager.Instance.PlaySFX("Vender");
+
             Debug.Log("[ShopUI] Cuota pagada. Juego completado.");
 
             if (victoryPanel != null)
                 StartCoroutine(VictorySequence());
             else
-                SceneLoader.Instance.GoToMainMenu();
+                ReturnToMainMenu();
         }
 
         private IEnumerator VictorySequence()
         {
             victoryPanel.SetActive(true);
             yield return new WaitForSecondsRealtime(3f);
-            SceneLoader.Instance.GoToMainMenu();
+            ReturnToMainMenu();
+        }
+
+        private void ReturnToMainMenu()
+        {
+            if (SceneLoader.Instance != null)
+                SceneLoader.Instance.GoToMainMenu();
+            else
+            {
+                Debug.LogWarning("[ShopUI] SceneLoader no encontrado. Cargando MainMenu directamente.");
+                UnityEngine.SceneManagement.SceneManager.LoadScene("MainMenu");
+            }
         }
 
         private void CloseShop()
