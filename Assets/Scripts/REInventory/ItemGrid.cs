@@ -9,8 +9,16 @@ public class ItemGrid : MonoBehaviour
 {
     #region Constants
 
-    public const float tileSizeWidht = 32f;
-    public const float tileSizeHeight = 32f;
+    public static float tileSizeWidht  = 32f;
+    public static float tileSizeHeight = 32f;
+
+    #endregion
+
+    #region Serialized Fields (Tile Size)
+
+    [Header("Tile Size")]
+    [Tooltip("Tamano de cada celda en pixeles. Cambia este valor para escalar el grid.")]
+    [SerializeField] public float tileSize = 32f;
 
     #endregion
 
@@ -54,6 +62,9 @@ public class ItemGrid : MonoBehaviour
 
     private void Awake()
     {
+        tileSizeWidht  = tileSize;
+        tileSizeHeight = tileSize;
+
         rectTransform = GetComponent<RectTransform>();
 
         if (rectTransform == null)
@@ -90,6 +101,11 @@ public class ItemGrid : MonoBehaviour
         // Ajustar tamaño visual del grid
         if (rectTransform != null)
         {
+            Vector2 topLeft = new Vector2(0f, 1f);
+            rectTransform.anchorMin = topLeft;
+            rectTransform.anchorMax = topLeft;
+            rectTransform.pivot = topLeft;
+
             Vector2 size = new Vector2(width * tileSizeWidht, height * tileSizeHeight);
             rectTransform.sizeDelta = size;
         }
@@ -163,6 +179,9 @@ public class ItemGrid : MonoBehaviour
     public void ForceInit()
     {
         if (inventoryItemSlots != null) return;
+
+        tileSizeWidht  = tileSize;
+        tileSizeHeight = tileSize;
 
         rectTransform = GetComponent<RectTransform>();
         Init(gridWidth, gridHeight);
