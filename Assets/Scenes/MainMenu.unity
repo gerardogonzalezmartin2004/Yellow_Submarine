@@ -4951,10 +4951,10 @@ RectTransform:
   - {fileID: 1555447108}
   m_Father: {fileID: 2050269195}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.3273542, y: 0.358}
-  m_AnchorMax: {x: 0.6674792, y: 0.4561852}
-  m_AnchoredPosition: {x: 35.249146, y: -79.136505}
-  m_SizeDelta: {x: -40.679, y: -6.6054}
+  m_AnchorMin: {x: 0.35531253, y: 0.28822222}
+  m_AnchorMax: {x: 0.6768542, y: 0.3777037}
+  m_AnchoredPosition: {x: -0.7508545, y: 0.36349487}
+  m_SizeDelta: {x: -4.679001, y: 2.3946}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1173477580
 MonoBehaviour:
@@ -5232,10 +5232,10 @@ RectTransform:
   - {fileID: 754691898}
   m_Father: {fileID: 2050269195}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.33152086, y: 0.24155559}
-  m_AnchorMax: {x: 0.67112505, y: 0.3422593}
-  m_AnchoredPosition: {x: 34.78192, y: -71.38739}
-  m_SizeDelta: {x: -40.6167, y: -6.7748}
+  m_AnchorMin: {x: 0.3594792, y: 0.17674072}
+  m_AnchorMax: {x: 0.6768542, y: 0.27414817}
+  m_AnchoredPosition: {x: 1.7819214, y: -0.88739014}
+  m_SizeDelta: {x: 3.3833008, y: -3.7747955}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1231070271
 MonoBehaviour:
@@ -6022,6 +6022,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1457694075}
   - component: {fileID: 1457694076}
+  - component: {fileID: 1457694077}
   m_Layer: 0
   m_Name: AudioManager
   m_TagString: Untagged
@@ -6057,11 +6058,168 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AbyssalReach.Core.AudioManager
   masterMixer: {fileID: 24100000, guid: 60e14a6d904f81c43b56cc7e71f34135, type: 2}
-  normalSnapshot: {fileID: 0}
-  underwaterSnapshot: {fileID: 0}
-  sounds: []
+  normalSnapshot: {fileID: 24500006, guid: 60e14a6d904f81c43b56cc7e71f34135, type: 2}
+  underwaterSnapshot: {fileID: -7839155618816574513, guid: 60e14a6d904f81c43b56cc7e71f34135, type: 2}
+  sounds:
+  - name: Music
+    clip: {fileID: 8300000, guid: 1c4e8b5b98946f74c8b60dfed97ba9f6, type: 3}
+    volume: 0.2
+    pitch: 1
+    loop: 1
+  - name: Burbujas
+    clip: {fileID: 0}
+    volume: 0.3
+    pitch: 1
+    loop: 0
+  - name: Vender
+    clip: {fileID: 8300000, guid: 7fee998c538eaa548ab237d0ae631308, type: 3}
+    volume: 0.3
+    pitch: 1
+    loop: 0
+  - name: BajoAgua
+    clip: {fileID: 8300000, guid: 406b673ba6fe1294186adef52f285667, type: 3}
+    volume: 0.35
+    pitch: 1
+    loop: 1
+  - name: Breathe
+    clip: {fileID: 8300000, guid: 92ad57598adf50a44b73489f0f46f64d, type: 3}
+    volume: 0.7
+    pitch: 1
+    loop: 0
+  - name: Pickup
+    clip: {fileID: 8300000, guid: 8a2994cf135ce43458f21e64cfebfa23, type: 3}
+    volume: 0.5
+    pitch: 1
+    loop: 0
+  - name: BajoAgua2
+    clip: {fileID: 8300000, guid: bd187ea53fdbdee448d3346d4348b79c, type: 3}
+    volume: 0.35
+    pitch: 1
+    loop: 1
+  - name: SalirAgua
+    clip: {fileID: 8300000, guid: 44488555b06abb74caff976add18dcb6, type: 3}
+    volume: 0.3
+    pitch: 1
+    loop: 0
+  - name: Button1
+    clip: {fileID: 8300000, guid: 9b0d52de6b4638346bb9e4e8d417f40c, type: 3}
+    volume: 0.5
+    pitch: 1
+    loop: 0
+  - name: Button2
+    clip: {fileID: 8300000, guid: 2ef84dd0a0abaea41bfa1957caad3f0f, type: 3}
+    volume: 0.5
+    pitch: 1
+    loop: 0
+  - name: Button3
+    clip: {fileID: 8300000, guid: 4ac48d4c506960a4789a31475055fec0, type: 3}
+    volume: 0.15
+    pitch: 1
+    loop: 0
+  - name: Button2.1
+    clip: {fileID: 8300000, guid: 2ef84dd0a0abaea41bfa1957caad3f0f, type: 3}
+    volume: 0.15
+    pitch: 0.5
+    loop: 0
   musicSource: {fileID: 0}
-  sfxSourcePrefab: {fileID: 0}
+  sfxSourcePrefab: {fileID: 5058636842209448622, guid: cbb9c8eae9365bf41a23edb263d25238, type: 3}
+--- !u!82 &1457694077
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1457694074}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_Resource: {fileID: 0}
+  m_PlayOnAwake: 1
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!1 &1459575535
 GameObject:
   m_ObjectHideFlags: 0
@@ -8010,10 +8168,10 @@ RectTransform:
   - {fileID: 880944427}
   m_Father: {fileID: 2050269195}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.33152086, y: 0.4672963}
-  m_AnchorMax: {x: 0.6674792, y: 0.5632591}
-  m_AnchoredPosition: {x: 35, y: -86.4147}
-  m_SizeDelta: {x: -40.1807, y: -6.4559}
+  m_AnchorMin: {x: 0.3594792, y: 0.38974074}
+  m_AnchorMax: {x: 0.6768542, y: 0.48051852}
+  m_AnchoredPosition: {x: -1, y: -0.41470337}
+  m_SizeDelta: {x: -4.1806984, y: -0.4559021}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2022649549
 MonoBehaviour:

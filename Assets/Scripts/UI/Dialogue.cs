@@ -27,6 +27,7 @@ public class Dialogue : MonoBehaviour
         {
             if(textComponent.text == lines[index])
             {
+                AudioManager.Instance.PlaySFX("Button1");
                 NextLine();
             }
             else
