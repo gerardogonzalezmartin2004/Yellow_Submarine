@@ -68,4 +68,11 @@ public class Dialogue : MonoBehaviour
             gameObject.SetActive(false);
         }
     }
+
+    public void SkipDialogue()
+    {
+        Debug.Log("Fin del dialogo");
+        OnDialogueFinished?.Invoke();
+        gameObject.SetActive(false);
+    }
 }

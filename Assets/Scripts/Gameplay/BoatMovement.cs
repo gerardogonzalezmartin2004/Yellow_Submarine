@@ -55,6 +55,7 @@ namespace AbyssalReach.Gameplay
 
         [SerializeField] private AudioSource engineAudioSource;
         private bool enginePlaying;
+        [SerializeField] private ParticleSystem boatParticles;
 
         #region Unity ciclo de vida
 
@@ -157,8 +158,11 @@ namespace AbyssalReach.Gameplay
 
             if (shouldPlay)
             {
+                boatParticles.Play();
+
                 if (!engineAudioSource.isPlaying)
                     engineAudioSource.Play();
+
 
                 engineAudioSource.pitch =
                     Mathf.Lerp(0.8f, 1.2f, speedPercent);
@@ -169,6 +173,7 @@ namespace AbyssalReach.Gameplay
             else
             {
                 engineAudioSource.Stop();
+                boatParticles.Stop();
             }
         }
 
