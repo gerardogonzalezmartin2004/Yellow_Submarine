@@ -124,7 +124,7 @@ namespace AbyssalReach.Core
             {
                 oxygenTimer -= Time.deltaTime;
                 oxygenSlider.value = oxygenTimer;
-
+                oxygenSlider.fillRect.GetComponent<Image>().color = Color.Lerp(Color.red, Color.green, oxygenTimer / maxTimer);
                 if (oxygenTimer <= 0f)
                 {
                     diverMovement?.EnterEmergencyAscent();

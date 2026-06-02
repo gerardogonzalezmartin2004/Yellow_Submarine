@@ -3,10 +3,10 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "NewItemData", menuName = "Inventory/Item Data", order = 1)]
 public class ItemData : ScriptableObject
 {
-    [Header("Identificación")]
+    [Header("Identificaciï¿½n")]
     public string itemName = "Nuevo Item";
 
-    [Header("Tamaño en el Grid")]
+    [Header("Tamaï¿½o en el Grid")]
     [Min(1)] public int width = 1;
     [Min(1)] public int height = 1;
 
@@ -16,7 +16,7 @@ public class ItemData : ScriptableObject
     [Header("World Object")]
     [Tooltip("Prefab del objeto en el mundo (el que tiene SpriteRenderer, Rigidbody2D, " +
              "CircleCollider2D y LootPickup). Se usa para re-instanciarlo cuando el jugador " +
-             "descarta el item desde el inventario — caerá desde el barco al agua.")]
+             "descarta el item desde el inventario ï¿½ caerï¿½ desde el barco al agua.")]
     public GameObject worldPrefab;
 
     [Header("Rareza")]
@@ -26,7 +26,7 @@ public class ItemData : ScriptableObject
     [Min(0)] public int value = 5;
     [Min(0)] public float weight = 1f;
 
-    [Header("Descripción")]
+    [Header("Descripciï¿½n")]
     [TextArea(2, 4)]
     public string description;
 
@@ -42,7 +42,7 @@ public class ItemData : ScriptableObject
     {
         switch (rarity)
         {
-            case ItemRarity.Common: return new Color(0.7f, 0.7f, 0.7f);
+            case ItemRarity.Common: return new Color(0.8f, 0.8f, 0.8f);
             case ItemRarity.Rare: return new Color(0.2f, 0.6f, 1f);
             case ItemRarity.Epic: return new Color(0.6f, 0.2f, 1f);
             case ItemRarity.Legendary: return new Color(1f, 0.8f, 0.2f);
