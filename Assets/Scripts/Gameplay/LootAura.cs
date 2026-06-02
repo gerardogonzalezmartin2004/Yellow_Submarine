@@ -4,7 +4,6 @@ using UnityEngine;
 public class LootAura : MonoBehaviour
 {
     [Header("Item Source ")]
-    [Tooltip("Si lo dejas vacio, busca el LootPickup en el padre automaticamente.")]
     [SerializeField] private LootPickup lootPickup;
 
     [Header("Opacidad")]
@@ -13,9 +12,7 @@ public class LootAura : MonoBehaviour
     [SerializeField] private float opacity = 1f;
 
     [Header("Tinte del objeto principal")]
-    [Tooltip("Si esta activo, tine el sprite del objeto con el color de su rareza.")]
     [SerializeField] private bool tintMainObject = true;
-    [Tooltip("Cuanto color de rareza se mezcla en el objeto (0 = nada, 1 = todo).")]
     [Range(0f, 1f)]
     [SerializeField] private float tintStrength = 0.35f;
 
@@ -25,16 +22,13 @@ public class LootAura : MonoBehaviour
     [SerializeField] private float maxAlpha   = 0.5f;
 
     [Header("Color")]
-    [Tooltip("Sube la saturacion del color para que no se vea lavado/clarito. 0 = color original.")]
     [Range(0f, 1f)]
     [SerializeField] private float extraSaturation = 0.4f;
 
     [Header("Sorting")]
-    [Tooltip("Orden de dibujado del aura. Debe ser menor que el del objeto para quedar detras.")]
     [SerializeField] private int sortingOrder = -1;
 
     [Header("Brillo")]
-    [Tooltip("Si esta activo usa additive (brilla pero lava el color). Desactivado = color solido.")]
     [SerializeField] private bool useAdditive = false;
 
     private SpriteRenderer auraRenderer;
@@ -174,11 +168,7 @@ public class LootAura : MonoBehaviour
 
         tex.Apply();
 
-        sharedGlowSprite = Sprite.Create(
-            tex,
-            new Rect(0, 0, size, size),
-            new Vector2(0.5f, 0.5f),
-            size);
+        sharedGlowSprite = Sprite.Create(tex,new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), size);
 
         return sharedGlowSprite;
     }
